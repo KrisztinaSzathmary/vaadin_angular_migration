@@ -22,7 +22,7 @@ public class BookstoreBeforeEnterListener implements Serializable {
     Logger logger;
 
     @SuppressWarnings("unused")
-    private void onServiceInit(@Observes BeforeEnterEvent enterEvent) {
+    private void onBeforeEnter(@Observes BeforeEnterEvent enterEvent) {
         logger.info("Attempt navigate to {}",
                 enterEvent.getLocation().getPath());
         if (!accessControl.isUserSignedIn()
