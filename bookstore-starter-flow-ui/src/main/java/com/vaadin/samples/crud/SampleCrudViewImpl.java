@@ -265,7 +265,7 @@ public class SampleCrudViewImpl extends HorizontalLayout
             form.confirmDiscard(() -> action.proceed());
         }
     }
-
+ 
     @Override
     public String getPageTitle() {
         return getTranslation(VIEW_NAME);

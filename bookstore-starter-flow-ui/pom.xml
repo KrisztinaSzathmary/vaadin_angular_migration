@@ -58,18 +58,17 @@
 
 	<build>
 		<plugins>
-<!--			<plugin>-->
-<!--				<groupId>org.wildfly.plugins</groupId>-->
-<!--				<artifactId>wildfly-maven-plugin</artifactId>-->
-<!--				<version>4.0.0.Final</version>-->
-<!--				<configuration>-->
-<!--					<version>27.0.0.Final</version>-->
-<!--				</configuration>-->
-<!--			</plugin>-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>3.3.2</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Dependencies>jdk.unsupported</Dependencies>
+                        </manifestEntries>
+                    </archive>
+                </configuration>				
 			</plugin>
 			<!--
                 Take care of synchronizing java dependencies and imports.
@@ -87,7 +86,6 @@
 					<execution>
 						<goals>
 							<goal>prepare-frontend</goal>
-							<!--							<goal>build-frontend</goal>-->
 						</goals>
 					</execution>
 				</executions>
@@ -109,12 +107,35 @@
 			</dependencies>
 			<build>
 				<plugins>
-					<plugin>
+<!--	    			<plugin>-->
+<!--						<groupId>org.zeroturnaround</groupId>-->
+<!--						<artifactId>jrebel-maven-plugin</artifactId>-->
+<!--						<version>1.2.0</version>-->
+<!--						<executions>-->
+<!--		    				<execution>-->
+<!--								<id>generate-rebel-xml</id>-->
+<!--								<phase>process-resources</phase>-->
+<!--								<goals>-->
+<!--			    					<goal>generate</goal>-->
+<!--								</goals>-->
+<!--		    				</execution>-->
+<!--						</executions>-->
+<!--	    			</plugin>-->
+	    			<plugin>
 						<groupId>org.wildfly.plugins</groupId>
 						<artifactId>wildfly-maven-plugin</artifactId>
 						<version>4.0.0.Final</version>
 						<configuration>
 							<version>27.0.0.Final</version>
+							<javaOpts>-Dvaadin.frontend.hotdeploy=true</javaOpts>
+<!--							<add-user>-->
+<!--								<users>-->
+<!--									<user>-->
+<!--										<username>admin</username>-->
+<!--										<password>admin</password>-->
+<!--									</user>-->
+<!--								</users>-->
+<!--							</add-user>-->
 						</configuration>
 					</plugin>
 				</plugins>
