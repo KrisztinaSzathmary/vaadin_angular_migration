@@ -23,7 +23,6 @@ public class BookstoreInitListener implements Serializable {
 
     @Inject
     Logger logger;
-    private String locale;
 
     // ServiceInitEvent CDI event is dispatched by CDI add-on upon
     // VaadinService start, no listener registration is needed when using this
@@ -35,17 +34,21 @@ public class BookstoreInitListener implements Serializable {
             Cookie localeCookie = CookieUtil.getCookieByName("language",
                     request);
 
-            session.access(() -> {
-                locale = (String) session.getAttribute("locale");
+            StringBuffer locale = new StringBuffer();
+            session.accessSynchronously(() -> {
+                var localeAttribute = (String) session.getAttribute("locale");
+                if (localeAttribute != null) {
+                    locale.append(localeAttribute);
+                }
             });
 
-            if (locale != null) {
+            if (!locale.isEmpty()) {
                 if (localeCookie == null) {
-                    localeCookie = new Cookie("language", locale);
+                    localeCookie = new Cookie("language", locale.toString());
                     localeCookie.setPath(request.getContextPath());
                     localeCookie.setMaxAge(60 * 60);
                 } else {
-                    localeCookie.setValue(locale);
+                    localeCookie.setValue(locale.toString());
                 }
                 response.addCookie(localeCookie);
             }
