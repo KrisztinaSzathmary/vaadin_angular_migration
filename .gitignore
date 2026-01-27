@@ -11,3 +11,6 @@
 **/node_modules
 bookstore-starter-flow-ui/webpack.generated.js
 /bin/
+
+# Maven Wrapper downloaded files
+.mvn/wrapper/maven-wrapper.jar
