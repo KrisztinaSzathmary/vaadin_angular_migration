@@ -32,32 +32,23 @@ Angular erstellt wurde.
 
 ### 2. Entwicklungsumgebung-Konfiguration (27.01.2026)
 
-#### Maven Wrapper eingerichtet
+#### Java-Version
 
-- **Ziel**: Konsistente Maven-Version für alle Entwickler sicherstellen
-- **Durchführung**:
-    - Maven Wrapper mit Version 3.9.6 generiert
-    - Dateien: `.mvn/wrapper/`, `mvnw`, `mvnw.cmd`
-    - Verwendung: `./mvnw` statt `mvn` Befehl
-
-#### Java-Version festgelegt
-
-- **`.sdkmanrc`** für SDKMAN Benutzer:
-    - Java: 17.0.12-tem
-    - Maven: 3.9.6
-    - Automatische Versionswechsel mit `sdkman_auto_env=true`
-- **`.java-version`** für jenv und andere Versionsmanager:
-    - Java: 17
-
-#### Verwendung
+Das Projekt erfordert **Java 17**. Vor dem Start der Anwendung müssen in jedem neuen Terminal folgende Umgebungsvariablen gesetzt werden:
 
 ```bash
-# Mit Maven Wrapper (empfohlen)
-./mvnw clean install
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+export PATH=$JAVA_HOME/bin:$PATH
+```
 
-# SDKMAN auto-env aktivieren
-sdk config  # sdkman_auto_env=true setzen
-cd /pfad/zum/projekt  # automatischer Versionswechsel
+#### Anwendung starten
+
+```bash
+# Build
+mvn clean install
+
+# Anwendung starten (im bookstore-starter-flow-ui Verzeichnis)
+mvn wildfly:run -PrunWar
 ```
 
 ### Warum Claude Code für diese Aufgaben?
