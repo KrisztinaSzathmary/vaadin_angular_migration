@@ -156,21 +156,103 @@ bookstore-angular/src/app/
 - **I18N**: ngx-translate v17 mit JSON Übersetzungsdateien
 - **Keyboard Shortcuts**: Ctrl+F (Filter), Alt+N (Neues Produkt), Ctrl+L (Logout)
 
-#### Angular Starten
+## Anwendung starten - Schritt für Schritt
+
+Um die vollständige Anwendung (Backend + Frontend) zu testen, folgen Sie diesen Schritten:
+
+### Voraussetzungen
+
+- **Java 17** installiert
+- **Node.js 18+** und **npm** installiert
+- **Maven 3.9+** installiert
+
+### Schritt 1: Repository klonen
 
 ```bash
+# Im gewünschten Verzeichnis
+git clone https://github.com/KrisztinaSzathmary/vaadin_angular_migration.git
+cd vaadin_angular_migration
+```
+
+### Schritt 2: Backend starten (Terminal 1)
+
+```bash
+# Im Projektverzeichnis: vaadin_angular_migration/
+
+# 2.1 Java 17 Umgebung setzen (macOS mit Homebrew)
+export JAVA_HOME=/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home
+export PATH=$JAVA_HOME/bin:$PATH
+
+# Alternative für Linux:
+# export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+# export PATH=$JAVA_HOME/bin:$PATH
+
+# 2.2 Backend bauen (nur beim ersten Mal oder nach Änderungen)
+mvn clean install -DskipTests
+
+# 2.3 In das UI-Modul wechseln (wichtig!)
+cd bookstore-starter-flow-ui
+
+# 2.4 WildFly Server mit Backend starten
+mvn wildfly:run -PrunWar
+
+# Warten bis: "WFLYSRV0025: WildFly ... started"
+# Backend läuft auf: http://localhost:8080
+# REST API verfügbar unter: http://localhost:8080/bookstore-starter-flow-ui-1.1-SNAPSHOT/api/
+```
+
+**Wichtig:** Der Befehl `mvn wildfly:run` muss im `bookstore-starter-flow-ui` Verzeichnis ausgeführt werden, nicht im Hauptverzeichnis!
+
+### Schritt 3: Angular Frontend starten (Terminal 2)
+
+```bash
+# Im Projektverzeichnis: vaadin_angular_migration/
+
+# 3.1 In das Angular Projekt wechseln
 cd bookstore-angular
+
+# 3.2 Abhängigkeiten installieren (nur beim ersten Mal)
 npm install
+
+# 3.3 Entwicklungsserver starten
 npm start
-# Öffne http://localhost:4200
+
+# Angular läuft auf: http://localhost:4200
 ```
 
-#### Build
+### Schritt 4: Anwendung testen
 
-```bash
-npm run build
-# Output: dist/bookstore-angular
-```
+1. **Browser öffnen**: http://localhost:4200
+2. **Login mit Admin-Rechten**:
+   - Benutzername: `admin`
+   - Passwort: `admin`
+3. **Login mit Leserechten** (beliebiger anderer Benutzer):
+   - Benutzername: `user` (oder beliebig)
+   - Passwort: `user` (gleich wie Benutzername)
+
+### Schnellstart-Befehle (Zusammenfassung)
+
+| Schritt             | Verzeichnis                                          | Befehl                       |
+|---------------------|------------------------------------------------------|------------------------------|
+| Backend bauen       | `vaadin_angular_migration/`                          | `mvn clean install -DskipTests` |
+| Backend starten     | `vaadin_angular_migration/bookstore-starter-flow-ui/` | `mvn wildfly:run -PrunWar`   |
+| Frontend installieren | `vaadin_angular_migration/bookstore-angular/`       | `npm install`                |
+| Frontend starten    | `vaadin_angular_migration/bookstore-angular/`        | `npm start`                  |
+
+### Ports und URLs
+
+| Dienst           | URL                          | Beschreibung        |
+|------------------|------------------------------|---------------------|
+| Angular Frontend | http://localhost:4200        | Benutzeroberfläche  |
+| WildFly Backend  | http://localhost:8080        | Application Server  |
+| REST API         | http://localhost:4200/api/*  | Via Angular Proxy   |
+
+**Hinweis:** Die Angular Anwendung verwendet einen Proxy (`proxy.conf.json`), der API-Anfragen an `/api/*` automatisch an den WildFly-Server weiterleitet.
+
+### Anwendung beenden
+
+- **Angular**: `Ctrl+C` im Terminal 2
+- **WildFly**: `Ctrl+C` im Terminal 1
 
 ## Nächste Schritte
 
