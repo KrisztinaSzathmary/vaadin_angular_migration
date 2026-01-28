@@ -1,0 +1,59 @@
+{
+  "bookstore": "Bookstore",
+  "menu": "Menu",
+  "logout": "Logout",
+  "admin": "Admin",
+  "inventory": "Inventory",
+  "about": "About",
+  "new-product": "New product",
+  "product-name": "Product name",
+  "price": "Price",
+  "in-stock": "In stock",
+  "availability": "Availability",
+  "categories": "Categories",
+  "delete": "Delete",
+  "discard": "Discard",
+  "cancel": "Cancel",
+  "save": "Save",
+  "filter": "Search name, availability or category",
+  "login": {
+    "title": "Login",
+    "info": "Login information",
+    "info-text": "Log in as \"admin\" to have full access. Log in with any other username to have read-only access. For all users, the password is same as the username.",
+    "username": "Username",
+    "password": "Password",
+    "button": "Log in",
+    "forgot-password": "Forgot password",
+    "hint": "Hint: same as username"
+  },
+  "admin-page": {
+    "add-new-category": "Add new category",
+    "edit-categories": "Edit categories"
+  },
+  "messages": {
+    "category-saved": "Category saved.",
+    "category-deleted": "Category deleted.",
+    "created": "\"{{name}}\" created",
+    "updated": "\"{{name}}\" updated",
+    "removed": "\"{{name}}\" removed",
+    "will-delete": "\"{{name}}\" will be deleted.",
+    "discard-changes": "Discard changes",
+    "unsaved-changes": "There are unsaved changes.",
+    "confirm": "Confirm"
+  },
+  "availability-status": {
+    "coming": "Coming",
+    "available": "Available",
+    "discontinued": "Discontinued"
+  },
+  "errors": {
+    "cannot-convert": "Cannot convert value to a number.",
+    "availability-mismatch": "Mismatch between availability and stock count",
+    "not-valid-pid": "Product id \"{{id}}\" not valid or found.",
+    "view-not-found": "The view could not be found.",
+    "cant-navigate": "Could not navigate to \"{{path}}\""
+  },
+  "about-page": {
+    "info-text": "This application is using Angular with Angular Material."
+  }
+}

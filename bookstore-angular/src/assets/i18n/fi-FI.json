@@ -1,0 +1,59 @@
+{
+  "bookstore": "Kirjakauppa",
+  "menu": "Valikko",
+  "logout": "Kirjaudu ulos",
+  "admin": "Hallinta",
+  "inventory": "Valikoima",
+  "about": "Tietoja",
+  "new-product": "Uusi tuote",
+  "product-name": "Tuotteen nimi",
+  "price": "Hinta",
+  "in-stock": "Varastossa",
+  "availability": "Saatavuus",
+  "categories": "Kategoriat",
+  "delete": "Poista",
+  "discard": "Hylkää",
+  "cancel": "Peruuta",
+  "save": "Tallenna",
+  "filter": "Hae nimellä, saatavuudella tai kategorialla",
+  "login": {
+    "title": "Kirjautuminen",
+    "info": "Kirjautumisesta",
+    "info-text": "Kirjaudu käyttämällä \"admin\" kaikkiin näkymiin. Käytä mitä tahansa muuta käyttäjä nimeä vain luku tilaan. Kaikilla käyttäjillä salasana on sama kuin käyttäjä.",
+    "username": "Käyttäjänimi",
+    "password": "Salasana",
+    "button": "Kirjaudu",
+    "forgot-password": "Salasana unohtui",
+    "hint": "Vihje: sama kuin käyttäjä"
+  },
+  "admin-page": {
+    "add-new-category": "Lisää kategoria",
+    "edit-categories": "Muokkaa kategorioita"
+  },
+  "messages": {
+    "category-saved": "Kategoria tallennettu.",
+    "category-deleted": "Kategoria poistettu.",
+    "created": "\"{{name}}\" luotu",
+    "updated": "\"{{name}}\" päivitetty",
+    "removed": "\"{{name}}\" poistettu",
+    "will-delete": "\"{{name}}\" poistetaan.",
+    "discard-changes": "Hylkää muutokset",
+    "unsaved-changes": "Lomakkeella on tallentamattomia muutoksia.",
+    "confirm": "Vahvista"
+  },
+  "availability-status": {
+    "coming": "Tulossa",
+    "available": "Saatavilla",
+    "discontinued": "Lopetettu"
+  },
+  "errors": {
+    "cannot-convert": "Ei voida muuttaa numeroksi.",
+    "availability-mismatch": "Saatavuus ja varastossa eivät täsmää",
+    "not-valid-pid": "Tuote id \"{{id}}\" ei sallittu tai löydy.",
+    "view-not-found": "Näkymää ei löydy.",
+    "cant-navigate": "Ei voitu navigoida kohteeseen \"{{path}}\""
+  },
+  "about-page": {
+    "info-text": "Tämä sovellus on tehty Angular ja Angular Material."
+  }
+}
