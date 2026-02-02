@@ -13,41 +13,96 @@ Angular erstellt wurde.
 
 ## Verwendete Quellen und Referenzen
 
-### Angular Dokumentation
-- [Angular Style Guide](https://angular.dev/style-guide) - Offizielle Angular Best Practices
-- [Angular Standalone Components](https://angular.dev/guide/components/standalone) - Standalone Component Architektur
-- [Angular Signals](https://angular.dev/guide/signals) - Reaktives State Management mit Signals
-- [Angular Functional Guards](https://angular.dev/guide/routing/route-guards) - Moderne Route Guards
+> Alle Quellen wurden am 28.01.2026 abgerufen.
 
-### Angular Material
-- [Angular Material Components](https://material.angular.io/components/categories) - UI Komponentenbibliothek
-- [Angular Material Table](https://material.angular.io/components/table/overview) - Datentabelle mit Sortierung/Paginierung
-- [Angular Material Dialog](https://material.angular.io/components/dialog/overview) - Modale Dialoge
-- [Angular Material Sidenav](https://material.angular.io/components/sidenav/overview) - Responsive Navigation
+### Angular Dokumentation (angular.dev)
 
-### Internationalisierung
-- [ngx-translate Migration Guide v16 → v17](https://ngx-translate.org/getting-started/migration-guide/) - I18N Setup
-- [ngx-translate HTTP Loader](https://ngx-translate.org/getting-started/translation-files/) - Übersetzungsdateien laden
+1. **Angular Style Guide** - Offizielle Angular Best Practices und Coding Conventions
+   https://angular.dev/style-guide
+
+2. **Standalone Components** - Moderne Komponentenarchitektur ohne NgModules
+   https://angular.dev/guide/components/standalone
+
+3. **Angular Signals** - Reaktives State Management mit Signals (Angular 17+)
+   https://angular.dev/guide/signals
+
+4. **Route Guards** - Funktionale Guards für Authentifizierung und Autorisierung
+   https://angular.dev/guide/routing/route-guards
+
+5. **HTTP Client & Interceptors** - HTTP Kommunikation und JWT Token Handling
+   https://angular.dev/guide/http/interceptors
+
+6. **Reactive Forms** - Formularvalidierung und Datenbindung
+   https://angular.dev/guide/forms/reactive-forms
+
+### Angular Material (material.angular.io)
+
+7. **Angular Material Components v18** - UI Komponentenbibliothek
+   https://material.angular.io/components/categories
+
+8. **Table Component** - Datentabelle mit Sortierung und Paginierung
+   https://material.angular.io/components/table/overview
+
+9. **Dialog Component** - Modale Dialoge für Formulare
+   https://material.angular.io/components/dialog/overview
+
+10. **Sidenav Component** - Responsive Seitennavigation
+    https://material.angular.io/components/sidenav/overview
+
+11. **Form Field & Input** - Material Design Eingabefelder
+    https://material.angular.io/components/form-field/overview
+
+### Internationalisierung (ngx-translate)
+
+12. **ngx-translate/core v17** - Internationalisierung für Angular
+    https://github.com/ngx-translate/core
+
+13. **Migration Guide v16 → v17** - Breaking Changes und neue API
+    https://ngx-translate.org/getting-started/migration-guide/
+
+14. **HTTP Loader Konfiguration** - Laden von Übersetzungsdateien
+    https://ngx-translate.org/getting-started/translation-files/
 
 ### JWT Authentifizierung
-- [JJWT Library](https://github.com/jwtk/jjwt) - JWT Token Generierung für Java
-- [Angular HTTP Interceptors](https://angular.dev/guide/http/interceptors) - JWT Token in HTTP Requests
+
+15. **JJWT (Java JWT)** - JWT Token Generierung und Validierung für Java
+    https://github.com/jwtk/jjwt
+
+16. **JSON Web Tokens (jwt.io)** - JWT Standard und Debugger
+    https://jwt.io/introduction
 
 ### Architektur und Patterns
-- [Feature-Based Directory Structure](https://medium.com/@sehban.alam/feature-based-directory-structure-in-angular) - Modulare Projektstruktur
-- [Angular + Spring Boot Integration (Baeldung)](https://www.baeldung.com/spring-boot-angular-web) - Backend Integration
-- [Jakarta EE JAX-RS](https://jakarta.ee/specifications/restful-ws/) - REST API Spezifikation
 
-### Vaadin zu Angular Migration
-- Analyse der bestehenden Vaadin Views und Komponenten
-- Mapping von Vaadin Komponenten zu Angular Material Äquivalenten:
-  - `Grid<T>` → `mat-table` + `MatTableDataSource`
-  - `Dialog` → `MatDialog`
-  - `TextField` → `mat-form-field` + `matInput`
-  - `Select` → `mat-select`
-  - `SideNav` → `mat-sidenav`
-  - `Notification` → `MatSnackBar`
-  - `LoginForm` → Reactive Forms mit Material Components
+17. **Feature-Based Directory Structure in Angular** - Modulare Projektstruktur
+    Alam, S. (2024). Medium.
+    https://medium.com/@sehban.alam/feature-based-directory-structure-in-angular
+
+18. **Spring Boot + Angular Integration** - Backend-Frontend Integration
+    Baeldung. https://www.baeldung.com/spring-boot-angular-web
+
+19. **Jakarta RESTful Web Services (JAX-RS)** - REST API Spezifikation
+    Jakarta EE. https://jakarta.ee/specifications/restful-ws/
+
+### Vaadin Dokumentation
+
+20. **Vaadin Flow Documentation** - Originalframework Dokumentation
+    https://vaadin.com/docs/latest/flow
+
+21. **Vaadin Grid Component** - Referenz für Migration zu mat-table
+    https://vaadin.com/docs/latest/components/grid
+
+### Komponenten-Mapping (Vaadin → Angular Material)
+
+| Vaadin Komponente | Angular Material Äquivalent | Referenz |
+|-------------------|----------------------------|----------|
+| `Grid<T>` | `mat-table` + `MatTableDataSource` | [8] |
+| `Dialog` | `MatDialog` | [9] |
+| `TextField` | `mat-form-field` + `matInput` | [11] |
+| `Select` | `mat-select` | [7] |
+| `SideNav` | `mat-sidenav` | [10] |
+| `Notification` | `MatSnackBar` | [7] |
+| `LoginForm` | Reactive Forms + Material | [6], [11] |
+| `Binder` | `FormGroup` + `Validators` | [6] |
 
 ## Durchgeführte Schritte
 
