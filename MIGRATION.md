@@ -5,6 +5,50 @@
 Dieses Repository ist eine private Kopie des bookstore-flow-ee Projekts, das für die Migration von Vaadin Flow zu
 Angular erstellt wurde.
 
+### Ursprünglicher Auftrag
+
+> "Elemezd a jelenlegi kod frontend reszet es esszeruen migrald a kodot a legujabb best practice-ek alapjan Angularra. Hasznalj igazolhato forrasokat, keress vaadin-angular migracios patterneket es ezek alapjan migralj. Kovesd a clean kod alapelveit. Tesztelheto kodot irj."
+
+**Übersetzung:** Analysiere den Frontend-Code und migriere ihn vernünftig zu Angular nach aktuellen Best Practices. Verwende verifizierbare Quellen, suche nach Vaadin-Angular Migrationsmustern und migriere entsprechend. Befolge Clean Code Prinzipien. Schreibe testbaren Code.
+
+## Verwendete Quellen und Referenzen
+
+### Angular Dokumentation
+- [Angular Style Guide](https://angular.dev/style-guide) - Offizielle Angular Best Practices
+- [Angular Standalone Components](https://angular.dev/guide/components/standalone) - Standalone Component Architektur
+- [Angular Signals](https://angular.dev/guide/signals) - Reaktives State Management mit Signals
+- [Angular Functional Guards](https://angular.dev/guide/routing/route-guards) - Moderne Route Guards
+
+### Angular Material
+- [Angular Material Components](https://material.angular.io/components/categories) - UI Komponentenbibliothek
+- [Angular Material Table](https://material.angular.io/components/table/overview) - Datentabelle mit Sortierung/Paginierung
+- [Angular Material Dialog](https://material.angular.io/components/dialog/overview) - Modale Dialoge
+- [Angular Material Sidenav](https://material.angular.io/components/sidenav/overview) - Responsive Navigation
+
+### Internationalisierung
+- [ngx-translate Migration Guide v16 → v17](https://ngx-translate.org/getting-started/migration-guide/) - I18N Setup
+- [ngx-translate HTTP Loader](https://ngx-translate.org/getting-started/translation-files/) - Übersetzungsdateien laden
+
+### JWT Authentifizierung
+- [JJWT Library](https://github.com/jwtk/jjwt) - JWT Token Generierung für Java
+- [Angular HTTP Interceptors](https://angular.dev/guide/http/interceptors) - JWT Token in HTTP Requests
+
+### Architektur und Patterns
+- [Feature-Based Directory Structure](https://medium.com/@sehban.alam/feature-based-directory-structure-in-angular) - Modulare Projektstruktur
+- [Angular + Spring Boot Integration (Baeldung)](https://www.baeldung.com/spring-boot-angular-web) - Backend Integration
+- [Jakarta EE JAX-RS](https://jakarta.ee/specifications/restful-ws/) - REST API Spezifikation
+
+### Vaadin zu Angular Migration
+- Analyse der bestehenden Vaadin Views und Komponenten
+- Mapping von Vaadin Komponenten zu Angular Material Äquivalenten:
+  - `Grid<T>` → `mat-table` + `MatTableDataSource`
+  - `Dialog` → `MatDialog`
+  - `TextField` → `mat-form-field` + `matInput`
+  - `Select` → `mat-select`
+  - `SideNav` → `mat-sidenav`
+  - `Notification` → `MatSnackBar`
+  - `LoginForm` → Reactive Forms mit Material Components
+
 ## Durchgeführte Schritte
 
 ### 1. Repository-Setup (27.01.2026)
