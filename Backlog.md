@@ -12,65 +12,9 @@
 
 ---
 
-## Phase A – Vorbereitung
+## Phase A – Backend REST-API
 
-### Iteration 1 – Stack.rules.md erstellen
-
-**Status:** Offen
-**Ziel:** Technische Leitplanken für die Migration definieren, damit alle nachfolgenden Entscheidungen auf einer dokumentierten Grundlage basieren.
-**Deliverables:**
-
-- `Stack.rules.md` mit folgenden Entscheidungen:
-  - Angular-Version (21) und CLI-Konfiguration
-  - Standalone Components als Standard (kein NgModule)
-  - Component-Library (z.B. Angular Material, PrimeNG oder keine)
-  - CSS-Strategie (Lumo-Tokens beibehalten, SCSS, Tailwind o.Ä.)
-  - State-Management-Ansatz (Signals, NgRx, Services)
-  - Authentifizierungsmechanismus (JWT, Session-basiert)
-  - Projektstruktur (Verzeichnis `bookstore-angular/` im Repo-Root)
-  - Testframework-Entscheidungen (Jasmine/Karma vs. Jest, Cypress vs. Playwright)
-  - API-Präfix und Versionierung (`/api/v1/...`)
-  - Proxy-Konfiguration für Entwicklung
-
----
-
-### Iteration 2 – State.md und ui-design-plan/ erstellen
-
-**Status:** Offen
-**Ziel:** Projektstand dokumentieren und visuelle Vorgaben für die Angular-Umsetzung festhalten.
-**Deliverables:**
-
-- `State.md` mit:
-  - Aktuellem Projektstand (Vaadin-App funktionsfähig, keine Angular-Komponenten)
-  - Liste aller abgeschlossenen Analysen (Code-Archäologie, Code-Review)
-  - Offene Fragen und Entscheidungen
-- `ui-design-plan/` Verzeichnis mit:
-  - Screenshots aller bestehenden Vaadin-Views (Login, Inventory, Admin, About)
-  - Beschreibung des Soll-Designs für Angular (kann identisch zum Ist-Design sein)
-  - Farbschema und Verfügbarkeits-Farbcodes (Grün, Orange, Rot)
-  - Responsive-Breakpoints (800px, 570px)
-
----
-
-### Iteration 3 – Kritische Bug-Fixes im Backend
-
-**Status:** Offen
-**Ziel:** Die in der Code-Review identifizierten kritischen Bugs beheben, damit die REST-API auf einer korrekten Datenschicht aufsetzt.
-**Deliverables:**
-
-- **BUG-1:** `MockDataService.deleteCategory()` – Synchronisierung hinzufügen und auf interner `products`-Liste statt auf defensiven Kopien operieren
-- **BUG-2:** `MockDataService.updateCategory()` – `synchronized` hinzufügen
-- **BUG-3:** `MockDataService.getAllCategories()` – Defensive Kopien zurückgeben (analog zu `getAllProducts()`)
-- **BUG-4:** `Product`-Copy-Constructor – `Set<Category>` deep-kopieren (`new HashSet<>(...)`)
-- Unit-Tests für alle vier Fixes
-
-> **Hinweis:** Diese Iteration berührt bestehende Backend-Logik und erfordert explizite Freigabe.
-
----
-
-## Phase B – Backend REST-API
-
-### Iteration 4 – REST-API: Grundgerüst und Produkte lesen
+### Iteration 1 – REST-API: Grundgerüst und Produkte lesen
 
 **Status:** Offen
 **Ziel:** Eine JAX-RS REST-API bereitstellen, über die Produkte gelesen werden können. Erster beweisbarer Integrationsschritt.
@@ -88,7 +32,7 @@
 
 ---
 
-### Iteration 5 – REST-API: Authentifizierung
+### Iteration 2 – REST-API: Authentifizierung
 
 **Status:** Offen
 **Ziel:** Login/Logout über REST ermöglichen, sodass Angular-Clients sich authentifizieren können.
@@ -104,7 +48,7 @@
 
 ---
 
-### Iteration 6 – REST-API: Produkte schreiben
+### Iteration 3 – REST-API: Produkte schreiben
 
 **Status:** Offen
 **Ziel:** Vollständige CRUD-Operationen für Produkte über die REST-API bereitstellen.
@@ -120,7 +64,7 @@
 
 ---
 
-### Iteration 7 – REST-API: Kategorien
+### Iteration 4 – REST-API: Kategorien
 
 **Status:** Offen
 **Ziel:** CRUD-Operationen für Kategorien über die REST-API bereitstellen.
@@ -136,9 +80,9 @@
 
 ---
 
-## Phase C – Angular-Grundgerüst
+## Phase B – Angular-Grundgerüst
 
-### Iteration 8 – Angular-Projekt initialisieren
+### Iteration 5 – Angular-Projekt initialisieren
 
 **Status:** Offen
 **Ziel:** Ein lauffähiges Angular-21-Projekt aufsetzen, das im Browser eine leere Seite anzeigt und erfolgreich baut.
@@ -160,7 +104,7 @@
 
 ---
 
-### Iteration 9 – TypeScript-Modelle und Product-API-Service
+### Iteration 6 – TypeScript-Modelle und Product-API-Service
 
 **Status:** Offen
 **Ziel:** TypeScript-Interfaces für alle Datenmodelle und einen HttpClient-Service für Produkte bereitstellen.
@@ -184,7 +128,7 @@
 
 ---
 
-### Iteration 10 – Authentifizierungs-Service und Auth-Guard
+### Iteration 7 – Authentifizierungs-Service und Auth-Guard
 
 **Status:** Offen
 **Ziel:** Die Angular-seitige Authentifizierung implementieren, sodass Login-Status verwaltet und geschützte Routen abgesichert werden.
@@ -206,9 +150,9 @@
 
 ---
 
-## Phase D – Angular-Views
+## Phase C – Angular-Views
 
-### Iteration 11 – Login-Seite
+### Iteration 8 – Login-Seite
 
 **Status:** Offen
 **Ziel:** Eine funktionsfähige Login-Seite, über die sich Benutzer an der Angular-Anwendung anmelden können.
@@ -225,7 +169,7 @@
 
 ---
 
-### Iteration 12 – Hauptlayout mit Navigation
+### Iteration 9 – Hauptlayout mit Navigation
 
 **Status:** Offen
 **Ziel:** Das Grundgerüst der Anwendung mit Seitennavigation, Routing und Logout bereitstellen.
@@ -246,7 +190,7 @@
 
 ---
 
-### Iteration 13 – Produkt-Grid (nur Lesen)
+### Iteration 10 – Produkt-Grid (nur Lesen)
 
 **Status:** Offen
 **Ziel:** Alle Produkte in einer Tabelle anzeigen – erster datengetriebener View in Angular.
@@ -262,7 +206,7 @@
 
 ---
 
-### Iteration 14 – Produkt-Filter
+### Iteration 11 – Produkt-Filter
 
 **Status:** Offen
 **Ziel:** Benutzer können die Produktliste nach Name, Verfügbarkeit und Kategorie durchsuchen.
@@ -275,7 +219,7 @@
 
 ---
 
-### Iteration 15 – Produkt-Formular (Erstellen und Bearbeiten)
+### Iteration 12 – Produkt-Formular (Erstellen und Bearbeiten)
 
 **Status:** Offen
 **Ziel:** Admin-Benutzer können Produkte erstellen und bearbeiten. Das Formular öffnet sich als Seitenleiste.
@@ -298,7 +242,7 @@
 
 ---
 
-### Iteration 16 – Produkt löschen
+### Iteration 13 – Produkt löschen
 
 **Status:** Offen
 **Ziel:** Admin-Benutzer können Produkte löschen, mit Bestätigungsdialog.
@@ -312,7 +256,7 @@
 
 ---
 
-### Iteration 17 – Admin-Ansicht (Kategorien-Verwaltung)
+### Iteration 14 – Admin-Ansicht (Kategorien-Verwaltung)
 
 **Status:** Offen
 **Ziel:** Admin-Benutzer können Kategorien erstellen, bearbeiten und löschen.
@@ -328,7 +272,7 @@
 
 ---
 
-### Iteration 18 – About-Seite und Fehlerseite
+### Iteration 15 – About-Seite und Fehlerseite
 
 **Status:** Offen
 **Ziel:** Statische Seiten für Informationen und Fehlerfälle bereitstellen.
@@ -343,9 +287,9 @@
 
 ---
 
-## Phase E – Erweiterte Funktionalität
+## Phase D – Erweiterte Funktionalität
 
-### Iteration 19 – URL-basierte Produktnavigation
+### Iteration 16 – URL-basierte Produktnavigation
 
 **Status:** Offen
 **Ziel:** Produkte können über URL-Parameter direkt angesteuert werden (Bookmarkable URLs).
@@ -358,7 +302,7 @@
 
 ---
 
-### Iteration 20 – Ungespeicherte Änderungen (Dirty State)
+### Iteration 17 – Ungespeicherte Änderungen (Dirty State)
 
 **Status:** Offen
 **Ziel:** Benutzer werden gewarnt, bevor ungespeicherte Änderungen verloren gehen.
@@ -374,7 +318,7 @@
 
 ---
 
-### Iteration 21 – Internationalisierung (i18n)
+### Iteration 18 – Internationalisierung (i18n)
 
 **Status:** Offen
 **Ziel:** Die Angular-Anwendung unterstützt Englisch und Deutsch mit dynamischem Sprachwechsel.
@@ -390,7 +334,7 @@
 
 ---
 
-### Iteration 22 – Keyboard-Shortcuts
+### Iteration 19 – Keyboard-Shortcuts
 
 **Status:** Offen
 **Ziel:** Die gleichen Keyboard-Shortcuts wie in der Vaadin-Anwendung bereitstellen.
@@ -406,7 +350,7 @@
 
 ---
 
-### Iteration 23 – Responsives Design
+### Iteration 20 – Responsives Design
 
 **Status:** Offen
 **Ziel:** Die Angular-Anwendung passt sich an verschiedene Bildschirmgrößen an.
@@ -420,9 +364,9 @@
 
 ---
 
-## Phase F – Qualitätssicherung
+## Phase E – Qualitätssicherung
 
-### Iteration 24 – Unit-Tests
+### Iteration 21 – Unit-Tests
 
 **Status:** Offen
 **Ziel:** Alle Angular-Services, Guards und kritische Komponenten sind durch Unit-Tests abgedeckt.
@@ -437,7 +381,7 @@
 
 ---
 
-### Iteration 25 – End-to-End-Tests
+### Iteration 22 – End-to-End-Tests
 
 **Status:** Offen
 **Ziel:** Alle kritischen Benutzerflüsse sind durch E2E-Tests abgesichert.
@@ -459,7 +403,7 @@
 
 ---
 
-### Iteration 26 – Abschluss und Dokumentation
+### Iteration 23 – Abschluss und Dokumentation
 
 **Status:** Offen
 **Ziel:** Migration abschließen, Dokumentation aktualisieren, State.md finalisieren.
