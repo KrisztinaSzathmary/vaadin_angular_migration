@@ -52,12 +52,102 @@ bevor die nächste begonnen wird.
 
 # Regeln zur Backlog-Bearbeitung
 
+- Lös immer nur eine Iterationsaufgabe auf einmal.
+- Halte am Ende jeder Iteration an.
+- Halte alle Änderungen in der Datei State.md fest.
+
 # Technische Leitplanken (Verweis auf Stack.rules.md)
+
+- **Stack:** Angular 20, Standalone Components (keine NgModules), Angular Material v20 (M3).
+- **CSS:** Tailwind CSS v4 – einzige CSS-Lösung. Kein SCSS/LESS.
+- **State:** Angular Signals (`signal()`, `computed()`, `effect()`) in Services. Kein NgRx.
+- **Auth:** Session-basiert (HttpOnly Cookie), kein JWT. `withCredentials: true`.
+- **Tests:** Jest (Unit, ≥80% Coverage) + Playwright (E2E). Jeder Service hat `.spec.ts`.
+- **API:** Basispfad `/api/v1`, JSON-Format.
+- **Code:** TypeScript `strict: true`, kein `any`, Reactive Forms, ESLint + Prettier.
+- **Projekt:** Verzeichnis `bookstore-angular/`, Dateien `kebab-case`, Klassen `PascalCase`.
 
 # Testregeln
 
+## Allgemein
+
+- Jede Iteration ist erst abgeschlossen, wenn **alle** Tests grün sind.
+- Neue/geänderte Komponenten, Services, Guards und Interceptors **MÜSSEN** eine `.spec.ts`-Datei haben.
+- Keine Iteration darf die bestehende Testabdeckung verschlechtern.
+- Tests prüfen **Verhalten**, nicht Implementierungsdetails.
+
+## Unit-Tests (Jest + TestBed)
+
+- **Mindestabdeckung:** ≥ 80 % Line Coverage pro Iteration.
+- Komponenten-Tests nutzen `TestBed.configureTestingModule()` mit Standalone-Import der Komponente.
+- HTTP-Aufrufe werden **ausschließlich** mit `provideHttpClientTesting()` + `HttpTestingController` gemockt – keine
+  echten API-Calls.
+- Signal-State in Services testen: Wert vor Aktion lesen → Aktion ausführen → Wert danach prüfen.
+- Reactive Forms testen: Validierung, Fehlermeldungen und Submit-Verhalten abdecken.
+- Angular Material-Komponenten im Test via `HarnessLoader` + Component Harnesses ansprechen.
+- Ausführung: `ng test` (Jest).
+
+## E2E-Tests (Playwright)
+
+- E2E-Tests decken vollständige Benutzerflüsse ab (z. B. Login → CRUD → Logout).
+- **Page Object Pattern** ist Pflicht – keine direkten Selektoren in Testdateien.
+- Tests laufen gegen Angular Dev-Server + Backend (`proxy.conf.json`).
+- Ausführung: `npx playwright test`.
+
+## Was NICHT getestet wird
+
+- Triviale Getter/Setter ohne Logik.
+- Direkte Angular-Framework-Interna (z. B. ob `@Injectable` korrekt dekoriert ist).
+- Drittanbieter-Libraries (Angular Material, Tailwind) – nur deren Integration.
+
 # Dokumentationsregeln (State.md)
+
+- Claude **MUSS** die `State.md` am **Ende jeder Iteration** aktualisieren – niemals mitten in der Implementierung.
+- Die Datei dient als Single Source of Truth für den aktuellen Projektstand.
+
+## Pflichtinhalte pro Update
+
+- **Abgeschlossene Iteration:** Nummer und Titel (z. B. „Iteration 3 – Angular-Projekt scaffolden").
+- **Umgesetzte Änderungen:** Stichpunkte zu erstellten/geänderten Dateien und deren Zweck.
+- **Offene Fragen / Blocker:** Alles, was ungeklärt ist oder die nächste Iteration beeinflusst.
+- **Entscheidungen:** Technische Entscheidungen, die während der Iteration getroffen wurden (mit Begründung).
+- **Nächste Iteration:** Verweis auf das nächste Backlog-Item.
+
+## Formatregeln
+
+- Chronologisch absteigend – neueste Iteration steht oben.
+- Kurz und faktisch – keine Prosa, nur Stichpunkte.
+- Datei- und Pfadangaben als `code`-Formatierung.
+
+## Was NICHT in State.md gehört
+
+- Vollständiger Code oder große Snippets – stattdessen auf Dateipfade verweisen.
+- Allgemeine Konventionen – diese stehen in `Stack.rules.md` oder `claude.md`.
+- Backlog-Items kopieren – nur auf `Backlog.md` referenzieren.
 
 # Kommunikation & Rückfragen
 
+- Claude **MUSS** Rückfragen stellen, wenn:
+    - Ein Backlog-Item unklar oder mehrdeutig formuliert ist.
+    - UI-Vorgaben in `ui-design-plan/` fehlen oder widersprüchlich sind.
+    - Technische Entscheidungen nötig sind, die nicht in `Stack.rules.md` abgedeckt sind.
+    - Eine Änderung potenziell andere Iterationen oder bestehende Funktionalität beeinflusst.
+- Claude **DARF NICHT** fehlende Informationen erraten oder stillschweigend Annahmen treffen.
+- Rückfragen werden **gebündelt** gestellt – nicht einzeln nacheinander.
+- Bei Unsicherheiten zur Priorität oder Reihenfolge gilt: `Backlog.md` ist maßgeblich.
+
 # Ausnahmebehandlung
+
+- **Test schlägt fehl:** Claude analysiert die Fehlerursache, passt den Code an und führt den Test erneut aus. Erst nach
+  grünem Test wird fortgefahren.
+- **Abhängigkeit fehlt:** Wenn eine benötigte Library oder Konfiguration nicht vorhanden ist, fragt Claude nach, bevor
+  sie installiert oder erstellt wird.
+- **Backend-Inkompatibilität:** Wenn ein API-Endpunkt nicht wie in `Stack.rules.md` dokumentiert antwortet, stoppt
+  Claude und meldet das Problem – Backend-Code wird **niemals** angepasst.
+- **Merge-Konflikte / bestehender Code:** Claude überschreibt keine unbekannten Änderungen. Bei Konflikten wird der
+  Benutzer informiert.
+- **Scope-Überschreitung:** Wenn während einer Iteration auffällt, dass zusätzliche Arbeit nötig ist, die über das
+  aktuelle Backlog-Item hinausgeht, dokumentiert Claude dies als offene Frage in `State.md` und setzt die Arbeit **nicht
+  ** eigenständig um.
+- **Unerwartete Fehler:** Bei nicht reproduzierbaren oder unklaren Fehlern stoppt Claude, beschreibt das Problem und
+  wartet auf Anweisung.
