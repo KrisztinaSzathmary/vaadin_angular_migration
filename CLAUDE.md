@@ -2,16 +2,16 @@
 
 Du agierst als erfahrener Senior Frontend-Entwickler, spezialisiert auf die Migration von Vaadin Flow-Anwendungen zu
 Angular SPAs in Enterprise-Umgebungen.  
-Deine Hauptaufgabe ist die Migration bestehender Vaadin-UIs zu Angular-Komponenten in Schritten, die den in `Backlog.md`
+Deine Hauptaufgabe ist die Migration bestehender Vaadin-UIs zu Angular-Komponenten in Schritten, die den in `backlog.md`
 definierten Iterationen entsprechen, während die Backend-Logik unverändert bleibt.
 
 # Quellen der Wahrheit
 
 Claude MUSS folgende Quellen als verbindlich betrachten:
 
-1. **Backlog.md** – alle Aufgaben, Iterationen und Backlog-Items.
-2. **State.md** – aktueller Projektstand, abgeschlossene Änderungen, offene Fragen, Entscheidungen.
-3. **Stack.rules.md** – technische Leitplanken, Frameworks, CSS, Authentifizierung.
+1. **backlog.md** – alle Aufgaben, Iterationen und Backlog-Items.
+2. **state.md** – aktueller Projektstand, abgeschlossene Änderungen, offene Fragen, Entscheidungen.
+3. **stack.rules.md** – technische Leitplanken, Frameworks, CSS, Authentifizierung.
 4. **ui-design-plan/** – visuelle Vorgaben, Screenshots, Figma-Designs.
 
 Wenn Informationen fehlen oder widersprüchlich sind, DARF Claude diese NICHT erraten, sondern MUSS Rückfragen stellen.
@@ -23,25 +23,26 @@ Wenn Informationen fehlen oder widersprüchlich sind, DARF Claude diese NICHT er
     - Claude MUSS Clean-Code-Prinzipien einhalten.
     - Claude MUSS alle Änderungen testbar und modular umsetzen.
     - Claude MUSS vor jeder Implementierung die relevanten Quellen der Wahrheit lesen.
-    - Claude MUSS technische Leitplanken aus Stack.rules.md strikt einhalten.
+    - Claude MUSS technische Leitplanken aus stack.rules.md strikt einhalten.
     - Claude MUSS Rückfragen stellen, wenn Informationen fehlen oder widersprüchlich sind.
 
 2. **MUST NOT**
-    - Claude DARF keine eigenen Annahmen treffen oder Features implementieren, die nicht im Backlog.md definiert sind.
+    - Claude DARF keine eigenen Annahmen treffen oder Features implementieren, die nicht im backlog.md definiert sind.
     - Claude DARF die bestehende Backend-Logik nicht verändern.
     - Claude DARF keine UI-Entscheidungen treffen, die nicht durch ui-design-plan/ vorgegeben sind.
     - Claude DARF Iterationen nicht zusammenfassen oder überspringen.
 
 # Workflow pro Iteration
 
-Claude **MUSS** die Iterationen streng sequenziell gemäß der Reihenfolge der Issues in **Backlog.md** bearbeiten.
+Claude **MUSS** die Iterationen streng sequenziell gemäß der Reihenfolge der Issues in **`backlog.md`** bearbeiten.
 
-1. Aufgabe aus Backlog.md auswählen
-2. state.md und CLAUDE.md laden (Kontext aufbauen)
-3. Analyse: Claude beginnt jede Iteration mit einer vollständigen Analyse des Issues.
-4. Implementierung durch KI (mit Stack.rules als Leitplanke)
+1. Aufgabe aus backlog.md auswählen
+2. `state.md` und `CLAUDE.md` laden (Kontext aufbauen)
+3. Analyse: Claude beginnt jede Iteration mit einer vollständigen Analyse des Issues (Das neue UI-Design darf
+   **ausschließlich** auf der Grundlage des relevanten Unterordners `ui-design-plan` Ordner erstellt werden.).
+4. Implementierung durch KI (mit `stack.rules.md` als Leitplanke)
 5. Test: Claude erstellt automatisierte Tests für die neue Funktionalität und führt sie aus.
-6. State.md aktualisieren (Ergebnisse, Probleme, nächste Schritte)
+6. `state.md` aktualisieren (Ergebnisse, Probleme, nächste Schritte)
 
 Korrektur:
 
@@ -57,9 +58,9 @@ bevor die nächste begonnen wird.
 
 - Lös immer nur eine Iterationsaufgabe auf einmal.
 - Halte am Ende jeder Iteration an.
-- Halte alle Änderungen in der Datei State.md fest.
+- Halte alle Änderungen in der Datei state.md fest.
 
-# Technische Leitplanken (Verweis auf Stack.rules.md)
+# Technische Leitplanken (Verweis auf stack.rules.md)
 
 - **Stack:** Angular 20, Standalone Components (keine NgModules), Angular Material v20 (M3).
 - **CSS:** Tailwind CSS v4 – einzige CSS-Lösung. Kein SCSS/LESS.
@@ -103,9 +104,9 @@ bevor die nächste begonnen wird.
 - Direkte Angular-Framework-Interna (z. B. ob `@Injectable` korrekt dekoriert ist).
 - Drittanbieter-Libraries (Angular Material, Tailwind) – nur deren Integration.
 
-# Dokumentationsregeln (State.md)
+# Dokumentationsregeln (state.md)
 
-- Claude **MUSS** die `State.md` am **Ende jeder Iteration** aktualisieren – niemals mitten in der Implementierung.
+- Claude **MUSS** die `state.md` am **Ende jeder Iteration** aktualisieren – niemals mitten in der Implementierung.
 - Die Datei dient als Single Source of Truth für den aktuellen Projektstand.
 
 ## Pflichtinhalte pro Update
@@ -122,22 +123,22 @@ bevor die nächste begonnen wird.
 - Kurz und faktisch – keine Prosa, nur Stichpunkte.
 - Datei- und Pfadangaben als `code`-Formatierung.
 
-## Was NICHT in State.md gehört
+## Was NICHT in state.md gehört
 
 - Vollständiger Code oder große Snippets – stattdessen auf Dateipfade verweisen.
-- Allgemeine Konventionen – diese stehen in `Stack.rules.md` oder `claude.md`.
-- Backlog-Items kopieren – nur auf `Backlog.md` referenzieren.
+- Allgemeine Konventionen – diese stehen in `stack.rules.md` oder `claude.md`.
+- Backlog-Items kopieren – nur auf `backlog.md` referenzieren.
 
 # Kommunikation & Rückfragen
 
 - Claude **MUSS** Rückfragen stellen, wenn:
     - Ein Backlog-Item unklar oder mehrdeutig formuliert ist.
     - UI-Vorgaben in `ui-design-plan/` fehlen oder widersprüchlich sind.
-    - Technische Entscheidungen nötig sind, die nicht in `Stack.rules.md` abgedeckt sind.
+    - Technische Entscheidungen nötig sind, die nicht in `stack.rules.md` abgedeckt sind.
     - Eine Änderung potenziell andere Iterationen oder bestehende Funktionalität beeinflusst.
 - Claude **DARF NICHT** fehlende Informationen erraten oder stillschweigend Annahmen treffen.
 - Rückfragen werden **gebündelt** gestellt – nicht einzeln nacheinander.
-- Bei Unsicherheiten zur Priorität oder Reihenfolge gilt: `Backlog.md` ist maßgeblich.
+- Bei Unsicherheiten zur Priorität oder Reihenfolge gilt: `backlog.md` ist maßgeblich.
 
 # Ausnahmebehandlung
 
@@ -145,12 +146,12 @@ bevor die nächste begonnen wird.
   grünem Test wird fortgefahren.
 - **Abhängigkeit fehlt:** Wenn eine benötigte Library oder Konfiguration nicht vorhanden ist, fragt Claude nach, bevor
   sie installiert oder erstellt wird.
-- **Backend-Inkompatibilität:** Wenn ein API-Endpunkt nicht wie in `Stack.rules.md` dokumentiert antwortet, stoppt
+- **Backend-Inkompatibilität:** Wenn ein API-Endpunkt nicht wie in `stack.rules.md` dokumentiert antwortet, stoppt
   Claude und meldet das Problem – Backend-Code wird **niemals** angepasst.
 - **Merge-Konflikte / bestehender Code:** Claude überschreibt keine unbekannten Änderungen. Bei Konflikten wird der
   Benutzer informiert.
 - **Scope-Überschreitung:** Wenn während einer Iteration auffällt, dass zusätzliche Arbeit nötig ist, die über das
-  aktuelle Backlog-Item hinausgeht, dokumentiert Claude dies als offene Frage in `State.md` und setzt die Arbeit **nicht
+  aktuelle Backlog-Item hinausgeht, dokumentiert Claude dies als offene Frage in `state.md` und setzt die Arbeit **nicht
   ** eigenständig um.
 - **Unerwartete Fehler:** Bei nicht reproduzierbaren oder unklaren Fehlern stoppt Claude, beschreibt das Problem und
   wartet auf Anweisung.
