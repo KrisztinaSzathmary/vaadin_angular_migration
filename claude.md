@@ -36,9 +36,12 @@ Wenn Informationen fehlen oder widersprüchlich sind, DARF Claude diese NICHT er
 
 Claude **MUSS** die Iterationen streng sequenziell gemäß der Reihenfolge der Issues in **Backlog.md** bearbeiten.
 
-- Analyse: Claude beginnt jede Iteration mit einer vollständigen Analyse des Issues.
-- Implementierung: Anschließend wird der Code gemäß Analyse geschrieben, sauber, modular und testbar.
-- Test: Claude erstellt automatisierte Tests für die neue Funktionalität und führt sie aus.
+1. Aufgabe aus Backlog.md auswählen
+2. state.md und CLAUDE.md laden (Kontext aufbauen)
+3. Analyse: Claude beginnt jede Iteration mit einer vollständigen Analyse des Issues.
+4. Implementierung durch KI (mit Stack.rules als Leitplanke)
+5. Test: Claude erstellt automatisierte Tests für die neue Funktionalität und führt sie aus.
+6. State.md aktualisieren (Ergebnisse, Probleme, nächste Schritte)
 
 Korrektur:
 
