@@ -2,6 +2,46 @@
 
 ---
 
+## Iteration 2 – REST-API: Authentifizierung
+
+**Status:** Abgeschlossen
+**Datum:** 2026-02-27
+
+### Umgesetzte Änderungen
+
+- `rest/dto/LoginRequestDTO.java` – POJO mit `username`, `password`, No-Arg/All-Args-Konstruktor
+- `rest/dto/LoginResponseDTO.java` – POJO mit `username`, `role`, No-Arg/All-Args-Konstruktor
+- `rest/dto/UserInfoDTO.java` – POJO mit `username`, `role`, No-Arg/All-Args-Konstruktor (semantisch getrennt von `LoginResponseDTO`)
+- `rest/AuthResource.java` – `@Path("auth")`, `@RequestScoped`, drei Endpunkte:
+  - `POST /api/v1/auth/login` → `LoginResponseDTO` (200) oder JSON-Fehler (400/401)
+  - `POST /api/v1/auth/logout` → 204 No Content (idempotent)
+  - `GET /api/v1/auth/me` → `UserInfoDTO` (200) oder JSON-Fehler (401)
+- `rest/AuthResourceTest.java` – 13 Unit-Tests (JUnit 5 + Mockito)
+
+### Entscheidungen
+
+- **Session-Invalidierung direkt über `HttpServletRequest`** statt `AccessControl.signOut()` – `signOut()` greift auf `VaadinSession` zu, die in JAX-RS-Kontext nicht verfügbar ist
+- **`request.changeSessionId()`** nach Login – Session-Fixation-Schutz
+- **`request.getSession(false)` bei Logout** – keine neue Session anlegen, wenn keine existiert
+- **Field Injection** für `AccessControl`, `@Context` für `HttpServletRequest` – konsistent mit `ProductResource`-Pattern
+- **Keine Änderungen an CORS-Filter** – POST, GET, Credentials und Content-Type bereits unterstützt
+- **Keine POM-Änderungen** – alle Test-Dependencies (JUnit 5, Mockito 5) bereits vorhanden
+
+### Verifikation
+
+- `mvn clean install` – BUILD SUCCESS, 22 Tests (13 neu + 9 bestehend), 0 Fehler
+- Manuelle curl-Tests ausstehend (WildFly-Deployment durch Reviewer)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 3 – siehe `backlog.md`
+
+---
+
 ## Iteration 1 – REST-API: Grundgerüst und Produkte lesen
 
 **Status:** Abgeschlossen
