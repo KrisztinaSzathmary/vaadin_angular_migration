@@ -30,7 +30,16 @@
 ### Verifikation
 
 - `mvn clean install` – BUILD SUCCESS, 22 Tests (13 neu + 9 bestehend), 0 Fehler
-- Manuelle curl-Tests ausstehend (WildFly-Deployment durch Reviewer)
+- **curl-Tests** (alle bestanden, Kontext-Pfad: `/bookstore-starter-flow-ui-1.1-SNAPSHOT/`):
+  - `POST /api/v1/auth/login` mit `user1/user1` → 200, `{"username":"user1","role":"user"}`
+  - `POST /api/v1/auth/login` mit falschen Credentials → 401, `{"error":"Invalid username or password"}`
+  - `GET /api/v1/auth/me` mit Cookie → 200, `{"username":"user1","role":"user"}`
+  - `GET /api/v1/auth/me` ohne Cookie → 401, `{"error":"Not authenticated"}`
+  - `POST /api/v1/auth/logout` mit Cookie → 204 No Content
+  - `GET /api/v1/auth/me` nach Logout → 401 (Session ungültig)
+  - `POST /api/v1/auth/login` mit `admin/admin` → 200, `{"username":"admin","role":"admin"}`
+  - `GET /api/v1/auth/me` als Admin → 200, `{"username":"admin","role":"admin"}`
+  - Vaadin-UI → 200 OK (keine Regression)
 
 ### Offene Punkte
 
