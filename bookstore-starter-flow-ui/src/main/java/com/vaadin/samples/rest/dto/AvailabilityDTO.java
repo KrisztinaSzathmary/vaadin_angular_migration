@@ -17,4 +17,12 @@ public enum AvailabilityDTO {
             case DISCONTINUED -> DISCONTINUED;
         };
     }
+
+    public Availability toEntity() {
+        return switch (this) {
+            case COMING -> Availability.COMING;
+            case AVAILABLE -> Availability.AVAILABLE;
+            case DISCONTINUED -> Availability.DISCONTINUED;
+        };
+    }
 }

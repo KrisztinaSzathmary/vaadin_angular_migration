@@ -2,6 +2,44 @@
 
 ---
 
+## Iteration 3 – REST-API: Produkte schreiben
+
+**Status:** Abgeschlossen
+**Datum:** 2026-02-27
+
+### Umgesetzte Änderungen
+
+- `rest/dto/ProductDTO.java` – Bean Validation Annotationen (`@NotBlank`, `@Size`, `@NotNull`, `@Min`) + `toEntity(Collection<Category>)` Methode für Rückkonvertierung
+- `rest/dto/AvailabilityDTO.java` – `toEntity()` Methode für Rückkonvertierung zu `Availability`
+- `rest/ProductResource.java` – Erweitert um drei schreibende Endpunkte:
+  - `POST /api/v1/products` → 201 Created + `ProductDTO` (nur Admin)
+  - `PUT /api/v1/products/{id}` → 200 OK + `ProductDTO` (nur Admin)
+  - `DELETE /api/v1/products/{id}` → 204 No Content (nur Admin)
+- `rest/ProductResourceTest.java` – Erweitert auf 21 Tests (17 neue Tests für CRUD + Auth + Validierung)
+
+### Entscheidungen
+
+- **Programmatische Bean Validation** mit `@Inject Validator` statt `@Valid` auf Methodenparameter – ermöglicht konsistente JSON-Fehlerantworten
+- **`requireAdmin()` Helper-Methode** – prüft `isUserSignedIn()` (401) und `isUserInRole("admin")` (403), wiederverwendbar für alle schreibenden Endpunkte
+- **Kategorie-Auflösung per ID** – `toEntity()` mappt `CategoryDTO`-IDs gegen `dataService.getAllCategories()`, unbekannte IDs werden ignoriert
+- **`ParameterMessageInterpolator`** in Tests statt EL-Dependency – Hibernate Validator benötigt Expression Language, die im Test-Classpath fehlt
+- **Keine neuen Dateien** – nur bestehende DTOs und `ProductResource` erweitert
+
+### Verifikation
+
+- `mvn clean install` – BUILD SUCCESS, 39 Tests (21 ProductResource + 13 Auth + 2 ProductDTO + 3 CORS), 0 Fehler
+- Manuelle curl-Tests ausstehend (WildFly-Deployment durch Reviewer)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 4 – REST-API: Kategorien (siehe `backlog.md`)
+
+---
+
 ## Iteration 2 – REST-API: Authentifizierung
 
 **Status:** Abgeschlossen
