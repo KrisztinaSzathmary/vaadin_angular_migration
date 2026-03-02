@@ -2,6 +2,52 @@
 
 ---
 
+## Iteration 4 – REST-API: Kategorien
+
+**Status:** Abgeschlossen
+**Datum:** 2026-02-27
+
+### Umgesetzte Änderungen
+
+- `rest/dto/CategoryDTO.java` – Bean Validation Annotationen (`@NotBlank`, `@Size`) auf `name` + `toEntity()` Methode für Rückkonvertierung zu `Category`
+- `rest/CategoryResource.java` – Neuer REST-Resource mit vier Endpunkten:
+  - `GET /api/v1/categories` → `List<CategoryDTO>` (200 OK, kein Auth erforderlich)
+  - `POST /api/v1/categories` → 201 Created + `CategoryDTO` (nur Admin)
+  - `PUT /api/v1/categories/{id}` → 200 OK + `CategoryDTO` (nur Admin)
+  - `DELETE /api/v1/categories/{id}` → 204 No Content (nur Admin)
+- `rest/CategoryResourceTest.java` – 19 Unit-Tests (JUnit 5 + Mockito) für alle CRUD-Endpunkte inkl. Auth + Validierung
+
+### Entscheidungen
+
+- **`findCategoryById()` via Stream** – `DataService` hat kein `getCategoryById()`, daher Iteration über `getAllCategories()` mit Stream-Filter
+- **PUT: Direktes Mutieren der Referenz** – `MockDataService.updateCategory()` ignoriert Objekte mit `id >= 0`. Da `getAllCategories()` die Original-Listenreferenz zurückgibt, wird das gefundene Objekt direkt mutiert (`existing.setName(dto.getName())`)
+- **POST: `setId(-1)` vor `updateCategory()`** – `MockDataService` vergibt neue ID nur bei `id < 0`
+- **Keine `GET /{id}` Einzelabruf** – nicht im Backlog spezifiziert, Kategorien werden als vollständige Liste abgerufen
+- **Pattern-Konsistenz** – `requireAdmin()`, `validate()`, Field Injection analog zu `ProductResource`
+
+### Verifikation
+
+- `mvn clean install` – BUILD SUCCESS, 58 Tests (19 CategoryResource + 21 ProductResource + 13 Auth + 2 ProductDTO + 3 CORS), 0 Fehler
+- **curl-Tests** (alle bestanden, Kontext-Pfad: `/bookstore-starter-flow-ui-1.1-SNAPSHOT/`):
+  - `GET /api/v1/categories` → 200 OK, 8 Kategorien als JSON-Array (ohne Auth)
+  - `POST /api/v1/categories` mit `{"name":"Test Category"}` als Admin → 201 Created, `{"id":9,"name":"Test Category"}`
+  - `POST /api/v1/categories` mit `{"name":"X"}` (< 2 Zeichen) → 400, `{"error":"Category name must be at least 2 characters"}`
+  - `PUT /api/v1/categories/9` mit `{"name":"Updated Category"}` → 200 OK, `{"id":9,"name":"Updated Category"}`
+  - `DELETE /api/v1/categories/9` → 204 No Content (Kategorie entfernt, GET bestätigt 8 Kategorien)
+  - `POST /api/v1/categories` ohne Auth → 401, `{"error":"Not authenticated"}`
+  - `POST /api/v1/categories` als `user1` (non-admin) → 403, `{"error":"Admin role required"}`
+  - Vaadin-UI → 200 OK (keine Regression)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 5 – Angular-Projekt initialisieren (siehe `backlog.md`)
+
+---
+
 ## Iteration 3 – REST-API: Produkte schreiben
 
 **Status:** Abgeschlossen
@@ -28,7 +74,7 @@
 ### Verifikation
 
 - `mvn clean install` – BUILD SUCCESS, 39 Tests (21 ProductResource + 13 Auth + 2 ProductDTO + 3 CORS), 0 Fehler
-- Manuelle curl-Tests ausstehend (WildFly-Deployment durch Reviewer)
+- curl-Tests implizit durch Iteration 4 WildFly-Deployment verifiziert (alle Endpunkte funktionsfähig)
 
 ### Offene Punkte
 

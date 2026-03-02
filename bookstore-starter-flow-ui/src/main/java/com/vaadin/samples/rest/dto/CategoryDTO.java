@@ -2,9 +2,15 @@ package com.vaadin.samples.rest.dto;
 
 import com.vaadin.samples.backend.data.Category;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class CategoryDTO {
 
     private int id;
+
+    @NotBlank(message = "Category name is required")
+    @Size(min = 2, message = "Category name must be at least 2 characters")
     private String name;
 
     public CategoryDTO() {
@@ -36,5 +42,12 @@ public class CategoryDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Category toEntity() {
+        Category category = new Category();
+        category.setId(id);
+        category.setName(name);
+        return category;
     }
 }
