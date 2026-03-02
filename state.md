@@ -2,6 +2,46 @@
 
 ---
 
+## Iteration 6 – TypeScript-Modelle und API-Services
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-02
+
+### Umgesetzte Änderungen
+
+- `src/app/models/availability.enum.ts` – String-Enum mit `COMING`, `AVAILABLE`, `DISCONTINUED`
+- `src/app/models/category.model.ts` – Interface mit `id: number`, `name: string`
+- `src/app/models/product.model.ts` – Interface mit `id`, `productName`, `price`, `stockCount`, `availability`, `category`
+- `src/app/core/services/product.service.ts` – 5 CRUD-Methoden (`getAll`, `getById`, `create`, `update`, `delete`)
+- `src/app/core/services/product.service.spec.ts` – 13 Unit-Tests
+- `src/app/core/services/category.service.ts` – 4 CRUD-Methoden (`getAll`, `create`, `update`, `delete`)
+- `src/app/core/services/category.service.spec.ts` – 9 Unit-Tests
+- `.gitkeep`-Dateien in `models/` und `core/services/` entfernt
+
+### Entscheidungen
+
+- **`price: number`** – Jackson serialisiert `BigDecimal` als JSON-Number, TypeScript `number` ist ausreichend
+- **`category: Category[]`** – Feldname singular (wie im Backend `List<CategoryDTO> category`)
+- **`CategoryService.update()` gibt `Observable<void>` zurück** – Response-Body wird ignoriert, obwohl Backend `200 + CategoryDTO` liefert
+- **`inject()` statt Constructor Injection** – ESLint-Regel `@angular-eslint/prefer-inject` erzwingt `inject()`-Funktion
+- **`withCredentials: true` auf jedem HTTP-Call** – AuthInterceptor kommt erst in Iteration 7, bis dahin explizit gesetzt
+
+### Verifikation
+
+- `ng test` → 22 Tests grün (2 bestehende + 13 ProductService + 9 CategoryService - davon je 1 Creation-Test)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (267 kB initial)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 7 – Authentifizierungs-Service und Auth-Guard (siehe `backlog.md`)
+
+---
+
 ## Iteration 5 – Angular-Projekt initialisieren
 
 **Status:** Abgeschlossen
