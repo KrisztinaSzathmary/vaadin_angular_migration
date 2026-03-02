@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-available: #2dd085;
+  --color-coming: #ffc66e;
+  --color-discontinued: #f54993;
+  --breakpoint-sm: 570px;
+  --breakpoint-md: 800px;
+  --breakpoint-lg: 1024px;
+  --width-sidebar: 260px;
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

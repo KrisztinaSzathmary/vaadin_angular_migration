@@ -2,6 +2,57 @@
 
 ---
 
+## Iteration 5 – Angular-Projekt initialisieren
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-02
+
+### Umgesetzte Änderungen
+
+- `bookstore-angular/` – Angular 20.3 Projekt erstellt via `@angular/cli@20`
+  - Standalone Components (Angular 20 Default, keine NgModules)
+  - Angular 20 Dateinamenskonvention: `app.ts`, `app.html`, `app.spec.ts` (statt `app.component.ts` etc.)
+- **Verzeichnisstruktur** gemäß `stack.rules.md` Sektion 7:
+  - `src/app/core/{services,guards,interceptors}/`
+  - `src/app/features/{login,inventory,admin,about}/`
+  - `src/app/shared/{components,pipes,directives}/`
+  - `src/app/models/`
+  - Alle mit `.gitkeep`-Dateien
+- **Tailwind CSS v4.2** – `@import "tailwindcss"` + `@theme` Block mit Custom-Farben/Breakpoints aus `stack.rules.md`
+  - `postcss.config.js` mit `@tailwindcss/postcss`
+- **Angular Material v20** – M3 Design System, `custom-theme.scss` (SCSS nur für Material-Theming, eigener Code nutzt Tailwind)
+- **Jest** statt Karma – `@angular-builders/jest@20` als Builder in `angular.json`
+  - Karma + Jasmine vollständig entfernt
+  - `tsconfig.spec.json` → `types: ["jest"]`
+  - `jest.config.js` – leere Konfiguration (Builder liefert eigene Defaults)
+- **Proxy** – `proxy.conf.json` für `/api/v1` → `http://localhost:8080/bookstore-starter-flow-ui-1.1-SNAPSHOT`
+- **app.config.ts** – `provideRouter(routes)` + `provideHttpClient(withInterceptorsFromDi())`
+- **App-Component** – minimal mit `<router-outlet />`
+- **ESLint** – `@angular-eslint/schematics@21` + `eslint-config-prettier` + `eslint-plugin-prettier`
+
+### Entscheidungen
+
+- **Tailwind v4 CSS-basierte Config** – `stack.rules.md` zeigt v3-Syntax (`tailwind.config.js`), aber da v4 gefordert ist, wird v4-native `@theme`-Block verwendet. Farben/Breakpoints 1:1 übernommen.
+- **Angular Material SCSS behalten** – Material-Theming benötigt intern SCSS; kein Widerspruch zu "kein SCSS/LESS" Regel, da nur für Material-eigene Theme-Konfiguration
+- **`@angular-builders/jest@20`** statt direktem `jest-preset-angular@16` – Builder integriert `jest-preset-angular@14` intern und setzt Zone-Testumgebung automatisch auf; kein separates `setup-jest.ts` nötig
+- **Angular 20 Dateinamen** – CLI generiert `app.ts` statt `app.component.ts`, wir folgen der Angular-20-Konvention
+
+### Verifikation
+
+- `ng build` → BUILD SUCCESS (267 kB initial)
+- `ng test` → 2 Tests grün (App-Erstellung + router-outlet vorhanden)
+- `ng lint` → Alle Dateien bestanden
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 6 – siehe `backlog.md`
+
+---
+
 ## Iteration 4 – REST-API: Kategorien
 
 **Status:** Abgeschlossen
