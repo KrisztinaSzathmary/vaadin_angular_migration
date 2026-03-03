@@ -2,6 +2,41 @@
 
 ---
 
+## Iteration 10 – Produkt-Grid (nur Lesen)
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-03
+
+### Umgesetzte Änderungen
+
+- `src/app/features/inventory/product-list.component.ts` – Vollständige Neuimplementierung: Signal-State (`products`, `loading`, `error`), Computed Signals (`availableCount`, `comingCount`, `discontinuedCount`), `MatTableDataSource` + `MatSort` Integration, Helper-Methoden (`formatAvailability`, `availabilityColor`, `formatCategories`)
+- `src/app/features/inventory/product-list.component.html` – Externes Template mit Header (Titel + Produktanzahl-Untertitel), Availability-Status-Badges (farbige Punkte + Zähler), Loading/Error-Zustände, `mat-table` mit 5 Spalten (Product name, Price, Availability, In stock, Categories), deklarativer Default-Sort auf productName ASC, Row-Striping
+- `src/app/features/inventory/product-list.component.spec.ts` – Neugeschrieben mit 17 Unit-Tests: Creation, Loading-State, API-Call, Tabellenrendering, Produktnamen, EUR-Preisformat, Availability-Labels + Farbklassen, Lagerbestand, Kategorien (kommasepariert + leere Kategorien), Produktanzahl-Untertitel, Summary-Badges, Loading-Verbergen, Fehlermeldung, Default-Sort
+
+### Entscheidungen
+
+- **`@ViewChild(MatSort)` als Setter statt `ngAfterViewInit()`** – Tabelle ist hinter `@if (!loading() && !error())` verborgen, daher ist `MatSort` erst nach Datenladen verfügbar. Setter-Pattern reagiert automatisch auf View-Query-Auflösung
+- **`MatTableDataSource` als Instanz-Property** – Kein Signal nötig, da `dataSource.data` direkt gesetzt wird und `MatSort` darauf referenziert
+- **`NgClass` für dynamische Availability-Farben** – `[ngClass]="availabilityColor(product.availability)"` setzt `bg-available`/`bg-coming`/`bg-discontinued` Klassen
+- **Kein `standalone: true`** – Angular 20 Default, konsistent mit allen bestehenden Komponenten
+- **`ProgressEvent` in Fehler-Tests** – `HttpTestingController.error()` erfordert `ProgressEvent`, nicht `ErrorEvent`
+
+### Verifikation
+
+- `ng test` → 84 Tests grün (68 bestehende − 1 alter Placeholder + 17 neue, 13 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (426 kB initial, 4 Lazy Chunks inkl. product-list 56.6 kB)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 11 – siehe `backlog.md`
+
+---
+
 ## Iteration 9 – Hauptlayout mit Navigation
 
 **Status:** Abgeschlossen
