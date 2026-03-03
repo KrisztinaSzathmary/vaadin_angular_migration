@@ -2,6 +2,43 @@
 
 ---
 
+## Iteration 11 – Produkt-Filter
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-03
+
+### Umgesetzte Änderungen
+
+- `src/app/features/inventory/product-list.component.ts` – Erweitert um Filter- und Admin-Logik: `filterText` Signal, `isAdmin` Signal-Referenz (AuthService), `filterSubject` mit `debounceTime(300)` + `takeUntilDestroyed()`, Custom `filterPredicate` auf `MatTableDataSource` (sucht in Produktname, Availability-Label und Kategorienamen), `onFilterInput()` Methode, `onNewProduct()` Placeholder. Neue Imports: `MatIconModule`, `MatButtonModule`, `AuthService`, `DestroyRef`, `Subject`, `debounceTime`, `takeUntilDestroyed`
+- `src/app/features/inventory/product-list.component.html` – Filter-Bar zwischen Header und Loading/Error/Table eingefügt: Plain `<input>` mit `mat-icon` Search-Prefix (Tailwind-gestylt), `mat-flat-button` "New product" mit `add_circle` Icon (disabled für Nicht-Admins)
+- `src/app/features/inventory/product-list.component.spec.ts` – 12 neue Tests: Filter-Input-Rendering + Placeholder, Search-Icon, New-Product-Button (Rendering, disabled/enabled nach Admin-Status), Filter nach Produktname, Availability-Label, Kategoriename, Case-Insensitive-Filter, Keine-Treffer-Filter, Debounce-Verhalten (300ms), Leerer Filter zeigt alle Produkte. AuthService als Mock mit Signal injiziert
+
+### Entscheidungen
+
+- **`Subject` + `debounceTime(300)` + `takeUntilDestroyed()`** – Standard-RxJS-Debounce-Pattern mit sauberem Lifecycle-Management über `DestroyRef`
+- **`MatTableDataSource.filterPredicate`** – Built-in Mechanismus, kein Custom DataSource nötig
+- **Availability-Matching über `formatAvailability().toLowerCase()`** – Benutzer tippen Labels wie "available", nicht Enum-Werte
+- **Kategorie-Matching über `category.some(c => c.name.includes(...))`** – Durchsucht alle Kategorien eines Produkts
+- **`isAdmin` als Signal-Referenz** – Gleisches Pattern wie `MainLayoutComponent` (`this.authService.isAdmin`)
+- **Filter-Tests direkt über `dataSource.filter`** – Trennung von FilterPredicate-Logik und Debounce-Timing; `fakeAsync`/`tick` nur für Debounce-Test
+- **`onNewProduct()` als leerer Placeholder** – Funktionalität kommt in Iteration 12
+
+### Verifikation
+
+- `ng test` → 96 Tests grün (84 bestehende + 12 neue, 13 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (427.60 kB initial, 4 Lazy Chunks inkl. product-list 58.25 kB)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 12 – siehe `backlog.md`
+
+---
+
 ## Iteration 10 – Produkt-Grid (nur Lesen)
 
 **Status:** Abgeschlossen

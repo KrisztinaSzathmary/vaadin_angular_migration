@@ -1,8 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { signal } from '@angular/core';
 import { ProductListComponent } from './product-list.component';
+import { AuthService } from '../../core/services/auth.service';
 import { Product } from '../../models/product.model';
 import { Availability } from '../../models/availability.enum';
 
@@ -40,11 +42,21 @@ describe('ProductListComponent', () => {
   let component: ProductListComponent;
   let fixture: ComponentFixture<ProductListComponent>;
   let httpTesting: HttpTestingController;
+  const isAdminSignal = signal(false);
 
   beforeEach(async () => {
+    isAdminSignal.set(false);
+
     await TestBed.configureTestingModule({
       imports: [ProductListComponent, NoopAnimationsModule],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        {
+          provide: AuthService,
+          useValue: { isAdmin: isAdminSignal },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductListComponent);
@@ -175,5 +187,118 @@ describe('ProductListComponent', () => {
     loadProducts();
     expect(component.dataSource.sort?.active).toBe('productName');
     expect(component.dataSource.sort?.direction).toBe('asc');
+  });
+
+  // --- Filter & Admin Tests ---
+
+  it('should render filter input with placeholder', () => {
+    loadProducts();
+    const input = fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement;
+    expect(input).toBeTruthy();
+    expect(input.placeholder).toBe('Search name, availability or category...');
+  });
+
+  it('should display search icon', () => {
+    loadProducts();
+    const icons = fixture.nativeElement.querySelectorAll('mat-icon');
+    const searchIcon = Array.from(icons).find(
+      (icon) => (icon as HTMLElement).textContent?.trim() === 'search',
+    );
+    expect(searchIcon).toBeTruthy();
+  });
+
+  it('should render New product button', () => {
+    loadProducts();
+    const buttons = fixture.nativeElement.querySelectorAll('button');
+    const newProductBtn = Array.from(buttons).find((btn) =>
+      (btn as HTMLElement).textContent?.includes('New product'),
+    ) as HTMLButtonElement;
+    expect(newProductBtn).toBeTruthy();
+  });
+
+  it('should disable New product button when not admin', () => {
+    isAdminSignal.set(false);
+    loadProducts();
+    const buttons = fixture.nativeElement.querySelectorAll('button');
+    const newProductBtn = Array.from(buttons).find((btn) =>
+      (btn as HTMLElement).textContent?.includes('New product'),
+    ) as HTMLButtonElement;
+    expect(newProductBtn.disabled).toBe(true);
+  });
+
+  it('should enable New product button when admin', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+    const buttons = fixture.nativeElement.querySelectorAll('button');
+    const newProductBtn = Array.from(buttons).find((btn) =>
+      (btn as HTMLElement).textContent?.includes('New product'),
+    ) as HTMLButtonElement;
+    expect(newProductBtn.disabled).toBe(false);
+  });
+
+  it('should filter by product name', () => {
+    loadProducts();
+    component.dataSource.filter = 'product a';
+    fixture.detectChanges();
+    const rows = fixture.nativeElement.querySelectorAll('tr[mat-row]');
+    expect(rows.length).toBe(1);
+    expect(fixture.nativeElement.textContent).toContain('Test Product A');
+  });
+
+  it('should filter by availability label', () => {
+    loadProducts();
+    component.dataSource.filter = 'coming';
+    fixture.detectChanges();
+    const rows = fixture.nativeElement.querySelectorAll('tr[mat-row]');
+    expect(rows.length).toBe(1);
+    expect(fixture.nativeElement.textContent).toContain('Test Product B');
+  });
+
+  it('should filter by category name', () => {
+    loadProducts();
+    component.dataSource.filter = 'cookbooks';
+    fixture.detectChanges();
+    const rows = fixture.nativeElement.querySelectorAll('tr[mat-row]');
+    expect(rows.length).toBe(1);
+    expect(fixture.nativeElement.textContent).toContain('Test Product A');
+  });
+
+  it('should filter case-insensitively', () => {
+    loadProducts();
+    component.dataSource.filter = 'MYSTERY';
+    fixture.detectChanges();
+    const rows = fixture.nativeElement.querySelectorAll('tr[mat-row]');
+    expect(rows.length).toBe(1);
+    expect(fixture.nativeElement.textContent).toContain('Test Product B');
+  });
+
+  it('should show zero rows when filter has no matches', () => {
+    loadProducts();
+    component.dataSource.filter = 'nonexistent';
+    fixture.detectChanges();
+    const rows = fixture.nativeElement.querySelectorAll('tr[mat-row]');
+    expect(rows.length).toBe(0);
+  });
+
+  it('should debounce filter input', fakeAsync(() => {
+    loadProducts();
+    component.onFilterInput('Product A');
+    // Before debounce completes, filter not yet applied
+    expect(component.dataSource.filter).toBe('');
+
+    tick(300);
+    // After 300ms, filter applied
+    expect(component.dataSource.filter).toBe('product a');
+  }));
+
+  it('should show all products when filter is cleared', () => {
+    loadProducts();
+    component.dataSource.filter = 'product a';
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('tr[mat-row]').length).toBe(1);
+
+    component.dataSource.filter = '';
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('tr[mat-row]').length).toBe(3);
   });
 });

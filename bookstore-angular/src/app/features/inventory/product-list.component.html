@@ -21,6 +21,29 @@
     </div>
   </div>
 
+  <!-- Filter Bar -->
+  <div class="mb-4 flex items-center gap-3">
+    <div class="relative flex-1">
+      <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">search</mat-icon>
+      <input
+        #filterInput
+        type="text"
+        placeholder="Search name, availability or category..."
+        (input)="onFilterInput(filterInput.value)"
+        class="w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-10 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+      />
+    </div>
+    <button
+      mat-flat-button
+      color="primary"
+      [disabled]="!isAdmin()"
+      (click)="onNewProduct()"
+    >
+      <mat-icon>add_circle</mat-icon>
+      New product
+    </button>
+  </div>
+
   <!-- Loading -->
   @if (loading()) {
     <p class="text-sm text-gray-500">Loading products...</p>
