@@ -1,0 +1,65 @@
+<div class="flex h-screen">
+  <!-- Sidebar -->
+  <nav class="flex w-sidebar flex-col border-r border-gray-200 bg-white">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 px-5 py-6">
+      <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500 text-white">
+        <mat-icon>auto_stories</mat-icon>
+      </div>
+      <span class="text-lg font-semibold text-gray-900">Bookstore</span>
+    </div>
+
+    <!-- Navigation Links -->
+    <div class="flex flex-1 flex-col gap-1 px-3 pt-2">
+      <a
+        routerLink="/inventory"
+        routerLinkActive="bg-indigo-50 text-indigo-600"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+      >
+        <mat-icon>edit</mat-icon>
+        Inventory
+      </a>
+      <a
+        routerLink="/about"
+        routerLinkActive="bg-indigo-50 text-indigo-600"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+      >
+        <mat-icon>info</mat-icon>
+        About
+      </a>
+      @if (isAdmin()) {
+        <a
+          routerLink="/admin"
+          routerLinkActive="bg-indigo-50 text-indigo-600"
+          class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+        >
+          <mat-icon>settings</mat-icon>
+          Admin
+        </a>
+      }
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="flex flex-col gap-1 border-t border-gray-200 px-3 py-3">
+      <button
+        disabled
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400"
+      >
+        <mat-icon>chevron_left</mat-icon>
+        Collapse
+      </button>
+      <button
+        (click)="logout()"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+      >
+        <mat-icon>logout</mat-icon>
+        Logout
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto bg-gray-50">
+    <router-outlet />
+  </main>
+</div>

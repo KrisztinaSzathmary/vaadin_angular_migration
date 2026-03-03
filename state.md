@@ -2,6 +2,54 @@
 
 ---
 
+## Iteration 9 – Hauptlayout mit Navigation
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-03
+
+### Umgesetzte Änderungen
+
+- `src/app/shared/components/main-layout/main-layout.component.ts` – MainLayoutComponent mit Sidebar-Navigation, AuthService-Integration für Admin-Sichtbarkeit, Logout mit Navigation
+- `src/app/shared/components/main-layout/main-layout.component.html` – Sidebar (260px) mit Logo, Inventory/About/Admin-Links, routerLinkActive-Hervorhebung, Collapse-Button (disabled), Logout-Button
+- `src/app/shared/components/main-layout/main-layout.component.spec.ts` – 10 Unit-Tests (Erstellung, Router-Outlet, Bookstore-Titel, Inventory/About-Links, Admin-Link versteckt/sichtbar, Logout-Button, Logout-Navigation bei Erfolg und Fehler)
+- `src/app/features/inventory/product-list.component.ts` – Placeholder-Komponente mit Inline-Template "Inventory"
+- `src/app/features/about/about.component.ts` – Placeholder-Komponente mit Inline-Template "About"
+- `src/app/features/admin/admin.component.ts` – Placeholder-Komponente mit Inline-Template "Admin"
+- `src/app/features/not-found/not-found.component.ts` – Standalone-Komponente mit Text "The view could not be found."
+- `src/app/features/inventory/product-list.component.spec.ts` – 1 Creation-Test
+- `src/app/features/about/about.component.spec.ts` – 1 Creation-Test
+- `src/app/features/admin/admin.component.spec.ts` – 1 Creation-Test
+- `src/app/features/not-found/not-found.component.spec.ts` – 2 Tests (Creation + Content-Prüfung)
+- `src/app/app.routes.ts` – Komplettes Rewrite: `/login` top-level, `/` → MainLayout + authGuard mit Children (`/inventory`, `/about`, `/admin` + adminGuard), `**` → NotFound
+- `.gitkeep`-Dateien gelöscht: `features/inventory/`, `features/about/`, `features/admin/`, `shared/components/`
+
+### Entscheidungen
+
+- **MainLayout in `shared/components/`** – Strukturelle Layout-Komponente, kein Feature; `core/` ist für Services/Guards
+- **`authGuard` nur auf Parent-Route** – Children erben den Guard (DRY-Prinzip)
+- **`**` Wildcard top-level ohne Sidebar** – Nicht-authentifizierte User sollen keine Sidebar sehen
+- **Collapse-Button disabled/visuell** – Nicht im Backlog-Scope, aber UI-Design zeigt ihn; als disabled-Button dargestellt
+- **Logout navigiert bei Error auch zu `/login`** – Defensiv: Session könnte ohnehin ungültig sein
+- **Inline-Templates für Placeholder-Komponenten** – Triviale Komponenten, vollständige Templates kommen in späteren Iterationen
+- **Feature-Komponenten lazy loaded** – `loadComponent` für Inventory, About, Admin, NotFound; MainLayout eagerly loaded als Shell
+- **Signal-Referenz für `isAdmin`** – Komponente bindet `authService.isAdmin` direkt als Signal-Referenz (kein Wrapper)
+
+### Verifikation
+
+- `ng test` → 68 Tests grün (53 bestehende + 15 neue, 13 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (405 kB initial, 4 Lazy Chunks)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 10 – siehe `backlog.md`
+
+---
+
 ## Iteration 8 – Login-Seite
 
 **Status:** Abgeschlossen
