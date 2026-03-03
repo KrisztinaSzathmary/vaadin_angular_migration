@@ -1,0 +1,47 @@
+import { Component, inject, signal } from '@angular/core';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { AuthService } from '../../core/services/auth.service';
+
+@Component({
+  selector: 'app-login',
+  imports: [ReactiveFormsModule, MatButtonModule, MatIconModule],
+  templateUrl: './login.component.html',
+})
+export class LoginComponent {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly fb = inject(FormBuilder);
+
+  readonly loginForm = this.fb.nonNullable.group({
+    username: ['', Validators.required],
+    password: ['', Validators.required],
+  });
+
+  readonly errorMessage = signal('');
+  readonly isLoading = signal(false);
+  readonly hidePassword = signal(true);
+
+  onSubmit(): void {
+    if (this.loginForm.invalid) {
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.isLoading.set(true);
+
+    const { username, password } = this.loginForm.getRawValue();
+    this.authService.login(username, password).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.router.navigate(['/inventory']);
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.errorMessage.set('Invalid username or password');
+      },
+    });
+  }
+}

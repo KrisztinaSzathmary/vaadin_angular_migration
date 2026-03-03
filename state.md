@@ -2,6 +2,47 @@
 
 ---
 
+## Iteration 8 – Login-Seite
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-03
+
+### Umgesetzte Änderungen
+
+- `src/app/features/login/login.component.ts` – Standalone LoginComponent mit Reactive Form (`username`, `password`), Signal-State (`errorMessage`, `isLoading`, `hidePassword`), AuthService-Integration
+- `src/app/features/login/login.component.html` – Zwei-Spalten-Layout (blaue Sidebar mit Login-Info + zentriertes Login-Formular), Angular Material Form Fields mit Visibility-Toggle, Tailwind CSS
+- `src/app/features/login/login.component.spec.ts` – 10 Unit-Tests (Erstellung, Form-Controls, Validierung, Submit-Verhalten, Navigation, Fehlermeldung, Loading-State, Password-Toggle)
+- `src/app/app.routes.ts` – Routen konfiguriert: `/login` → LoginComponent, `/` → Redirect zu `/login`, `**` → Redirect zu `/login`
+- `src/app/features/login/.gitkeep` – gelöscht
+- `src/styles.css` – `@source` Direktive hinzugefügt für Tailwind v4 Content Detection
+- `postcss.config.js` → `.postcssrc.json` – PostCSS-Konfiguration auf JSON-Format umgestellt (Angular Builder erkennt nur `.postcssrc.json`)
+
+### Entscheidungen
+
+- **`FormBuilder.nonNullable.group()`** – Typsicheres Formular ohne `null`-Werte
+- **Sidebar auf `sm`-Breakpoint ausblenden** – `hidden sm:flex` für responsive Darstellung auf kleinen Bildschirmen
+- **"Forgot password"-Link** – Als nicht-funktionales Element dargestellt (kein `href`, kein Click-Handler), da kein Backlog-Item dafür existiert
+- **Sprachauswahl-Dropdown** – Nicht implementiert, gehört zu Iteration 18 (i18n)
+- **Einfache Routen-Konfiguration** – Nur Login-Route + Redirects; Erweiterung mit Guards und MainLayout erfolgt in späteren Iterationen
+- **`.postcssrc.json` statt `postcss.config.js`** – Angular's `@angular/build:application` Builder erkennt PostCSS-Konfiguration nur im `.postcssrc.json`-Format (nicht `postcss.config.js`). Ohne dies werden Tailwind v4 Utility-Klassen nicht generiert.
+- **`@source` Direktive** – Tailwind v4 Content Detection findet Angular-Templates nicht automatisch innerhalb des Angular-Build-Prozesses; expliziter `@source "./app/**/*.{html,ts}"` nötig
+
+### Verifikation
+
+- `ng test` → 53 Tests grün (43 bestehende + 10 neue LoginComponent-Tests, 8 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (474 kB initial)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 9 – siehe `backlog.md`
+
+---
+
 ## Iteration 7 – Authentifizierungs-Service und Auth-Guard
 
 **Status:** Abgeschlossen
