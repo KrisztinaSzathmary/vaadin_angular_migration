@@ -9,30 +9,22 @@ export class ProductService {
   private readonly http = inject(HttpClient);
 
   getAll(): Observable<Product[]> {
-    return this.http.get<Product[]>(this.apiUrl, { withCredentials: true });
+    return this.http.get<Product[]>(this.apiUrl);
   }
 
   getById(id: number): Observable<Product> {
-    return this.http.get<Product>(`${this.apiUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.get<Product>(`${this.apiUrl}/${id}`);
   }
 
   create(product: Product): Observable<Product> {
-    return this.http.post<Product>(this.apiUrl, product, {
-      withCredentials: true,
-    });
+    return this.http.post<Product>(this.apiUrl, product);
   }
 
   update(product: Product): Observable<Product> {
-    return this.http.put<Product>(`${this.apiUrl}/${product.id}`, product, {
-      withCredentials: true,
-    });
+    return this.http.put<Product>(`${this.apiUrl}/${product.id}`, product);
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

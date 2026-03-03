@@ -9,26 +9,18 @@ export class CategoryService {
   private readonly http = inject(HttpClient);
 
   getAll(): Observable<Category[]> {
-    return this.http.get<Category[]>(this.apiUrl, {
-      withCredentials: true,
-    });
+    return this.http.get<Category[]>(this.apiUrl);
   }
 
   create(category: Category): Observable<Category> {
-    return this.http.post<Category>(this.apiUrl, category, {
-      withCredentials: true,
-    });
+    return this.http.post<Category>(this.apiUrl, category);
   }
 
   update(category: Category): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/${category.id}`, category, {
-      withCredentials: true,
-    });
+    return this.http.put<void>(`${this.apiUrl}/${category.id}`, category);
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

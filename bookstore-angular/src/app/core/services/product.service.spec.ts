@@ -56,14 +56,6 @@ describe('ProductService', () => {
       expect(req.request.method).toBe('GET');
       req.flush(mockProducts);
     });
-
-    it('should set withCredentials to true', () => {
-      service.getAll().subscribe();
-
-      const req = httpTesting.expectOne('/api/v1/products');
-      expect(req.request.withCredentials).toBe(true);
-      req.flush([]);
-    });
   });
 
   describe('getById', () => {
@@ -74,14 +66,6 @@ describe('ProductService', () => {
 
       const req = httpTesting.expectOne('/api/v1/products/1');
       expect(req.request.method).toBe('GET');
-      req.flush(mockProduct);
-    });
-
-    it('should set withCredentials to true', () => {
-      service.getById(42).subscribe();
-
-      const req = httpTesting.expectOne('/api/v1/products/42');
-      expect(req.request.withCredentials).toBe(true);
       req.flush(mockProduct);
     });
   });
@@ -97,14 +81,6 @@ describe('ProductService', () => {
       expect(req.request.body).toEqual(mockProduct);
       req.flush(mockProduct);
     });
-
-    it('should set withCredentials to true', () => {
-      service.create(mockProduct).subscribe();
-
-      const req = httpTesting.expectOne('/api/v1/products');
-      expect(req.request.withCredentials).toBe(true);
-      req.flush(mockProduct);
-    });
   });
 
   describe('update', () => {
@@ -118,14 +94,6 @@ describe('ProductService', () => {
       expect(req.request.body).toEqual(mockProduct);
       req.flush(mockProduct);
     });
-
-    it('should set withCredentials to true', () => {
-      service.update(mockProduct).subscribe();
-
-      const req = httpTesting.expectOne('/api/v1/products/1');
-      expect(req.request.withCredentials).toBe(true);
-      req.flush(mockProduct);
-    });
   });
 
   describe('delete', () => {
@@ -134,14 +102,6 @@ describe('ProductService', () => {
 
       const req = httpTesting.expectOne('/api/v1/products/1');
       expect(req.request.method).toBe('DELETE');
-      req.flush(null);
-    });
-
-    it('should set withCredentials to true', () => {
-      service.delete(1).subscribe();
-
-      const req = httpTesting.expectOne('/api/v1/products/1');
-      expect(req.request.withCredentials).toBe(true);
       req.flush(null);
     });
   });

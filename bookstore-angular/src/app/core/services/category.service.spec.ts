@@ -42,14 +42,6 @@ describe('CategoryService', () => {
       expect(req.request.method).toBe('GET');
       req.flush(mockCategories);
     });
-
-    it('should set withCredentials to true', () => {
-      service.getAll().subscribe();
-
-      const req = httpTesting.expectOne('/api/v1/categories');
-      expect(req.request.withCredentials).toBe(true);
-      req.flush([]);
-    });
   });
 
   describe('create', () => {
@@ -63,14 +55,6 @@ describe('CategoryService', () => {
       expect(req.request.body).toEqual(mockCategory);
       req.flush(mockCategory);
     });
-
-    it('should set withCredentials to true', () => {
-      service.create(mockCategory).subscribe();
-
-      const req = httpTesting.expectOne('/api/v1/categories');
-      expect(req.request.withCredentials).toBe(true);
-      req.flush(mockCategory);
-    });
   });
 
   describe('update', () => {
@@ -82,14 +66,6 @@ describe('CategoryService', () => {
       expect(req.request.body).toEqual(mockCategory);
       req.flush(null);
     });
-
-    it('should set withCredentials to true', () => {
-      service.update(mockCategory).subscribe();
-
-      const req = httpTesting.expectOne('/api/v1/categories/1');
-      expect(req.request.withCredentials).toBe(true);
-      req.flush(null);
-    });
   });
 
   describe('delete', () => {
@@ -98,14 +74,6 @@ describe('CategoryService', () => {
 
       const req = httpTesting.expectOne('/api/v1/categories/1');
       expect(req.request.method).toBe('DELETE');
-      req.flush(null);
-    });
-
-    it('should set withCredentials to true', () => {
-      service.delete(1).subscribe();
-
-      const req = httpTesting.expectOne('/api/v1/categories/1');
-      expect(req.request.withCredentials).toBe(true);
       req.flush(null);
     });
   });

@@ -2,6 +2,53 @@
 
 ---
 
+## Iteration 7 – Authentifizierungs-Service und Auth-Guard
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-03
+
+### Umgesetzte Änderungen
+
+- `src/app/models/auth.model.ts` – Interfaces `LoginRequest`, `LoginResponse`, `UserInfo`
+- `src/app/core/services/auth.service.ts` – Auth-Service mit Signal-basiertem State (`currentUser`, `isLoggedIn`, `isAdmin`), Methoden `login()`, `logout()`, `getCurrentUser()`, `clearAuth()`
+- `src/app/core/services/auth.service.spec.ts` – 16 Unit-Tests
+- `src/app/core/interceptors/auth.interceptor.ts` – Class-based `HttpInterceptor`, setzt `withCredentials: true` global, 401-Redirect zu `/login` (Auth-Endpoints ausgenommen)
+- `src/app/core/interceptors/auth.interceptor.spec.ts` – 9 Unit-Tests
+- `src/app/core/guards/auth.guard.ts` – Functional Guard (`CanActivateFn`) für authentifizierte Routen
+- `src/app/core/guards/auth.guard.spec.ts` – 2 Unit-Tests
+- `src/app/core/guards/admin.guard.ts` – Functional Guard für Admin-Routen (prüft Login + Admin-Rolle)
+- `src/app/core/guards/admin.guard.spec.ts` – 3 Unit-Tests
+- `src/app/app.config.ts` – `AuthInterceptor` als `HTTP_INTERCEPTORS` Provider registriert
+- `src/app/core/services/product.service.ts` – `withCredentials: true` aus allen 5 HTTP-Calls entfernt
+- `src/app/core/services/product.service.spec.ts` – 5 `withCredentials`-Tests entfernt (13 → 8 Tests)
+- `src/app/core/services/category.service.ts` – `withCredentials: true` aus allen 4 HTTP-Calls entfernt
+- `src/app/core/services/category.service.spec.ts` – 4 `withCredentials`-Tests entfernt (9 → 5 Tests)
+- `.gitkeep`-Dateien in `core/guards/` und `core/interceptors/` gelöscht
+
+### Entscheidungen
+
+- **Class-based `HttpInterceptor`** – `app.config.ts` nutzt bereits `withInterceptorsFromDi()`, daher passt `HTTP_INTERCEPTORS` Multi-Token
+- **Functional Guards (`CanActivateFn`)** – Modernes Angular-20-Pattern, einfacher und besser testbar
+- **401-Redirect nur für Nicht-Auth-Endpoints** – URLs mit `/api/v1/auth/` werden vom Redirect ausgenommen, um Login-Loops zu vermeiden
+- **`user` als readonly Signal** – `currentUser.asReadonly()` exponiert den Signal-State nach außen, ohne Schreibzugriff zu erlauben
+- **Separate Interfaces `LoginResponse` / `UserInfo`** – identische Felder, aber semantisch getrennt (Konsistenz mit Backend-DTOs)
+
+### Verifikation
+
+- `ng test` → 43 Tests grün (2 App + 8 Product + 5 Category + 16 Auth + 9 Interceptor + 2 AuthGuard + 3 AdminGuard – über 7 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (269 kB initial)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 8 – siehe `backlog.md`
+
+---
+
 ## Iteration 6 – TypeScript-Modelle und API-Services
 
 **Status:** Abgeschlossen
