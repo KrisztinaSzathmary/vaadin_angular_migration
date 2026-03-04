@@ -2,6 +2,51 @@
 
 ---
 
+## Iteration 12 – Produkt-Formular (Erstellen und Bearbeiten)
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-04
+
+### Umgesetzte Änderungen
+
+- `src/app/core/services/notification.service.ts` – Thin Wrapper um `MatSnackBar` mit `showSuccess(message)` (3s Dauer) und `showError(message)` (5s Dauer), `@Injectable({ providedIn: 'root' })`
+- `src/app/core/services/notification.service.spec.ts` – 5 Unit-Tests (Creation, showSuccess/showError rufen snackBar.open auf, korrekte Duration-Werte)
+- `src/app/features/inventory/product-form.component.ts` – Standalone Component als `MatDialog`-Content: `ProductFormData`-Interface, exportierte `availabilityStockValidator`-Funktion (Cross-Field), Reactive Form (`fb.nonNullable.group()`) mit Feldern `productName`, `price`, `stockCount`, `availability`, `categoryIds`, Methoden `onSave()`, `onDiscard()`, `onCancel()`, `toggleCategory()`, `isCategorySelected()`, `formatAvailability()`. Computed Signal `isEditMode`, WritableSignal `isSaving`. Form-Initialisierung direkt aus `MAT_DIALOG_DATA` (kein `ngOnInit` nötig). Fehler-Handler extrahiert Backend-Fehlermeldung aus `err.error?.error` mit Fallback auf generischen Text
+- `src/app/features/inventory/product-form.component.html` – Dialog-UI gemäß `ui-design-plan/add-item/v0_add_item.png`: Header mit Titel + X-Close-Button, Untertitel, Product name Input, 2-Spalten-Reihe (Price + Availability `mat-select`), In stock Input, Tailwind-gestylte Kategorie-Chip-Buttons, Cross-Field-Fehlermeldung, Dirty-Tracking mit blauem Rand, Footer mit Discard/Cancel/Save-Buttons
+- `src/app/features/inventory/product-form.component.spec.ts` – 36 Unit-Tests: Rendering (7), Form-Initialisierung (3), Feld-Validierung (7), Cross-Field-Validierung (6), Kategorie-Interaktion (2), Save (6), Discard (2), Cancel/Close (2)
+- `src/app/features/inventory/product-list.component.ts` – Erweitert um `MatDialog`, `CategoryService`, `NotificationService` Injections, `categories` Signal, `onRowClick(product)`, `openProductDialog(product)` (dialog.open mit width 520px), `refreshProducts()`, `ngOnInit()` lädt zusätzlich Kategorien
+- `src/app/features/inventory/product-list.component.html` – `(click)="onRowClick(row)"` und `[class.cursor-pointer]="isAdmin()"` auf `<tr mat-row>`
+- `src/app/features/inventory/product-list.component.spec.ts` – 8 neue Tests: Kategorien laden, Dialog öffnen bei New Product/Zeilen-Klick (Admin), Produktdaten übergeben, kein Dialog bei Nicht-Admin, Refresh nach Dialog-Close mit Ergebnis, keine Aktualisierung ohne Ergebnis, Notification nach Save
+- `src/app/core/interceptors/auth.interceptor.ts` – Erweitert: `MatDialog` Injection + `dialog.closeAll()` vor Router-Navigation bei 401-Redirect (verhindert verwaiste Dialoge)
+- `src/app/core/interceptors/auth.interceptor.spec.ts` – 1 neuer Test: `closeAll()` wird bei 401-Redirect aufgerufen
+- `proxy.conf.json` – `cookiePathRewrite` hinzugefügt: mappt `/bookstore-starter-flow-ui-1.1-SNAPSHOT` → `/`, damit JSESSIONID-Cookie auch für `/api/v1/...` Requests gesendet wird
+
+### Entscheidungen
+
+- **Tailwind-Chip-Buttons statt `mat-chip-listbox`/`mat-chip-option`** – Angular Material Chips verursachen `ExpressionChangedAfterItHasBeenCheckedError` bei `[selected]`-Binding aus Formular-State; plain Tailwind-gestylte Buttons mit `role="option"` vermeiden den Feedback-Loop und sind konsistenter mit dem Projekt-CSS-Ansatz
+- **Form-Initialisierung im Constructor (Felddeklaration) statt `ngOnInit`** – `MAT_DIALOG_DATA` ist bei `inject()` sofort verfügbar; Initialisierung über Feld-Default-Werte vermeidet `ExpressionChangedAfterItHasBeenCheckedError` bei Edit-Modus
+- **`MatDialogModule` nicht in ProductListComponent `imports`** – Nur programmatischer `dialog.open()` Aufruf, keine Dialog-Direktiven im Template; `MatDialog` ist `providedIn: 'root'` und braucht kein Modul-Import
+- **`jest.spyOn(dialog, 'open')` statt `useValue`-Mock** – `MatDialog` wird von Angular's Root-Injector bereitgestellt; direkter Spy auf die Instanz ist zuverlässiger als Provider-Override bei Standalone-Components
+- **`eslint-disable-next-line` für `mat-select` und Categories-Label** – `@angular-eslint/template/label-has-associated-control` erkennt `aria-labelledby` nicht; `mat-select` hat kein natives `id`-for-Attribut
+- **`cookiePathRewrite` in Proxy-Config** – WildFly setzt JSESSIONID mit `Path=/bookstore-starter-flow-ui-1.1-SNAPSHOT/`, Angular Dev-Server sendet Requests an `/api/v1/...`. Ohne Cookie-Path-Rewrite sendet der Browser den Cookie nicht mit → 401 bei authentifizierten POST/PUT/DELETE-Requests (erster authentifizierter Schreibzugriff aus Angular)
+- **`dialog.closeAll()` im AuthInterceptor** – Bei 401-Redirect zu `/login` bleiben offene `MatDialog`-Overlays im CDK-Container bestehen; explizites Schließen verhindert verwaiste Dialoge
+
+### Verifikation
+
+- `ng test` → 146 Tests grün (96 bestehende + 5 NotificationService + 36 ProductFormComponent + 8 neue ProductListComponent + 1 neuer AuthInterceptor, 15 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (544.65 kB initial, 4 Lazy Chunks inkl. product-list 178.34 kB)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 13 – siehe `backlog.md`
+
+---
+
 ## Iteration 11 – Produkt-Filter
 
 **Status:** Abgeschlossen
@@ -36,6 +81,34 @@
 ### Nächste Iteration
 
 - Iteration 12 – siehe `backlog.md`
+
+---
+
+## Unteraufgabe 11a – Playwright E2E-Konfiguration
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-04
+
+### Umgesetzte Änderungen
+
+- `@playwright/test` als devDependency installiert, Chromium-Browser heruntergeladen
+- `playwright.config.ts` – Konfiguration mit `webServer` (startet `ng serve` automatisch), `baseURL: http://localhost:4200`, Chromium-Projekt, HTML-Reporter
+- `e2e/pages/login.page.ts` – Page Object für Login-Seite (Locators für Heading, Username, Password, Login-Button, Error-Message; `goto()` und `login()` Methoden)
+- `e2e/smoke.spec.ts` – Minimaler Smoke-Test: Login-Seite lädt und zeigt Formular
+- `jest.config.js` – `testPathIgnorePatterns: ['/e2e/']` hinzugefügt, damit Jest die Playwright-Tests nicht mitläuft
+- `package.json` – `"e2e": "playwright test"` Script hinzugefügt
+
+### Entscheidungen
+
+- **`webServer.reuseExistingServer: !process.env['CI']`** – Lokal wird ein bereits laufender Dev-Server wiederverwendet, in CI wird immer ein neuer gestartet
+- **Nur Chromium** – Für Smoke-Test ausreichend, weitere Browser können später ergänzt werden
+- **`exact: true` im Heading-Locator** – Vermeidet Mehrdeutigkeit zwischen "Login" und "Login information" Headings
+
+### Verifikation
+
+- `npx playwright test` → 1 Test grün (Login-Seite lädt)
+- `ng test` → 146 Unit-Tests grün (E2E-Dateien korrekt ausgeschlossen)
+- `ng lint` → Alle Dateien bestanden
 
 ---
 

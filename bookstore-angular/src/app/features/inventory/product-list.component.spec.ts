@@ -3,9 +3,14 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { signal } from '@angular/core';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { of } from 'rxjs';
 import { ProductListComponent } from './product-list.component';
+import { ProductFormComponent } from './product-form.component';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { Product } from '../../models/product.model';
+import { Category } from '../../models/category.model';
 import { Availability } from '../../models/availability.enum';
 
 const mockProducts: Product[] = [
@@ -38,14 +43,26 @@ const mockProducts: Product[] = [
   },
 ];
 
+const mockCategories: Category[] = [
+  { id: 1, name: 'Best sellers' },
+  { id: 2, name: 'Cookbooks' },
+  { id: 3, name: 'Mystery' },
+];
+
 describe('ProductListComponent', () => {
   let component: ProductListComponent;
   let fixture: ComponentFixture<ProductListComponent>;
   let httpTesting: HttpTestingController;
+  let dialog: MatDialog;
+  let notificationSpy: jest.Mocked<NotificationService>;
   const isAdminSignal = signal(false);
 
   beforeEach(async () => {
     isAdminSignal.set(false);
+    notificationSpy = {
+      showSuccess: jest.fn(),
+      showError: jest.fn(),
+    } as unknown as jest.Mocked<NotificationService>;
 
     await TestBed.configureTestingModule({
       imports: [ProductListComponent, NoopAnimationsModule],
@@ -56,27 +73,35 @@ describe('ProductListComponent', () => {
           provide: AuthService,
           useValue: { isAdmin: isAdminSignal },
         },
+        { provide: NotificationService, useValue: notificationSpy },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductListComponent);
     component = fixture.componentInstance;
     httpTesting = TestBed.inject(HttpTestingController);
+    dialog = TestBed.inject(MatDialog);
   });
 
   afterEach(() => {
     httpTesting.verify();
   });
 
+  function flushInit(): void {
+    httpTesting.expectOne('/api/v1/products').flush(mockProducts);
+    httpTesting.expectOne('/api/v1/categories').flush(mockCategories);
+  }
+
   function loadProducts(): void {
     fixture.detectChanges();
-    httpTesting.expectOne('/api/v1/products').flush(mockProducts);
+    flushInit();
     fixture.detectChanges();
   }
 
   it('should create', () => {
     fixture.detectChanges();
     httpTesting.expectOne('/api/v1/products').flush([]);
+    httpTesting.expectOne('/api/v1/categories').flush([]);
     expect(component).toBeTruthy();
   });
 
@@ -85,6 +110,7 @@ describe('ProductListComponent', () => {
     const el: HTMLElement = fixture.nativeElement;
     expect(el.textContent).toContain('Loading products...');
     httpTesting.expectOne('/api/v1/products').flush([]);
+    httpTesting.expectOne('/api/v1/categories').flush([]);
   });
 
   it('should load products from API on init', () => {
@@ -92,6 +118,7 @@ describe('ProductListComponent', () => {
     const req = httpTesting.expectOne('/api/v1/products');
     expect(req.request.method).toBe('GET');
     req.flush(mockProducts);
+    httpTesting.expectOne('/api/v1/categories').flush([]);
   });
 
   it('should display products in table after loading', () => {
@@ -172,6 +199,7 @@ describe('ProductListComponent', () => {
   it('should show error message on API failure', () => {
     fixture.detectChanges();
     httpTesting.expectOne('/api/v1/products').error(new ProgressEvent('error'));
+    httpTesting.expectOne('/api/v1/categories').flush([]);
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     expect(el.textContent).toContain('Failed to load products');
@@ -180,6 +208,7 @@ describe('ProductListComponent', () => {
   it('should hide loading on error', () => {
     fixture.detectChanges();
     httpTesting.expectOne('/api/v1/products').error(new ProgressEvent('error'));
+    httpTesting.expectOne('/api/v1/categories').flush([]);
     expect(component.loading()).toBe(false);
   });
 
@@ -300,5 +329,117 @@ describe('ProductListComponent', () => {
     component.dataSource.filter = '';
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('tr[mat-row]').length).toBe(3);
+  });
+
+  // --- Dialog Integration Tests ---
+
+  it('should load categories on init', () => {
+    loadProducts();
+    expect(component.categories()).toEqual(mockCategories);
+  });
+
+  it('should open dialog on New Product click as admin', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+    const dialogRefMock = {
+      afterClosed: () => of(undefined),
+    } as unknown as MatDialogRef<ProductFormComponent>;
+    const openSpy = jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    component.onNewProduct();
+
+    expect(openSpy).toHaveBeenCalledWith(ProductFormComponent, {
+      data: { product: null, categories: mockCategories },
+      width: '520px',
+    });
+  });
+
+  it('should pass null as product data for New Product', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+    const dialogRefMock = {
+      afterClosed: () => of(undefined),
+    } as unknown as MatDialogRef<ProductFormComponent>;
+    const openSpy = jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    component.onNewProduct();
+
+    const callArgs = openSpy.mock.calls[0][1];
+    expect(callArgs?.data.product).toBeNull();
+  });
+
+  it('should pass product data on row click as admin', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+    const dialogRefMock = {
+      afterClosed: () => of(undefined),
+    } as unknown as MatDialogRef<ProductFormComponent>;
+    const openSpy = jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    component.onRowClick(mockProducts[0]);
+
+    const callArgs = openSpy.mock.calls[0][1];
+    expect(callArgs?.data.product).toEqual(mockProducts[0]);
+  });
+
+  it('should not open dialog on row click when not admin', () => {
+    isAdminSignal.set(false);
+    loadProducts();
+    const openSpy = jest.spyOn(dialog, 'open');
+
+    component.onRowClick(mockProducts[0]);
+
+    expect(openSpy).not.toHaveBeenCalled();
+  });
+
+  it('should refresh products after dialog close with result', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const savedProduct = { ...mockProducts[0], productName: 'Updated' };
+    const dialogRefMock = {
+      afterClosed: () => of(savedProduct),
+    } as unknown as MatDialogRef<ProductFormComponent>;
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    component.onNewProduct();
+
+    // Flush the refresh request
+    const req = httpTesting.expectOne('/api/v1/products');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockProducts);
+  });
+
+  it('should not refresh products when dialog closes without result', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const dialogRefMock = {
+      afterClosed: () => of(undefined),
+    } as unknown as MatDialogRef<ProductFormComponent>;
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    component.onNewProduct();
+
+    // No additional product request should be made
+    httpTesting.expectNone('/api/v1/products');
+  });
+
+  it('should show notification after successful save', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const savedProduct = { ...mockProducts[0], productName: 'Updated' };
+    const dialogRefMock = {
+      afterClosed: () => of(savedProduct),
+    } as unknown as MatDialogRef<ProductFormComponent>;
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    component.onNewProduct();
+
+    // Flush the refresh request
+    httpTesting.expectOne('/api/v1/products').flush(mockProducts);
+
+    expect(notificationSpy.showSuccess).toHaveBeenCalledWith('Product created');
   });
 });

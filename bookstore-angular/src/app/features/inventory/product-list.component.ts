@@ -4,11 +4,16 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { NgClass } from '@angular/common';
 import { Subject, debounceTime } from 'rxjs';
 import { ProductService } from '../../core/services/product.service';
+import { CategoryService } from '../../core/services/category.service';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../core/services/notification.service';
+import { ProductFormComponent, ProductFormData } from './product-form.component';
 import { Product } from '../../models/product.model';
+import { Category } from '../../models/category.model';
 import { Availability } from '../../models/availability.enum';
 
 @Component({
@@ -18,10 +23,14 @@ import { Availability } from '../../models/availability.enum';
 })
 export class ProductListComponent implements OnInit {
   private readonly productService = inject(ProductService);
+  private readonly categoryService = inject(CategoryService);
   private readonly authService = inject(AuthService);
+  private readonly dialog = inject(MatDialog);
+  private readonly notificationService = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly products = signal<Product[]>([]);
+  readonly categories = signal<Category[]>([]);
   readonly loading = signal(true);
   readonly error = signal('');
   readonly filterText = signal('');
@@ -78,6 +87,10 @@ export class ProductListComponent implements OnInit {
         this.loading.set(false);
       },
     });
+
+    this.categoryService.getAll().subscribe({
+      next: (cats) => this.categories.set(cats),
+    });
   }
 
   onFilterInput(value: string): void {
@@ -85,7 +98,42 @@ export class ProductListComponent implements OnInit {
   }
 
   onNewProduct(): void {
-    // Placeholder – functionality will be implemented in Iteration 12
+    this.openProductDialog(null);
+  }
+
+  onRowClick(product: Product): void {
+    if (this.isAdmin()) {
+      this.openProductDialog(product);
+    }
+  }
+
+  private openProductDialog(product: Product | null): void {
+    const data: ProductFormData = {
+      product,
+      categories: this.categories(),
+    };
+
+    const dialogRef = this.dialog.open(ProductFormComponent, {
+      data,
+      width: '520px',
+    });
+
+    dialogRef.afterClosed().subscribe((result?: Product) => {
+      if (result) {
+        this.refreshProducts();
+        const message = product ? 'Product updated' : 'Product created';
+        this.notificationService.showSuccess(message);
+      }
+    });
+  }
+
+  private refreshProducts(): void {
+    this.productService.getAll().subscribe({
+      next: (data) => {
+        this.products.set(data);
+        this.dataSource.data = data;
+      },
+    });
   }
 
   formatAvailability(availability: Availability): string {

@@ -94,7 +94,7 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="even:bg-gray-50"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="onRowClick(row)" class="even:bg-gray-50" [class.cursor-pointer]="isAdmin()"></tr>
       </table>
     </div>
   }

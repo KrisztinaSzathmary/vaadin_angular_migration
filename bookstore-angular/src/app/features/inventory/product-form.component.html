@@ -1,0 +1,158 @@
+<!-- Header -->
+<div class="flex items-center justify-between px-6 pt-6 pb-2">
+  <div>
+    <h2 class="text-xl font-bold text-gray-900">
+      @if (isEditMode()) {
+        Edit product
+      } @else {
+        Add new product
+      }
+    </h2>
+    <p class="text-sm text-gray-500 mt-1">Fill in the details below to add a new book to your inventory.</p>
+  </div>
+  <button mat-icon-button (click)="onCancel()" class="text-gray-400 hover:text-gray-600">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<!-- Form -->
+<div class="px-6 py-4">
+  <form [formGroup]="productForm" (ngSubmit)="onSave()">
+    <!-- Product name -->
+    <div class="mb-4" [ngClass]="{'border-l-2 border-blue-500 pl-3': productForm.controls.productName.dirty}">
+      <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">Product name</label>
+      <input
+        id="productName"
+        type="text"
+        formControlName="productName"
+        placeholder="e.g. The Art of Programming"
+        class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+      />
+      @if (productForm.controls.productName.touched && productForm.controls.productName.errors) {
+        <p class="text-xs text-red-600 mt-1">
+          @if (productForm.controls.productName.errors['required']) {
+            Product name is required.
+          } @else if (productForm.controls.productName.errors['minlength']) {
+            Product name must be at least 2 characters.
+          }
+        </p>
+      }
+    </div>
+
+    <!-- Price + Availability row -->
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <!-- Price -->
+      <div [ngClass]="{'border-l-2 border-blue-500 pl-3': productForm.controls.price.dirty}">
+        <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Price (&euro;)</label>
+        <input
+          id="price"
+          type="number"
+          formControlName="price"
+          step="0.01"
+          min="0"
+          class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+        />
+        @if (productForm.controls.price.touched && productForm.controls.price.errors) {
+          <p class="text-xs text-red-600 mt-1">
+            @if (productForm.controls.price.errors['required']) {
+              Price is required.
+            } @else if (productForm.controls.price.errors['min']) {
+              Price must be 0 or greater.
+            }
+          </p>
+        }
+      </div>
+
+      <!-- Availability -->
+      <div [ngClass]="{'border-l-2 border-blue-500 pl-3': productForm.controls.availability.dirty}">
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+        <label id="availability-label" class="block text-sm font-medium text-gray-700 mb-1">Availability</label>
+        <mat-select
+          formControlName="availability"
+          aria-labelledby="availability-label"
+          class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm"
+        >
+          @for (av of availabilities; track av) {
+            <mat-option [value]="av">{{ formatAvailability(av) }}</mat-option>
+          }
+        </mat-select>
+      </div>
+    </div>
+
+    <!-- In stock -->
+    <div class="mb-4" [ngClass]="{'border-l-2 border-blue-500 pl-3': productForm.controls.stockCount.dirty}">
+      <label for="stockCount" class="block text-sm font-medium text-gray-700 mb-1">In stock</label>
+      <input
+        id="stockCount"
+        type="number"
+        formControlName="stockCount"
+        placeholder="Number of items in stock"
+        min="0"
+        class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+      />
+      @if (productForm.controls.stockCount.touched && productForm.controls.stockCount.errors) {
+        <p class="text-xs text-red-600 mt-1">
+          @if (productForm.controls.stockCount.errors['required']) {
+            Stock count is required.
+          } @else if (productForm.controls.stockCount.errors['min']) {
+            Stock count must be 0 or greater.
+          }
+        </p>
+      }
+    </div>
+
+    <!-- Cross-field validation error -->
+    @if (productForm.errors?.['availabilityMismatch'] && (productForm.controls.stockCount.touched || productForm.controls.availability.touched)) {
+      <p class="text-xs text-red-600 mb-4">{{ productForm.errors?.['availabilityMismatch'] }}</p>
+    }
+
+    <!-- Categories -->
+    <div class="mb-6" [ngClass]="{'border-l-2 border-blue-500 pl-3': productForm.controls.categoryIds.dirty}">
+      <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+      <label id="categories-label" class="block text-sm font-medium text-gray-700 mb-2">Categories</label>
+      <div class="flex flex-wrap gap-2" role="listbox" aria-labelledby="categories-label">
+        @for (cat of categories; track cat.id) {
+          <button
+            type="button"
+            role="option"
+            [attr.aria-selected]="isCategorySelected(cat.id)"
+            (click)="toggleCategory(cat.id)"
+            class="rounded-full border px-4 py-1.5 text-sm transition-colors"
+            [ngClass]="isCategorySelected(cat.id) ? 'bg-blue-100 border-blue-400 text-blue-800' : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'"
+          >
+            {{ cat.name }}
+          </button>
+        }
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Footer Buttons -->
+<div class="flex justify-end gap-3 px-6 pb-6">
+  <button
+    mat-button
+    [disabled]="productForm.pristine"
+    (click)="onDiscard()"
+  >
+    Discard
+  </button>
+  <button
+    mat-stroked-button
+    (click)="onCancel()"
+  >
+    Cancel
+  </button>
+  <button
+    mat-flat-button
+    color="primary"
+    [disabled]="isSaving()"
+    (click)="onSave()"
+  >
+    @if (isEditMode()) {
+      Save
+    } @else {
+      Add product
+    }
+  </button>
+</div>

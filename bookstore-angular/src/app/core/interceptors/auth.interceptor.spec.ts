@@ -7,6 +7,7 @@ import {
 } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthInterceptor } from './auth.interceptor';
 import { AuthService } from '../services/auth.service';
 
@@ -15,6 +16,7 @@ describe('AuthInterceptor', () => {
   let httpTesting: HttpTestingController;
   let authService: AuthService;
   let router: Router;
+  let dialog: MatDialog;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -32,6 +34,7 @@ describe('AuthInterceptor', () => {
     httpTesting = TestBed.inject(HttpTestingController);
     authService = TestBed.inject(AuthService);
     router = TestBed.inject(Router);
+    dialog = TestBed.inject(MatDialog);
   });
 
   afterEach(() => {
@@ -69,6 +72,21 @@ describe('AuthInterceptor', () => {
 
     expect(clearAuthSpy).toHaveBeenCalled();
     expect(navigateSpy).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('should close all dialogs on 401 redirect', () => {
+    const closeAllSpy = jest.spyOn(dialog, 'closeAll');
+
+    http.get('/api/v1/products').subscribe({
+      error: () => {
+        /* expected */
+      },
+    });
+
+    const req = httpTesting.expectOne('/api/v1/products');
+    req.flush({ error: 'Not authenticated' }, { status: 401, statusText: 'Unauthorized' });
+
+    expect(closeAllSpy).toHaveBeenCalled();
   });
 
   it('should not redirect on 401 for auth login endpoint', () => {

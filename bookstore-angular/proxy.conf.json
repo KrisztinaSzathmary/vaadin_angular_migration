@@ -2,6 +2,9 @@
   "/api/v1": {
     "target": "http://localhost:8080/bookstore-starter-flow-ui-1.1-SNAPSHOT",
     "secure": false,
-    "changeOrigin": true
+    "changeOrigin": true,
+    "cookiePathRewrite": {
+      "/bookstore-starter-flow-ui-1.1-SNAPSHOT": "/"
+    }
   }
 }
