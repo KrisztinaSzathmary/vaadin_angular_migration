@@ -8,6 +8,9 @@ export class InventoryPage {
   readonly newProductButton: Locator;
   readonly loadingText: Locator;
   readonly table: Locator;
+  readonly availableStatus: Locator;
+  readonly comingStatus: Locator;
+  readonly discontinuedStatus: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -17,6 +20,9 @@ export class InventoryPage {
     this.newProductButton = page.getByRole('button', { name: 'New product' });
     this.loadingText = page.getByText('Loading products...');
     this.table = page.locator('table');
+    this.availableStatus = page.getByText(/\d+ Available/);
+    this.comingStatus = page.getByText(/\d+ Coming/);
+    this.discontinuedStatus = page.getByText(/\d+ Discontinued/);
   }
 
   async goto(): Promise<void> {
@@ -46,5 +52,22 @@ export class InventoryPage {
 
   async clickProductRow(name: string): Promise<void> {
     await this.getRowByProductName(name).click();
+  }
+
+  async clickSortHeader(column: string): Promise<void> {
+    await this.page.locator(`th.mat-column-${column} .mat-sort-header-container`).click();
+  }
+
+  async getColumnValues(column: string): Promise<string[]> {
+    const cells = this.page.locator(`td.mat-column-${column}`);
+    return cells.allTextContents();
+  }
+
+  async fillSearch(text: string): Promise<void> {
+    await this.searchInput.fill(text);
+  }
+
+  async clearSearch(): Promise<void> {
+    await this.searchInput.clear();
   }
 }

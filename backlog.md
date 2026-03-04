@@ -248,6 +248,22 @@
 
 ---
 
+### Unteraufgabe 12a – Playwright E2E-Tests für alle User-Interaktionen
+
+**Status:** Abgeschlossen
+**Ziel:** Umfassende E2E-Tests für alle bisherigen User-Interaktionen (Login, Logout, Navigation, Route Guards, Produktliste mit Sortierung/Filter).
+**Deliverables:**
+
+- 3 neue Page Objects: `sidebar.page.ts`, `about.page.ts`, `not-found.page.ts`
+- Erweiterung `inventory.page.ts` (Status-Badges, Sort, Filter)
+- `auth.spec.ts` – 3 Tests (Login valid/invalid, Logout)
+- `route-guards.spec.ts` – 3 Tests (Auth-Guard, Admin-Guard, 404)
+- `navigation.spec.ts` – 5 Tests (Sidebar-Links, Admin-Sichtbarkeit, Navigation, aktiver Link)
+- `inventory.spec.ts` – 7 Tests (Tabelle, Produktanzahl, Status-Indikatoren, Sortierung, Filter, Non-Admin)
+- Gesamt: 30 E2E-Tests (12 bestehende + 18 neue)
+
+---
+
 ### Iteration 13 – Produkt löschen
 
 **Status:** Offen

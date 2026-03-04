@@ -2,6 +2,37 @@
 
 ---
 
+## Unteraufgabe 12a – Playwright E2E-Tests für alle User-Interaktionen
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-04
+
+### Umgesetzte Änderungen
+
+- `e2e/pages/sidebar.page.ts` – Neues Page Object für Sidebar-Navigation: Locators für `logo`, `inventoryLink`, `aboutLink`, `adminLink`, `logoutButton`; Methoden `clickInventory()`, `clickAbout()`, `clickAdmin()`, `clickLogout()`
+- `e2e/pages/about.page.ts` – Neues Page Object für About-Seite: `heading` Locator, `goto()` Methode
+- `e2e/pages/not-found.page.ts` – Neues Page Object für 404-Seite: `message` Locator
+- `e2e/pages/inventory.page.ts` – Erweitert um `availableStatus`, `comingStatus`, `discontinuedStatus` Locators; neue Methoden `clickSortHeader(column)`, `getColumnValues(column)`, `fillSearch(text)`, `clearSearch()`
+- `e2e/auth.spec.ts` – 3 Tests: Login mit gültigen/ungültigen Credentials, Logout-Redirect
+- `e2e/route-guards.spec.ts` – 3 Tests: Unauthentifizierter Zugriff → Login-Redirect, Non-Admin → Inventory-Redirect (via `pushState`/`popstate`), unbekannte Route → 404-Meldung
+- `e2e/navigation.spec.ts` – 5 Tests: Sidebar-Links sichtbar, Admin-Link für Admin/Non-Admin, Link-Navigation, aktive Link-Hervorhebung (`bg-indigo-50`)
+- `e2e/inventory.spec.ts` – 7 Tests: Produkte laden, Produktanzahl-Text, Status-Indikatoren, Sortierung nach Preis (asc/desc), Suchfilter filtert/löschen, Non-Admin New-Product disabled
+
+### Entscheidungen
+
+- **`pushState` + `popstate` statt `page.goto` für Admin-Guard-Test** – AuthService speichert User-State nur in-memory (Signal), kein APP_INITIALIZER für Session-Restore. `page.goto('/admin')` löst Full-Page-Reload aus, Angular verliert Auth-State → authGuard greift statt adminGuard. Client-seitige Navigation via `pushState`/`popstate` bewahrt den Angular-Router-Kontext
+- **`page.waitForTimeout(500)` nach Filter-Input** – Debounce (300ms) + DOM-Update brauchen Zeit; kein besserer Locator-basierter Wait möglich bei Filter-Änderungen
+
+### Verifikation
+
+- `npx playwright test` → 30 Tests grün (12 bestehende + 18 neue)
+
+### Nächste Iteration
+
+- Iteration 13 – siehe `backlog.md`
+
+---
+
 ## Iteration 12 – Produkt-Formular (Erstellen und Bearbeiten)
 
 **Status:** Abgeschlossen
