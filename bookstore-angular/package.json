@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "e2e": "playwright test"
   },
   "prettier": {
     "printWidth": 100,
@@ -44,6 +45,7 @@
     "@angular/cli": "^20.3.18",
     "@angular/compiler-cli": "^20.3.0",
     "@angular/platform-browser-dynamic": "^20.3.17",
+    "@playwright/test": "^1.58.2",
     "@types/jest": "^30.0.0",
     "angular-eslint": "21.0.1",
     "eslint": "^9.39.1",

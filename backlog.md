@@ -216,6 +216,12 @@
 - Client-seitige Filterung (case-insensitive Suche in Produktname, Verfügbarkeit, Kategorienamen)
 - Filter-Eingabe mit Debounce (300ms)
 - "New Product"-Button rechts neben dem Suchfeld (deaktiviert für Nicht-Admins)
+- **Unteraufgabe 11a – Playwright E2E-Konfiguration:**
+  - Playwright installieren und `playwright.config.ts` einrichten
+  - `webServer`-Konfiguration für Angular Dev-Server
+  - Page Object Pattern-Grundstruktur (`e2e/pages/`)
+  - Minimaler Smoke-Test (Login-Seite lädt) zur Verifikation der Konfiguration
+  - Manuelle Prüfung: `npx playwright test` läuft erfolgreich
 
 ---
 
