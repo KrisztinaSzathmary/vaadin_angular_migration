@@ -129,30 +129,42 @@
 </div>
 
 <!-- Footer Buttons -->
-<div class="flex justify-end gap-3 px-6 pb-6">
-  <button
-    mat-button
-    [disabled]="productForm.pristine"
-    (click)="onDiscard()"
-  >
-    Discard
-  </button>
-  <button
-    mat-stroked-button
-    (click)="onCancel()"
-  >
-    Cancel
-  </button>
-  <button
-    mat-flat-button
-    color="primary"
-    [disabled]="isSaving()"
-    (click)="onSave()"
-  >
-    @if (isEditMode()) {
-      Save
-    } @else {
-      Add product
-    }
-  </button>
+<div class="flex items-center px-6 pb-6">
+  @if (isEditMode()) {
+    <button
+      mat-flat-button
+      color="warn"
+      [disabled]="isDeleting()"
+      (click)="onDelete()"
+    >
+      Delete
+    </button>
+  }
+  <div class="ml-auto flex gap-3">
+    <button
+      mat-button
+      [disabled]="productForm.pristine"
+      (click)="onDiscard()"
+    >
+      Discard
+    </button>
+    <button
+      mat-stroked-button
+      (click)="onCancel()"
+    >
+      Cancel
+    </button>
+    <button
+      mat-flat-button
+      color="primary"
+      [disabled]="isSaving()"
+      (click)="onSave()"
+    >
+      @if (isEditMode()) {
+        Save
+      } @else {
+        Add product
+      }
+    </button>
+  </div>
 </div>

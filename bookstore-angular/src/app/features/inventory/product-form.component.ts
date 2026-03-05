@@ -6,16 +6,30 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { NgClass } from '@angular/common';
 import { ProductService } from '../../core/services/product.service';
 import { NotificationService } from '../../core/services/notification.service';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { Product } from '../../models/product.model';
 import { Category } from '../../models/category.model';
 import { Availability } from '../../models/availability.enum';
+
+export interface ProductDeletedResult {
+  deleted: true;
+  productName: string;
+}
 
 export interface ProductFormData {
   product: Product | null;
@@ -54,11 +68,13 @@ export class ProductFormComponent {
   private readonly fb = inject(FormBuilder);
   private readonly productService = inject(ProductService);
   private readonly notificationService = inject(NotificationService);
+  private readonly dialog = inject(MatDialog);
   private readonly dialogRef = inject(MatDialogRef<ProductFormComponent>);
   private readonly data: ProductFormData = inject(MAT_DIALOG_DATA);
 
   readonly isEditMode = computed(() => this.data.product !== null);
   readonly isSaving = signal(false);
+  readonly isDeleting = signal(false);
   readonly categories = this.data.categories;
   readonly availabilities = [
     Availability.AVAILABLE,
@@ -116,6 +132,46 @@ export class ProductFormComponent {
       error: (err: { error?: { error?: string } }) => {
         this.isSaving.set(false);
         const message = err.error?.error ?? 'Failed to save product';
+        this.notificationService.showError(message);
+      },
+    });
+  }
+
+  onDelete(): void {
+    const productName = this.data.product?.productName ?? '';
+    const dialogData: ConfirmDialogData = {
+      message: `'${productName}' will be deleted.`,
+    };
+
+    this.dialog
+      .open(ConfirmDialogComponent, { data: dialogData })
+      .afterClosed()
+      .subscribe((confirmed?: boolean) => {
+        if (confirmed) {
+          this.executeDelete();
+        }
+      });
+  }
+
+  private executeDelete(): void {
+    const productId = this.data.product?.id;
+    if (productId === undefined) {
+      return;
+    }
+
+    this.isDeleting.set(true);
+    this.productService.delete(productId).subscribe({
+      next: () => {
+        this.isDeleting.set(false);
+        const result: ProductDeletedResult = {
+          deleted: true,
+          productName: this.data.product?.productName ?? '',
+        };
+        this.dialogRef.close(result);
+      },
+      error: (err: { error?: { error?: string } }) => {
+        this.isDeleting.set(false);
+        const message = err.error?.error ?? 'Failed to delete product';
         this.notificationService.showError(message);
       },
     });

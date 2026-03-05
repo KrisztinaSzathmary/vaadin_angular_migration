@@ -2,6 +2,47 @@
 
 ---
 
+## Iteration 13 – Produkt löschen
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-05
+
+### Umgesetzte Änderungen
+
+- `src/app/shared/components/confirm-dialog/confirm-dialog.component.ts` – Wiederverwendbarer Bestätigungsdialog: `ConfirmDialogData`-Interface mit `message`, `onConfirm()` schließt mit `true`, `onCancel()` schließt ohne Result. Inline-Template mit `mat-dialog-title`, `mat-dialog-content`, `mat-dialog-actions`
+- `src/app/shared/components/confirm-dialog/confirm-dialog.component.spec.ts` – 6 Unit-Tests (Creation, Nachricht anzeigen, Titel, Confirm-Result, Cancel-Result, Button-Rendering)
+- `src/app/features/inventory/product-form.component.ts` – Erweitert um `ProductDeletedResult`-Interface (`{ deleted: true, productName: string }`), `isDeleting` Signal, `onDelete()` Methode (öffnet ConfirmDialog mit `"'{Name}' will be deleted."`), `executeDelete()` private Methode (ruft `ProductService.delete()`, schließt Dialog mit `ProductDeletedResult`)
+- `src/app/features/inventory/product-form.component.html` – Footer umstrukturiert: Delete-Button links (nur `isEditMode()`), restliche Buttons rechts via `ml-auto`. Delete-Button mit `color="warn"`, disabled bei `isDeleting()`
+- `src/app/features/inventory/product-form.component.spec.ts` – 8 neue Tests: Delete-Button nicht in Create-Modus, Delete-Button in Edit-Modus, Confirm-Dialog öffnet, kein Delete bei Cancel, ProductService.delete() bei Confirm, Dialog schließt mit DeletedResult, isDeleting-State, Fehler-Notification bei Delete-Fehler
+- `src/app/features/inventory/product-list.component.ts` – `openProductDialog` erweitert: Ergebnis-Typ `Product | ProductDeletedResult`, `'deleted' in result` Prüfung, `"'{Name}' removed"` Benachrichtigung bei Löschung
+- `src/app/features/inventory/product-list.component.spec.ts` – 3 neue Tests: Refresh nach Delete-Result, Delete-Notification-Text, Update-Notification bei Edit
+- `e2e/pages/product-form.page.ts` – Erweitert um `deleteButton`, `confirmDialog`, `confirmDialogConfirmButton`, `confirmDialogCancelButton` Locators; neue Methoden `clickDelete()`, `confirmDelete()`, `cancelDelete()`
+- `e2e/product-form.spec.ts` – 4 neue E2E-Tests: Delete-Button nur in Edit-Modus sichtbar, Cancel im Bestätigungsdialog behält Produkt, Confirm-Delete entfernt Produkt + zeigt Notification, Non-Admin sieht keinen Delete-Button
+
+### Entscheidungen
+
+- **`ProductDeletedResult`-Interface statt String-Sentinel** – Typsicherer Ansatz mit `{ deleted: true, productName: string }`, Unterscheidung von `Product`-Ergebnis via `'deleted' in result`
+- **`ConfirmDialogComponent` in `shared/components/`** – Wiederverwendbar für zukünftige Lösch-Bestätigungen (z.B. Kategorien in Iteration 14)
+- **`component['dialog']` in Tests statt `TestBed.inject(MatDialog)`** – Bracket-Notation für private Property sichert korrekte Spy-Bindung an die Component-Instanz
+- **Footer-Layout mit `ml-auto`** – Delete-Button linksbündig, Discard/Cancel/Save rechtsbündig; klare visuelle Trennung destruktiver und konstruktiver Aktionen
+
+### Verifikation
+
+- `ng test` → 163 Unit-Tests grün (146 bestehende + 6 ConfirmDialog + 8 ProductForm-Delete + 3 ProductList-Delete, 16 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (550.52 kB initial, 4 Lazy Chunks inkl. product-list 180.18 kB)
+- `npx playwright test` → 34 E2E-Tests grün (30 bestehende + 4 neue Delete-Tests)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 14 – siehe `backlog.md`
+
+---
+
 ## Unteraufgabe 12a – Playwright E2E-Tests für alle User-Interaktionen
 
 **Status:** Abgeschlossen

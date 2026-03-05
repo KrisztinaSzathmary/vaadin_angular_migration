@@ -11,7 +11,11 @@ import { ProductService } from '../../core/services/product.service';
 import { CategoryService } from '../../core/services/category.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { ProductFormComponent, ProductFormData } from './product-form.component';
+import {
+  ProductFormComponent,
+  ProductFormData,
+  ProductDeletedResult,
+} from './product-form.component';
 import { Product } from '../../models/product.model';
 import { Category } from '../../models/category.model';
 import { Availability } from '../../models/availability.enum';
@@ -118,11 +122,15 @@ export class ProductListComponent implements OnInit {
       width: '520px',
     });
 
-    dialogRef.afterClosed().subscribe((result?: Product) => {
+    dialogRef.afterClosed().subscribe((result?: Product | ProductDeletedResult) => {
       if (result) {
         this.refreshProducts();
-        const message = product ? 'Product updated' : 'Product created';
-        this.notificationService.showSuccess(message);
+        if ('deleted' in result) {
+          this.notificationService.showSuccess(`'${result.productName}' removed`);
+        } else {
+          const message = product ? 'Product updated' : 'Product created';
+          this.notificationService.showSuccess(message);
+        }
       }
     });
   }

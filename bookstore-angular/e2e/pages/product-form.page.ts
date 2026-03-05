@@ -13,6 +13,10 @@ export class ProductFormPage {
   readonly discardButton: Locator;
   readonly cancelButton: Locator;
   readonly closeButton: Locator;
+  readonly deleteButton: Locator;
+  readonly confirmDialog: Locator;
+  readonly confirmDialogConfirmButton: Locator;
+  readonly confirmDialogCancelButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -26,7 +30,13 @@ export class ProductFormPage {
     this.saveButton = this.dialog.getByRole('button', { name: 'Save' });
     this.discardButton = this.dialog.getByRole('button', { name: 'Discard' });
     this.cancelButton = this.dialog.getByRole('button', { name: 'Cancel' });
-    this.closeButton = this.dialog.locator('button', { has: page.locator('mat-icon:text("close")') });
+    this.closeButton = this.dialog.locator('button', {
+      has: page.locator('mat-icon:text("close")'),
+    });
+    this.deleteButton = this.dialog.getByRole('button', { name: 'Delete' });
+    this.confirmDialog = page.locator('app-confirm-dialog');
+    this.confirmDialogConfirmButton = this.confirmDialog.getByRole('button', { name: 'Confirm' });
+    this.confirmDialogCancelButton = this.confirmDialog.getByRole('button', { name: 'Cancel' });
   }
 
   async waitForOpen(): Promise<void> {
@@ -97,5 +107,19 @@ export class ProductFormPage {
 
   async expectDiscardEnabled(): Promise<void> {
     await expect(this.discardButton).toBeEnabled();
+  }
+
+  async clickDelete(): Promise<void> {
+    await this.deleteButton.click();
+  }
+
+  async confirmDelete(): Promise<void> {
+    await this.confirmDialog.waitFor({ state: 'visible' });
+    await this.confirmDialogConfirmButton.click();
+  }
+
+  async cancelDelete(): Promise<void> {
+    await this.confirmDialog.waitFor({ state: 'visible' });
+    await this.confirmDialogCancelButton.click();
   }
 }

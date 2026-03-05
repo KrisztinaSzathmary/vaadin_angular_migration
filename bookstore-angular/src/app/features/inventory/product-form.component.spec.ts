@@ -3,11 +3,14 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { of } from 'rxjs';
 import {
   ProductFormComponent,
   ProductFormData,
+  ProductDeletedResult,
   availabilityStockValidator,
 } from './product-form.component';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { Product } from '../../models/product.model';
 import { Category } from '../../models/category.model';
 import { Availability } from '../../models/availability.enum';
@@ -403,5 +406,115 @@ describe('ProductFormComponent', () => {
     expect(btn).toBeTruthy();
     btn.click();
     expect(dialogRefSpy.close).toHaveBeenCalledWith();
+  });
+
+  // --- Delete ---
+
+  it('should not show Delete button in create mode', () => {
+    setup(createData(null));
+    const buttons = fixture.nativeElement.querySelectorAll('button');
+    const deleteBtn = Array.from(buttons).find(
+      (b) => (b as HTMLElement).textContent?.trim() === 'Delete',
+    );
+    expect(deleteBtn).toBeFalsy();
+  });
+
+  it('should show Delete button in edit mode', () => {
+    setup(createData(mockProduct));
+    const buttons = fixture.nativeElement.querySelectorAll('button');
+    const deleteBtn = Array.from(buttons).find(
+      (b) => (b as HTMLElement).textContent?.trim() === 'Delete',
+    );
+    expect(deleteBtn).toBeTruthy();
+  });
+
+  it('should open confirm dialog on delete', () => {
+    setup(createData(mockProduct));
+    const confirmDialogRef = {
+      afterClosed: () => of(undefined),
+    } as unknown as MatDialogRef<ConfirmDialogComponent>;
+    // Access component's injected MatDialog via bracket notation
+    const openSpy = jest.spyOn(component['dialog'], 'open').mockReturnValue(confirmDialogRef);
+
+    component.onDelete();
+
+    expect(openSpy).toHaveBeenCalledWith(ConfirmDialogComponent, {
+      data: { message: "'Existing Book' will be deleted." },
+    });
+  });
+
+  it('should not delete when confirm dialog is cancelled', () => {
+    setup(createData(mockProduct));
+    const confirmDialogRef = {
+      afterClosed: () => of(undefined),
+    } as unknown as MatDialogRef<ConfirmDialogComponent>;
+    jest.spyOn(component['dialog'], 'open').mockReturnValue(confirmDialogRef);
+
+    component.onDelete();
+
+    httpTesting.expectNone('/api/v1/products/42');
+  });
+
+  it('should call ProductService.delete() when confirmed', () => {
+    setup(createData(mockProduct));
+    const confirmDialogRef = {
+      afterClosed: () => of(true),
+    } as unknown as MatDialogRef<ConfirmDialogComponent>;
+    jest.spyOn(component['dialog'], 'open').mockReturnValue(confirmDialogRef);
+
+    component.onDelete();
+
+    const req = httpTesting.expectOne('/api/v1/products/42');
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null, { status: 204, statusText: 'No Content' });
+  });
+
+  it('should close dialog with deleted result on successful delete', () => {
+    setup(createData(mockProduct));
+    const confirmDialogRef = {
+      afterClosed: () => of(true),
+    } as unknown as MatDialogRef<ConfirmDialogComponent>;
+    jest.spyOn(component['dialog'], 'open').mockReturnValue(confirmDialogRef);
+
+    component.onDelete();
+    httpTesting
+      .expectOne('/api/v1/products/42')
+      .flush(null, { status: 204, statusText: 'No Content' });
+
+    const expectedResult: ProductDeletedResult = {
+      deleted: true,
+      productName: 'Existing Book',
+    };
+    expect(dialogRefSpy.close).toHaveBeenCalledWith(expectedResult);
+  });
+
+  it('should set isDeleting during delete API call', () => {
+    setup(createData(mockProduct));
+    const confirmDialogRef = {
+      afterClosed: () => of(true),
+    } as unknown as MatDialogRef<ConfirmDialogComponent>;
+    jest.spyOn(component['dialog'], 'open').mockReturnValue(confirmDialogRef);
+
+    component.onDelete();
+    expect(component.isDeleting()).toBe(true);
+
+    httpTesting
+      .expectOne('/api/v1/products/42')
+      .flush(null, { status: 204, statusText: 'No Content' });
+    expect(component.isDeleting()).toBe(false);
+  });
+
+  it('should show error notification on delete failure', () => {
+    setup(createData(mockProduct));
+    const confirmDialogRef = {
+      afterClosed: () => of(true),
+    } as unknown as MatDialogRef<ConfirmDialogComponent>;
+    jest.spyOn(component['dialog'], 'open').mockReturnValue(confirmDialogRef);
+
+    component.onDelete();
+    httpTesting.expectOne('/api/v1/products/42').error(new ProgressEvent('error'));
+
+    expect(component.isDeleting()).toBe(false);
+    expect(notificationSpy.showError).toHaveBeenCalledWith('Failed to delete product');
   });
 });

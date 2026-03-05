@@ -6,7 +6,7 @@ import { signal } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { ProductListComponent } from './product-list.component';
-import { ProductFormComponent } from './product-form.component';
+import { ProductFormComponent, ProductDeletedResult } from './product-form.component';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { Product } from '../../models/product.model';
@@ -441,5 +441,58 @@ describe('ProductListComponent', () => {
     httpTesting.expectOne('/api/v1/products').flush(mockProducts);
 
     expect(notificationSpy.showSuccess).toHaveBeenCalledWith('Product created');
+  });
+
+  // --- Delete Result Tests ---
+
+  it('should refresh products after dialog close with delete result', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const deleteResult: ProductDeletedResult = { deleted: true, productName: 'Test Product A' };
+    const dialogRefMock = {
+      afterClosed: () => of(deleteResult),
+    } as unknown as MatDialogRef<ProductFormComponent>;
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    component.onRowClick(mockProducts[0]);
+
+    const req = httpTesting.expectOne('/api/v1/products');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockProducts.slice(1));
+  });
+
+  it('should show delete notification after successful delete', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const deleteResult: ProductDeletedResult = { deleted: true, productName: 'Test Product A' };
+    const dialogRefMock = {
+      afterClosed: () => of(deleteResult),
+    } as unknown as MatDialogRef<ProductFormComponent>;
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    component.onRowClick(mockProducts[0]);
+
+    httpTesting.expectOne('/api/v1/products').flush(mockProducts.slice(1));
+
+    expect(notificationSpy.showSuccess).toHaveBeenCalledWith("'Test Product A' removed");
+  });
+
+  it('should show update notification for edit result', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const updatedProduct = { ...mockProducts[0], productName: 'Updated Name' };
+    const dialogRefMock = {
+      afterClosed: () => of(updatedProduct),
+    } as unknown as MatDialogRef<ProductFormComponent>;
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    component.onRowClick(mockProducts[0]);
+
+    httpTesting.expectOne('/api/v1/products').flush(mockProducts);
+
+    expect(notificationSpy.showSuccess).toHaveBeenCalledWith('Product updated');
   });
 });

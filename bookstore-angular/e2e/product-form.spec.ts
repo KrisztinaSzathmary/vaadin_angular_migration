@@ -187,4 +187,93 @@ test.describe('Product Form (Iteration 12)', () => {
     const snackbar = page.locator('mat-snack-bar-container');
     await expect(snackbar).toContainText('Product created');
   });
+
+  // --- Delete Tests (Iteration 13) ---
+
+  test('Delete button is visible only in edit mode', async () => {
+    // Create mode: no Delete button
+    await inventoryPage.clickNewProduct();
+    await productForm.waitForOpen();
+    await expect(productForm.deleteButton).not.toBeVisible();
+    await productForm.clickCancel();
+    await productForm.waitForClosed();
+
+    // Edit mode: Delete button visible
+    const firstProductName = (await inventoryPage.getProductNames())[0];
+    await inventoryPage.clickProductRow(firstProductName);
+    await productForm.waitForOpen();
+    await expect(productForm.deleteButton).toBeVisible();
+    await productForm.clickCancel();
+  });
+
+  test('Cancel in confirm dialog keeps product', async () => {
+    const firstProductName = (await inventoryPage.getProductNames())[0];
+
+    await inventoryPage.clickProductRow(firstProductName);
+    await productForm.waitForOpen();
+
+    await productForm.clickDelete();
+
+    // Confirm dialog should show product name
+    await expect(productForm.confirmDialog).toContainText(`'${firstProductName.trim()}' will be deleted.`);
+
+    // Cancel the deletion
+    await productForm.cancelDelete();
+
+    // Product form should still be open
+    await expect(productForm.dialog).toBeVisible();
+    await productForm.clickCancel();
+    await productForm.waitForClosed();
+
+    // Product should still be in table
+    const row = inventoryPage.getRowByProductName(firstProductName);
+    await expect(row).toBeVisible();
+  });
+
+  test('Confirm delete removes product and shows notification', async ({ page }) => {
+    // Create a product to delete
+    const deleteName = `Delete Me ${Date.now()}`;
+    await inventoryPage.clickNewProduct();
+    await productForm.waitForOpen();
+
+    await productForm.fillProductName(deleteName);
+    await productForm.fillPrice('1');
+    await productForm.fillStockCount('1');
+    await productForm.selectAvailability('Available');
+
+    await productForm.clickAddProduct();
+    await productForm.waitForClosed();
+
+    // Verify it exists
+    const row = inventoryPage.getRowByProductName(deleteName);
+    await expect(row).toBeVisible();
+
+    // Open product and delete
+    await inventoryPage.clickProductRow(deleteName);
+    await productForm.waitForOpen();
+
+    await productForm.clickDelete();
+    await productForm.confirmDelete();
+    await productForm.waitForClosed();
+
+    // Product should be gone from table
+    await expect(row).not.toBeVisible();
+
+    // Notification should appear
+    const snackbar = page.locator('mat-snack-bar-container');
+    await expect(snackbar).toContainText(`'${deleteName}' removed`);
+  });
+
+  test('non-admin user does not see Delete button in edit mode', async ({ page }) => {
+    // Re-login as regular user
+    await page.goto('/login');
+    await loginPage.login('user1', 'user1');
+    await inventoryPage.waitForTableLoaded();
+
+    // Non-admin cannot open dialog via row click (already tested),
+    // so Delete button is implicitly hidden
+    const firstProductName = (await inventoryPage.getProductNames())[0];
+    await inventoryPage.clickProductRow(firstProductName);
+    await expect(productForm.dialog).not.toBeVisible();
+  });
 });
