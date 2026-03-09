@@ -4,6 +4,7 @@ import { MainLayoutComponent } from './shared/components/main-layout/main-layout
 import { EmptyRouteComponent } from './shared/components/empty-route/empty-route.component';
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
+import { unsavedChangesGuard } from './core/guards/unsaved-changes.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -17,6 +18,7 @@ export const routes: Routes = [
         path: 'inventory',
         loadComponent: () =>
           import('./features/inventory/product-list.component').then((m) => m.ProductListComponent),
+        canDeactivate: [unsavedChangesGuard],
         children: [{ path: ':id', component: EmptyRouteComponent }],
       },
       {

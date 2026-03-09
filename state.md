@@ -2,6 +2,59 @@
 
 ---
 
+## Iteration 17 – Ungespeicherte Änderungen (Dirty State)
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-09
+
+### Umgesetzte Änderungen
+
+- `src/app/core/guards/unsaved-changes.guard.ts` – Neuer Guard: `HasUnsavedChanges` Interface (`hasUnsavedChanges(): boolean`, `confirmDiscard(): Observable<boolean>`) + funktionaler `CanDeactivateFn<HasUnsavedChanges>` Guard
+- `src/app/core/guards/unsaved-changes.guard.spec.ts` – 4 Unit-Tests (erlaubt ohne Änderungen, ruft `confirmDiscard()` bei Änderungen, blockiert bei Cancel, erlaubt bei Confirm)
+- `src/app/features/inventory/product-form.component.ts` – Erweitert um:
+  - `canClose(): Observable<boolean>` – öffnet ConfirmDialog mit "You have unsaved changes. Discard them?" bei dirty Form, gibt `of(true)` bei pristine zurück
+  - `onCancel()` modifiziert: delegiert an `canClose()`, schließt Dialog nur bei Confirm/pristine
+  - `onDiscard()` modifiziert: ConfirmDialog mit "Discard all changes?" vor Reset; bei pristine Form keine Aktion
+- `src/app/features/inventory/product-form.component.spec.ts` – 11 neue Tests (ersetzen 4 alte): `canClose()` pristine/dirty/confirm/cancel, `onCancel()` pristine/dirty-confirm/dirty-cancel, `onDiscard()` pristine/dirty-confirm/dirty-cancel/dialog-öffnet
+- `src/app/features/inventory/product-list.component.ts` – `HasUnsavedChanges` Interface implementiert:
+  - Neue Felder: `currentDialogRef`, `currentDialogProduct`, `pendingProductId`, `suppressAfterClosedNavigation`
+  - `hasUnsavedChanges()` prüft `currentDialogRef?.componentInstance?.productForm?.dirty`
+  - `confirmDiscard()` delegiert an `canClose()` bei dirty, `forceCloseDialog()` bei pristine
+  - `handleRouteParam()` erweitert: Produktwechsel bei dirty → `canClose()` → Confirm: `pendingProductId` + `forceCloseDialog()`, Cancel: URL-Restore via `replaceUrl: true`
+  - `openProductDialogFromRoute()`: `disableClose: true`, Escape-Key via `keydownEvents()` → `onCancel()`, `afterClosed` prüft `pendingProductId` und `suppressAfterClosedNavigation`
+  - `forceCloseDialog()` Hilfsmethode
+- `src/app/features/inventory/product-list.component.spec.ts` – 10 neue Tests: `hasUnsavedChanges()` (ohne Dialog/pristine/dirty), `confirmDiscard()` (pristine/dirty-confirm/dirty-cancel), `disableClose: true` Config, Produktwechsel (clean/dirty-confirm/dirty-cancel)
+- `src/app/app.routes.ts` – `canDeactivate: [unsavedChangesGuard]` auf Inventory-Route
+- `e2e/pages/product-form.page.ts` – Neue Methoden `confirmUnsavedChanges()` und `cancelUnsavedChanges()`
+- `e2e/unsaved-changes.spec.ts` – 15 neue E2E-Tests: Cancel/X ohne Änderungen (kein Confirm), Cancel mit Änderungen (Confirm angezeigt, Confirm schließt, Cancel behält), X mit Änderungen, Discard mit Änderungen (Confirm "Discard all changes?", Confirm resettet, Cancel behält), Sidebar-Navigation mit Änderungen (Confirm navigiert, Cancel bleibt), Produktwechsel mit Änderungen (Confirm öffnet neues, Cancel behält altes), Escape mit/ohne Änderungen
+- `e2e/product-form.spec.ts` – 4 bestehende Tests aktualisiert: "Cancel closes dialog", "Discard resets form", "category selection toggles", "form validation" – jeweils ConfirmDialog-Handling hinzugefügt
+
+### Entscheidungen
+
+- **`disableClose: true` auf MatDialog** – Verhindert Backdrop-Klick und natives Escape-Schließen; Escape wird via `keydownEvents()` abgefangen und an `onCancel()` delegiert
+- **`suppressAfterClosedNavigation` Flag** – Wenn `CanDeactivate` Guard den Dialog force-closed, darf `afterClosed` nicht zu `/inventory` navigieren (würde Guard-Navigation zu `/about` etc. überschreiben)
+- **`pendingProductId` Pattern** – Bei Produktwechsel wird die neue Produkt-ID zwischengespeichert; nach `forceCloseDialog()` pickt `afterClosed` die pending ID auf und öffnet den neuen Dialog
+- **URL-Restore bei Cancel** – Bei Produktwechsel + Cancel wird die URL via `router.navigate(['/inventory', restoreParam], { replaceUrl: true })` zum aktuellen Produkt zurückgesetzt
+- **`page.evaluate` + `dispatchEvent` in E2E-Tests** – CDK Overlay-Backdrop blockiert Klicks auf Sidebar-Links und Tabellenzeilen; direkte DOM-API-Aufrufe umgehen Hit-Testing
+- **`Subject` für `afterClosed` in Unit-Tests** – `of(undefined)` feuert synchron und setzt `currentDialogRef = null` bevor Assertions greifen; `Subject` hält den Dialog "offen" bis explizit completed
+
+### Verifikation
+
+- `ng test` → 237 Unit-Tests grün (216 bestehende + 4 Guard + 11 ProductForm + 10 ProductList − 4 ersetzte alte Tests, 17 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS
+- `npx playwright test` → 70 E2E-Tests grün (55 bestehende + 15 neue Unsaved-Changes-Tests)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 18 – siehe `backlog.md`
+
+---
+
 ## Iteration 16 – URL-basierte Produktnavigation
 
 **Status:** Abgeschlossen

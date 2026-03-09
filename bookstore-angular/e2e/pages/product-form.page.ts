@@ -122,4 +122,14 @@ export class ProductFormPage {
     await this.confirmDialog.waitFor({ state: 'visible' });
     await this.confirmDialogCancelButton.click();
   }
+
+  async confirmUnsavedChanges(): Promise<void> {
+    await this.confirmDialog.waitFor({ state: 'visible' });
+    await this.confirmDialogConfirmButton.click();
+  }
+
+  async cancelUnsavedChanges(): Promise<void> {
+    await this.confirmDialog.waitFor({ state: 'visible' });
+    await this.confirmDialogCancelButton.click();
+  }
 }

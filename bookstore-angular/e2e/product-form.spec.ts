@@ -46,6 +46,9 @@ test.describe('Product Form (Iteration 12)', () => {
 
     await productForm.fillProductName('Should Not Be Saved');
     await productForm.clickCancel();
+
+    // Confirm dialog appears for unsaved changes
+    await productForm.confirmUnsavedChanges();
     await productForm.waitForClosed();
 
     // Product should NOT appear in table
@@ -63,8 +66,9 @@ test.describe('Product Form (Iteration 12)', () => {
     await productForm.fillProductName('Modified Name');
     await productForm.expectDiscardEnabled();
 
-    // Discard
+    // Discard – now shows confirm dialog
     await productForm.clickDiscard();
+    await productForm.confirmUnsavedChanges();
     await productForm.expectProductName(firstProductName.trim());
     await productForm.expectDiscardDisabled();
   });
@@ -127,7 +131,9 @@ test.describe('Product Form (Iteration 12)', () => {
     await chip.click();
     await expect(chip).toHaveAttribute('aria-selected', 'false');
 
+    // Form is dirty from toggles – cancel triggers confirm
     await productForm.clickCancel();
+    await productForm.confirmUnsavedChanges();
   });
 
   test('form validation prevents saving with empty name', async () => {
@@ -145,7 +151,9 @@ test.describe('Product Form (Iteration 12)', () => {
     // Validation error should show
     await expect(productForm.dialog.getByText('Product name is required.')).toBeVisible();
 
+    // Form is dirty – cancel triggers confirm
     await productForm.clickCancel();
+    await productForm.confirmUnsavedChanges();
   });
 
   test('close button (X) closes dialog', async () => {

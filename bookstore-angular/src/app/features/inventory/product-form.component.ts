@@ -22,6 +22,7 @@ import {
   ConfirmDialogComponent,
   ConfirmDialogData,
 } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { map, Observable, of } from 'rxjs';
 import { Product } from '../../models/product.model';
 import { Category } from '../../models/category.model';
 import { Availability } from '../../models/availability.enum';
@@ -177,13 +178,41 @@ export class ProductFormComponent {
     });
   }
 
+  canClose(): Observable<boolean> {
+    if (this.productForm.pristine) {
+      return of(true);
+    }
+    return this.dialog
+      .open(ConfirmDialogComponent, {
+        data: { message: 'You have unsaved changes. Discard them?' } as ConfirmDialogData,
+      })
+      .afterClosed()
+      .pipe(map((confirmed?: boolean) => confirmed === true));
+  }
+
   onDiscard(): void {
-    this.productForm.reset(this.initialValues);
-    this.productForm.markAsPristine();
+    if (this.productForm.pristine) {
+      return;
+    }
+    this.dialog
+      .open(ConfirmDialogComponent, {
+        data: { message: 'Discard all changes?' } as ConfirmDialogData,
+      })
+      .afterClosed()
+      .subscribe((confirmed?: boolean) => {
+        if (confirmed) {
+          this.productForm.reset(this.initialValues);
+          this.productForm.markAsPristine();
+        }
+      });
   }
 
   onCancel(): void {
-    this.dialogRef.close();
+    this.canClose().subscribe((canClose) => {
+      if (canClose) {
+        this.dialogRef.close();
+      }
+    });
   }
 
   toggleCategory(id: number): void {

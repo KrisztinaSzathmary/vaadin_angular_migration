@@ -6,6 +6,7 @@ import { signal } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { of, Subject } from 'rxjs';
+import { FormControl, FormGroup } from '@angular/forms';
 import { ProductListComponent } from './product-list.component';
 import { ProductFormComponent, ProductDeletedResult } from './product-form.component';
 import { AuthService } from '../../core/services/auth.service';
@@ -96,6 +97,43 @@ describe('ProductListComponent', () => {
   afterEach(() => {
     httpTesting.verify();
   });
+
+  function createMockDialogRef(
+    afterClosedValue: Product | ProductDeletedResult | undefined = undefined,
+    productForm?: FormGroup,
+  ): MatDialogRef<ProductFormComponent> {
+    const keydownSubject = new Subject<KeyboardEvent>();
+    return {
+      afterClosed: () => of(afterClosedValue),
+      close: jest.fn(),
+      keydownEvents: () => keydownSubject.asObservable(),
+      componentInstance: {
+        productForm: productForm ?? new FormGroup({ dummy: new FormControl('') }),
+        onCancel: jest.fn(),
+        canClose: jest.fn().mockReturnValue(of(true)),
+      },
+    } as unknown as MatDialogRef<ProductFormComponent>;
+  }
+
+  function createOpenDialogRef(productForm?: FormGroup): {
+    dialogRef: MatDialogRef<ProductFormComponent>;
+    afterClosedSubject: Subject<Product | ProductDeletedResult | undefined>;
+    keydownSubject: Subject<KeyboardEvent>;
+  } {
+    const afterClosedSubject = new Subject<Product | ProductDeletedResult | undefined>();
+    const keydownSubject = new Subject<KeyboardEvent>();
+    const dialogRef = {
+      afterClosed: () => afterClosedSubject.asObservable(),
+      close: jest.fn(),
+      keydownEvents: () => keydownSubject.asObservable(),
+      componentInstance: {
+        productForm: productForm ?? new FormGroup({ dummy: new FormControl('') }),
+        onCancel: jest.fn(),
+        canClose: jest.fn().mockReturnValue(of(true)),
+      },
+    } as unknown as MatDialogRef<ProductFormComponent>;
+    return { dialogRef, afterClosedSubject, keydownSubject };
+  }
 
   function flushInit(): void {
     httpTesting.expectOne('/api/v1/products').flush(mockProducts);
@@ -380,9 +418,7 @@ describe('ProductListComponent', () => {
     isAdminSignal.set(true);
     loadProducts();
 
-    const dialogRefMock = {
-      afterClosed: () => of(undefined),
-    } as unknown as MatDialogRef<ProductFormComponent>;
+    const dialogRefMock = createMockDialogRef();
     const openSpy = jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
 
     routerEventsSubject.next(new NavigationEnd(1, '/inventory/1', '/inventory/1'));
@@ -393,6 +429,7 @@ describe('ProductListComponent', () => {
     expect(openSpy).toHaveBeenCalledWith(ProductFormComponent, {
       data: { product: mockProducts[0], categories: mockCategories },
       width: '520px',
+      disableClose: true,
     });
   });
 
@@ -400,9 +437,7 @@ describe('ProductListComponent', () => {
     isAdminSignal.set(true);
     loadProducts();
 
-    const dialogRefMock = {
-      afterClosed: () => of(undefined),
-    } as unknown as MatDialogRef<ProductFormComponent>;
+    const dialogRefMock = createMockDialogRef();
     const openSpy = jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
 
     routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
@@ -410,6 +445,7 @@ describe('ProductListComponent', () => {
     expect(openSpy).toHaveBeenCalledWith(ProductFormComponent, {
       data: { product: null, categories: mockCategories },
       width: '520px',
+      disableClose: true,
     });
   });
 
@@ -417,9 +453,7 @@ describe('ProductListComponent', () => {
     isAdminSignal.set(true);
     loadProducts();
 
-    const dialogRefMock = {
-      afterClosed: () => of(undefined),
-    } as unknown as MatDialogRef<ProductFormComponent>;
+    const dialogRefMock = createMockDialogRef();
     jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
 
     routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
@@ -470,9 +504,7 @@ describe('ProductListComponent', () => {
     loadProducts();
     // Categories already loaded via flushInit
 
-    const dialogRefMock = {
-      afterClosed: () => of(undefined),
-    } as unknown as MatDialogRef<ProductFormComponent>;
+    const dialogRefMock = createMockDialogRef();
     jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
 
     routerEventsSubject.next(new NavigationEnd(1, '/inventory/1', '/inventory/1'));
@@ -490,9 +522,7 @@ describe('ProductListComponent', () => {
     httpTesting.expectOne('/api/v1/categories').flush([]);
     fixture.detectChanges();
 
-    const dialogRefMock = {
-      afterClosed: () => of(undefined),
-    } as unknown as MatDialogRef<ProductFormComponent>;
+    const dialogRefMock = createMockDialogRef();
     jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
 
     routerEventsSubject.next(new NavigationEnd(1, '/inventory/1', '/inventory/1'));
@@ -507,9 +537,7 @@ describe('ProductListComponent', () => {
     loadProducts();
 
     const savedProduct = { ...mockProducts[0], productName: 'Updated' };
-    const dialogRefMock = {
-      afterClosed: () => of(savedProduct),
-    } as unknown as MatDialogRef<ProductFormComponent>;
+    const dialogRefMock = createMockDialogRef(savedProduct);
     jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
 
     routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
@@ -527,9 +555,7 @@ describe('ProductListComponent', () => {
     loadProducts();
 
     const updatedProduct = { ...mockProducts[0], productName: 'Updated Name' };
-    const dialogRefMock = {
-      afterClosed: () => of(updatedProduct),
-    } as unknown as MatDialogRef<ProductFormComponent>;
+    const dialogRefMock = createMockDialogRef(updatedProduct);
     jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
 
     routerEventsSubject.next(new NavigationEnd(1, '/inventory/1', '/inventory/1'));
@@ -547,9 +573,7 @@ describe('ProductListComponent', () => {
     loadProducts();
 
     const deleteResult: ProductDeletedResult = { deleted: true, productName: 'Test Product A' };
-    const dialogRefMock = {
-      afterClosed: () => of(deleteResult),
-    } as unknown as MatDialogRef<ProductFormComponent>;
+    const dialogRefMock = createMockDialogRef(deleteResult);
     jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
 
     routerEventsSubject.next(new NavigationEnd(1, '/inventory/1', '/inventory/1'));
@@ -569,5 +593,196 @@ describe('ProductListComponent', () => {
     expect(component.extractIdFromUrl('/inventory/new')).toBe('new');
     expect(component.extractIdFromUrl('/inventory')).toBeNull();
     expect(component.extractIdFromUrl('/about')).toBeNull();
+  });
+
+  // --- HasUnsavedChanges Tests ---
+
+  it('should return false from hasUnsavedChanges when no dialog is open', () => {
+    loadProducts();
+    expect(component.hasUnsavedChanges()).toBe(false);
+  });
+
+  it('should return false from hasUnsavedChanges when dialog form is pristine', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const pristineForm = new FormGroup({ name: new FormControl('test') });
+    const { dialogRef } = createOpenDialogRef(pristineForm);
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRef);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
+
+    expect(component.hasUnsavedChanges()).toBe(false);
+  });
+
+  it('should return true from hasUnsavedChanges when dialog form is dirty', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const dirtyForm = new FormGroup({ name: new FormControl('test') });
+    dirtyForm.markAsDirty();
+    const { dialogRef } = createOpenDialogRef(dirtyForm);
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRef);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
+
+    expect(component.hasUnsavedChanges()).toBe(true);
+  });
+
+  it('should close dialog directly in confirmDiscard when form is pristine', (done) => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const pristineForm = new FormGroup({ name: new FormControl('test') });
+    const { dialogRef } = createOpenDialogRef(pristineForm);
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRef);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
+
+    component.confirmDiscard().subscribe((result) => {
+      expect(result).toBe(true);
+      expect(dialogRef.close).toHaveBeenCalled();
+      done();
+    });
+  });
+
+  it('should delegate to canClose in confirmDiscard when form is dirty', (done) => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const dirtyForm = new FormGroup({ name: new FormControl('test') });
+    dirtyForm.markAsDirty();
+    const { dialogRef } = createOpenDialogRef(dirtyForm);
+    (dialogRef.componentInstance.canClose as jest.Mock).mockReturnValue(of(true));
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRef);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
+
+    component.confirmDiscard().subscribe((result) => {
+      expect(result).toBe(true);
+      expect(dialogRef.componentInstance.canClose).toHaveBeenCalled();
+      expect(dialogRef.close).toHaveBeenCalled();
+      done();
+    });
+  });
+
+  it('should not close dialog in confirmDiscard when user cancels', (done) => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const dirtyForm = new FormGroup({ name: new FormControl('test') });
+    dirtyForm.markAsDirty();
+    const { dialogRef } = createOpenDialogRef(dirtyForm);
+    (dialogRef.componentInstance.canClose as jest.Mock).mockReturnValue(of(false));
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRef);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
+
+    component.confirmDiscard().subscribe((result) => {
+      expect(result).toBe(false);
+      expect(dialogRef.close).not.toHaveBeenCalled();
+      done();
+    });
+  });
+
+  it('should open dialog with disableClose: true', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const dialogRefMock = createMockDialogRef();
+    const openSpy = jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
+
+    expect(openSpy).toHaveBeenCalledWith(
+      ProductFormComponent,
+      expect.objectContaining({ disableClose: true }),
+    );
+  });
+
+  it('should close and reopen dialog on product switch with clean form', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    // Open first dialog (stays open)
+    const { dialogRef: firstDialogRef, afterClosedSubject } = createOpenDialogRef();
+
+    const openSpy = jest.spyOn(dialog, 'open').mockReturnValue(firstDialogRef);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
+    expect(openSpy).toHaveBeenCalledTimes(1);
+
+    // Prepare second dialog for when afterClosed fires
+    const secondDialogRef = createMockDialogRef();
+    openSpy.mockReturnValue(secondDialogRef);
+
+    // Navigate to a different product while dialog is open (form is pristine)
+    routerEventsSubject.next(new NavigationEnd(2, '/inventory/1', '/inventory/1'));
+
+    // First dialog should be closed
+    expect(firstDialogRef.close).toHaveBeenCalled();
+
+    // Fire afterClosed for the first dialog
+    afterClosedSubject.next(undefined);
+    afterClosedSubject.complete();
+
+    // The pending product should trigger handleRouteParam
+    httpTesting.expectOne('/api/v1/products/1').flush(mockProducts[0]);
+
+    // Second dialog should be opened
+    expect(openSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('should confirm before product switch when form is dirty', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    // Open first dialog with dirty form
+    const dirtyForm = new FormGroup({ name: new FormControl('test') });
+    dirtyForm.markAsDirty();
+    const { dialogRef: firstDialogRef } = createOpenDialogRef(dirtyForm);
+
+    const openSpy = jest.spyOn(dialog, 'open').mockReturnValue(firstDialogRef);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
+
+    // Prepare second dialog
+    const secondDialogRef = createMockDialogRef();
+    openSpy.mockReturnValue(secondDialogRef);
+
+    // Navigate to a different product while dialog is dirty
+    routerEventsSubject.next(new NavigationEnd(2, '/inventory/1', '/inventory/1'));
+
+    // canClose should have been called
+    expect(firstDialogRef.componentInstance.canClose).toHaveBeenCalled();
+
+    // Since canClose returns of(true), first dialog should be closed
+    expect(firstDialogRef.close).toHaveBeenCalled();
+  });
+
+  it('should restore URL on product switch when user cancels confirm', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    // Open first dialog with dirty form for product ID 1
+    const dirtyForm = new FormGroup({ name: new FormControl('test') });
+    dirtyForm.markAsDirty();
+    const { dialogRef: firstDialogRef } = createOpenDialogRef(dirtyForm);
+    (firstDialogRef.componentInstance.canClose as jest.Mock).mockReturnValue(of(false));
+
+    jest.spyOn(dialog, 'open').mockReturnValue(firstDialogRef);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/1', '/inventory/1'));
+    httpTesting.expectOne('/api/v1/products/1').flush(mockProducts[0]);
+
+    // Clear previous navigate calls
+    mockRouter.navigate.mockClear();
+
+    // Navigate to another product while dialog is dirty
+    routerEventsSubject.next(new NavigationEnd(2, '/inventory/2', '/inventory/2'));
+
+    // User cancelled – URL should be restored to current product
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/inventory', '1'], { replaceUrl: true });
+    expect(firstDialogRef.close).not.toHaveBeenCalled();
   });
 });

@@ -5,9 +5,10 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { NgClass } from '@angular/common';
-import { Subject, debounceTime, filter, forkJoin, of } from 'rxjs';
+import { Observable, Subject, debounceTime, filter, forkJoin, map, of } from 'rxjs';
+import { HasUnsavedChanges } from '../../core/guards/unsaved-changes.guard';
 import { ProductService } from '../../core/services/product.service';
 import { CategoryService } from '../../core/services/category.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -26,7 +27,7 @@ import { Availability } from '../../models/availability.enum';
   templateUrl: './product-list.component.html',
   imports: [MatTableModule, MatSortModule, MatIconModule, MatButtonModule, NgClass, RouterOutlet],
 })
-export class ProductListComponent implements OnInit {
+export class ProductListComponent implements OnInit, HasUnsavedChanges {
   private readonly productService = inject(ProductService);
   private readonly categoryService = inject(CategoryService);
   private readonly authService = inject(AuthService);
@@ -56,7 +57,10 @@ export class ProductListComponent implements OnInit {
   readonly displayedColumns = ['productName', 'price', 'availability', 'stockCount', 'categories'];
 
   private readonly filterSubject = new Subject<string>();
-  private dialogOpen = false;
+  private currentDialogRef: MatDialogRef<ProductFormComponent> | null = null;
+  private currentDialogProduct: Product | null = null;
+  private pendingProductId: string | null = null;
+  private suppressAfterClosedNavigation = false;
 
   @ViewChild(MatSort) set matSort(sort: MatSort) {
     if (sort) {
@@ -71,6 +75,27 @@ export class ProductListComponent implements OnInit {
         this.filterText.set(value);
         this.dataSource.filter = value.trim().toLowerCase();
       });
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.currentDialogRef?.componentInstance?.productForm?.dirty ?? false;
+  }
+
+  confirmDiscard(): Observable<boolean> {
+    if (!this.hasUnsavedChanges()) {
+      this.suppressAfterClosedNavigation = true;
+      this.forceCloseDialog();
+      return of(true);
+    }
+    return this.currentDialogRef!.componentInstance.canClose().pipe(
+      map((confirmed) => {
+        if (confirmed) {
+          this.suppressAfterClosedNavigation = true;
+          this.forceCloseDialog();
+        }
+        return confirmed;
+      }),
+    );
   }
 
   ngOnInit(): void {
@@ -139,7 +164,25 @@ export class ProductListComponent implements OnInit {
   }
 
   private handleRouteParam(idParam: string): void {
-    if (this.dialogOpen) {
+    if (this.currentDialogRef) {
+      // Dialog already open – handle product switching
+      if (this.hasUnsavedChanges()) {
+        this.currentDialogRef.componentInstance.canClose().subscribe((confirmed) => {
+          if (confirmed) {
+            this.pendingProductId = idParam;
+            this.forceCloseDialog();
+          } else {
+            // Restore URL to current product
+            const restoreParam = this.currentDialogProduct
+              ? String(this.currentDialogProduct.id)
+              : 'new';
+            this.router.navigate(['/inventory', restoreParam], { replaceUrl: true });
+          }
+        });
+      } else {
+        this.pendingProductId = idParam;
+        this.forceCloseDialog();
+      }
       return;
     }
 
@@ -182,7 +225,7 @@ export class ProductListComponent implements OnInit {
   }
 
   private openProductDialogFromRoute(product: Product | null): void {
-    this.dialogOpen = true;
+    this.currentDialogProduct = product;
 
     const data: ProductFormData = {
       product,
@@ -192,11 +235,35 @@ export class ProductListComponent implements OnInit {
     const dialogRef = this.dialog.open(ProductFormComponent, {
       data,
       width: '520px',
+      disableClose: true,
     });
 
+    this.currentDialogRef = dialogRef;
+
+    // Handle Escape key via dialog's keydown events
+    dialogRef
+      .keydownEvents()
+      .pipe(filter((e) => e.key === 'Escape'))
+      .subscribe(() => {
+        dialogRef.componentInstance.onCancel();
+      });
+
     dialogRef.afterClosed().subscribe((result?: Product | ProductDeletedResult) => {
-      this.dialogOpen = false;
-      this.router.navigate(['/inventory']);
+      this.currentDialogRef = null;
+      this.currentDialogProduct = null;
+
+      if (this.suppressAfterClosedNavigation) {
+        this.suppressAfterClosedNavigation = false;
+        return;
+      }
+
+      if (this.pendingProductId !== null) {
+        const pending = this.pendingProductId;
+        this.pendingProductId = null;
+        this.handleRouteParam(pending);
+      } else {
+        this.router.navigate(['/inventory']);
+      }
 
       if (result) {
         this.refreshProducts();
@@ -208,6 +275,14 @@ export class ProductListComponent implements OnInit {
         }
       }
     });
+  }
+
+  private forceCloseDialog(): void {
+    if (this.currentDialogRef) {
+      this.currentDialogRef.close();
+      this.currentDialogRef = null;
+      this.currentDialogProduct = null;
+    }
   }
 
   private refreshProducts(): void {

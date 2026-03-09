@@ -370,42 +370,158 @@ describe('ProductFormComponent', () => {
     expect(notificationSpy.showError).toHaveBeenCalledWith('Failed to save product');
   });
 
-  // --- Discard ---
+  // --- canClose ---
 
-  it('should reset form to initial values on discard', () => {
+  it('should return true from canClose when form is pristine', (done) => {
     setup(createData(mockProduct));
-    component.productForm.controls.productName.setValue('Changed');
-    expect(component.productForm.controls.productName.value).toBe('Changed');
-
-    component.onDiscard();
-    expect(component.productForm.controls.productName.value).toBe('Existing Book');
+    component.canClose().subscribe((result) => {
+      expect(result).toBe(true);
+      done();
+    });
   });
 
-  it('should mark form as pristine after discard', () => {
+  it('should open confirm dialog from canClose when form is dirty', () => {
     setup(createData(mockProduct));
     component.productForm.controls.productName.setValue('Changed');
     component.productForm.controls.productName.markAsDirty();
-    expect(component.productForm.dirty).toBe(true);
+
+    const confirmDialogRef = {
+      afterClosed: () => of(undefined),
+    } as unknown as MatDialogRef<ConfirmDialogComponent>;
+    const openSpy = jest.spyOn(component['dialog'], 'open').mockReturnValue(confirmDialogRef);
+
+    component.canClose().subscribe();
+
+    expect(openSpy).toHaveBeenCalledWith(ConfirmDialogComponent, {
+      data: { message: 'You have unsaved changes. Discard them?' },
+    });
+  });
+
+  it('should return true from canClose when user confirms', (done) => {
+    setup(createData(mockProduct));
+    component.productForm.controls.productName.setValue('Changed');
+    component.productForm.controls.productName.markAsDirty();
+
+    const confirmDialogRef = {
+      afterClosed: () => of(true),
+    } as unknown as MatDialogRef<ConfirmDialogComponent>;
+    jest.spyOn(component['dialog'], 'open').mockReturnValue(confirmDialogRef);
+
+    component.canClose().subscribe((result) => {
+      expect(result).toBe(true);
+      done();
+    });
+  });
+
+  it('should return false from canClose when user cancels', (done) => {
+    setup(createData(mockProduct));
+    component.productForm.controls.productName.setValue('Changed');
+    component.productForm.controls.productName.markAsDirty();
+
+    const confirmDialogRef = {
+      afterClosed: () => of(undefined),
+    } as unknown as MatDialogRef<ConfirmDialogComponent>;
+    jest.spyOn(component['dialog'], 'open').mockReturnValue(confirmDialogRef);
+
+    component.canClose().subscribe((result) => {
+      expect(result).toBe(false);
+      done();
+    });
+  });
+
+  // --- Discard ---
+
+  it('should do nothing on discard when form is pristine', () => {
+    setup(createData(mockProduct));
+    const openSpy = jest.spyOn(component['dialog'], 'open');
 
     component.onDiscard();
+
+    expect(openSpy).not.toHaveBeenCalled();
+  });
+
+  it('should open confirm dialog on discard when form is dirty', () => {
+    setup(createData(mockProduct));
+    component.productForm.controls.productName.setValue('Changed');
+    component.productForm.controls.productName.markAsDirty();
+
+    const confirmDialogRef = {
+      afterClosed: () => of(undefined),
+    } as unknown as MatDialogRef<ConfirmDialogComponent>;
+    const openSpy = jest.spyOn(component['dialog'], 'open').mockReturnValue(confirmDialogRef);
+
+    component.onDiscard();
+
+    expect(openSpy).toHaveBeenCalledWith(ConfirmDialogComponent, {
+      data: { message: 'Discard all changes?' },
+    });
+  });
+
+  it('should reset form to initial values on discard when confirmed', () => {
+    setup(createData(mockProduct));
+    component.productForm.controls.productName.setValue('Changed');
+    component.productForm.controls.productName.markAsDirty();
+    expect(component.productForm.controls.productName.value).toBe('Changed');
+
+    const confirmDialogRef = {
+      afterClosed: () => of(true),
+    } as unknown as MatDialogRef<ConfirmDialogComponent>;
+    jest.spyOn(component['dialog'], 'open').mockReturnValue(confirmDialogRef);
+
+    component.onDiscard();
+    expect(component.productForm.controls.productName.value).toBe('Existing Book');
     expect(component.productForm.pristine).toBe(true);
+  });
+
+  it('should not reset form on discard when cancelled', () => {
+    setup(createData(mockProduct));
+    component.productForm.controls.productName.setValue('Changed');
+    component.productForm.controls.productName.markAsDirty();
+
+    const confirmDialogRef = {
+      afterClosed: () => of(undefined),
+    } as unknown as MatDialogRef<ConfirmDialogComponent>;
+    jest.spyOn(component['dialog'], 'open').mockReturnValue(confirmDialogRef);
+
+    component.onDiscard();
+    expect(component.productForm.controls.productName.value).toBe('Changed');
+    expect(component.productForm.dirty).toBe(true);
   });
 
   // --- Cancel / Close ---
 
-  it('should close dialog without result on cancel', () => {
+  it('should close dialog directly on cancel when form is pristine', () => {
     setup(createData(null));
     component.onCancel();
-    expect(dialogRefSpy.close).toHaveBeenCalledWith();
+    expect(dialogRefSpy.close).toHaveBeenCalled();
   });
 
-  it('should close dialog on X button click', () => {
-    setup(createData(null));
-    const closeButton = fixture.nativeElement.querySelector('button mat-icon');
-    const btn = closeButton?.closest('button') as HTMLButtonElement;
-    expect(btn).toBeTruthy();
-    btn.click();
-    expect(dialogRefSpy.close).toHaveBeenCalledWith();
+  it('should not close dialog on cancel when dirty and user cancels confirm', () => {
+    setup(createData(mockProduct));
+    component.productForm.controls.productName.setValue('Changed');
+    component.productForm.controls.productName.markAsDirty();
+
+    const confirmDialogRef = {
+      afterClosed: () => of(undefined),
+    } as unknown as MatDialogRef<ConfirmDialogComponent>;
+    jest.spyOn(component['dialog'], 'open').mockReturnValue(confirmDialogRef);
+
+    component.onCancel();
+    expect(dialogRefSpy.close).not.toHaveBeenCalled();
+  });
+
+  it('should close dialog on cancel when dirty and user confirms', () => {
+    setup(createData(mockProduct));
+    component.productForm.controls.productName.setValue('Changed');
+    component.productForm.controls.productName.markAsDirty();
+
+    const confirmDialogRef = {
+      afterClosed: () => of(true),
+    } as unknown as MatDialogRef<ConfirmDialogComponent>;
+    jest.spyOn(component['dialog'], 'open').mockReturnValue(confirmDialogRef);
+
+    component.onCancel();
+    expect(dialogRefSpy.close).toHaveBeenCalled();
   });
 
   // --- Delete ---
