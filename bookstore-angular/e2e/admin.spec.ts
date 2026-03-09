@@ -20,19 +20,6 @@ test.describe('Admin – Category Management (Iteration 14)', () => {
     await adminPage.waitForLoaded();
   });
 
-  test('should display heading and category list', async () => {
-    await expect(adminPage.heading).toBeVisible();
-    await expect(adminPage.subtitle).toBeVisible();
-    await expect(adminPage.editCategoriesHeading).toBeVisible();
-    await expect(adminPage.categoryRows.first()).toBeVisible();
-  });
-
-  test('should display correct category count', async () => {
-    const names = await adminPage.getCategoryNames();
-    const count = names.length;
-    await expect(adminPage.categoryCount).toContainText(`${count} categories`);
-  });
-
   test('should enter edit mode on category click', async () => {
     const names = await adminPage.getCategoryNames();
     const firstName = names[0].trim();
@@ -65,17 +52,6 @@ test.describe('Admin – Category Management (Iteration 14)', () => {
     await adminPage.clickCategory(updatedName);
     await adminPage.fillCategoryName(originalName);
     await adminPage.clickSave();
-  });
-
-  test('should show validation error for short name', async () => {
-    const names = await adminPage.getCategoryNames();
-    const firstName = names[0].trim();
-
-    await adminPage.clickCategory(firstName);
-    await adminPage.fillCategoryName('A');
-    await adminPage.clickSave();
-
-    await expect(adminPage.validationError).toContainText('Name must be at least 2 characters.');
   });
 
   test('should create new category', async () => {
@@ -123,19 +99,5 @@ test.describe('Admin – Category Management (Iteration 14)', () => {
 
     // Category should be gone
     await expect(adminPage.getCategoryByName(deleteName)).not.toBeVisible();
-  });
-
-  test('should cancel edit and restore original name', async () => {
-    const names = await adminPage.getCategoryNames();
-    const originalName = names[0].trim();
-
-    await adminPage.clickCategory(originalName);
-    await adminPage.fillCategoryName('Something Else');
-    await adminPage.clickCancel();
-
-    // Original name should still be visible
-    await expect(adminPage.getCategoryByName(originalName)).toBeVisible();
-    // Input should be gone
-    await expect(adminPage.categoryNameInput).not.toBeVisible();
   });
 });

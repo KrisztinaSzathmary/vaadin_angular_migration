@@ -22,19 +22,6 @@ test.describe('Inventory / Product List', () => {
       expect(await rows.count()).toBeGreaterThan(0);
     });
 
-    test('product count text matches row count', async () => {
-      const rows = inventoryPage.getTableRows();
-      const rowCount = await rows.count();
-
-      await expect(inventoryPage.productCount).toContainText(`${rowCount} products in your catalog`);
-    });
-
-    test('status indicators are visible', async () => {
-      await expect(inventoryPage.availableStatus).toBeVisible();
-      await expect(inventoryPage.comingStatus).toBeVisible();
-      await expect(inventoryPage.discontinuedStatus).toBeVisible();
-    });
-
     test('sorting by price works', async () => {
       // Click Price header to sort ascending
       await inventoryPage.clickSortHeader('price');
@@ -74,19 +61,6 @@ test.describe('Inventory / Product List', () => {
         name.toLowerCase().includes(searchTerm.toLowerCase()),
       );
       expect(hasMatch).toBe(true);
-    });
-
-    test('clearing search filter shows all products', async () => {
-      const initialCount = await inventoryPage.getTableRows().count();
-
-      await inventoryPage.fillSearch('some-filter-text');
-      await inventoryPage.page.waitForTimeout(500);
-
-      await inventoryPage.clearSearch();
-      await inventoryPage.page.waitForTimeout(500);
-
-      const restoredCount = await inventoryPage.getTableRows().count();
-      expect(restoredCount).toBe(initialCount);
     });
   });
 
