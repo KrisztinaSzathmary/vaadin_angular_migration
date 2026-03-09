@@ -2,6 +2,46 @@
 
 ---
 
+## Iteration 14 – Admin-Ansicht (Kategorien-Verwaltung)
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-09
+
+### Umgesetzte Änderungen
+
+- `src/app/features/admin/admin.component.ts` – Vollständige Neuimplementierung: Signal-State (`categories`, `loading`, `error`, `editingCategoryId`, `isSaving`), Computed Signal (`categoryCount`), einzelner `FormControl<string>` mit `required` + `minLength(2)` Validierung, Methoden `onAddCategory()` (Sentinel `id: -1`), `onEditCategory()`, `onSaveCategory()` (Create/Update), `onDeleteCategory()` (mit ConfirmDialog), `onCancelEdit()`. Injections: `CategoryService`, `NotificationService`, `MatDialog`
+- `src/app/features/admin/admin.component.html` – Neues externes Template gemäß `ui-design-plan/admin/v0_admin.png`: Seitentitel + Untertitel, Kategorien-Card mit Header (`sell` Icon, "Edit categories", Kategorie-Anzahl, "Add new category" Button), Kategoriereihen mit zwei Modi: Lesemodus (Button mit Kategoriename + "category" Badge) und Bearbeitungsmodus (Text-Input mit Validierungsfehler + Save/Delete/Cancel Buttons), dekorativer `drag_indicator` pro Zeile
+- `src/app/features/admin/admin.component.spec.ts` – 30 Unit-Tests: Rendering (7: Creation, Loading-State, Seitentitel, Untertitel, "Edit categories" Heading, Kategorie-Anzahl, Kategorienamen), Inline-Editing (5: Edit-Modus bei Klick, Input mit aktuellem Namen, Save/Delete/Cancel Buttons, Delete versteckt bei neuer Kategorie, nur eine Zeile editierbar), Validierung (3: Name < 2 Zeichen verhindert Speichern, Fehlermeldung angezeigt, Speichern bei gültigem Namen), CRUD (8: Create-API-Call, Create aktualisiert Liste, Update-API-Call, Update aktualisiert Namen, Delete öffnet ConfirmDialog, Delete-API-Call bei Confirm, Delete entfernt aus Liste, kein Delete bei Cancel), Notifications (4: "Category saved" bei Create/Update, "Category deleted", Fehler-Notification), Add/Cancel (3: Add fügt leere Zeile hinzu, Button deaktiviert während Bearbeitung, Cancel entfernt neue/stellt bestehende wieder her)
+- `e2e/pages/admin.page.ts` – Page Object für Admin-Seite: Locators für Heading, Subtitle, EditCategoriesHeading, CategoryCount, AddButton, CategoryRows, CategoryNameInput, SaveButton, DeleteButton, CancelButton, Snackbar, ValidationError, ConfirmDialog; Methoden `goto()`, `waitForLoaded()`, `getCategoryByName()`, `clickCategory()`, `fillCategoryName()`, `clickSave()`, `clickDelete()`, `clickCancel()`, `clickAdd()`, `getCategoryNames()`, `confirmDelete()`, `cancelConfirmDialog()`
+- `e2e/admin.spec.ts` – 8 E2E-Tests: Heading + Kategorieliste angezeigt, Kategorie-Anzahl stimmt, Klick → Edit-Modus, Kategorie bearbeiten + speichern + Notification, Validierung bei kurzem Namen, Neue Kategorie erstellen + Notification, Kategorie löschen mit Bestätigung + Notification, Bearbeitung abbrechen → Originalname
+
+### Entscheidungen
+
+- **Einzelner `FormControl` statt `FormGroup`** – Nur ein Feld (name), kein Over-Engineering
+- **`editingCategoryId` Signal** – Nur eine Zeile gleichzeitig bearbeitbar, einfacher als per-Row-Flags
+- **`id: -1` Sentinel für neue Kategorien** – Spiegelt Vaadin-Backend-Pattern (`getId() < 0`), Delete-Button versteckt bei `id < 0`
+- **Externes Template** – Template ist umfangreich (~100 Zeilen), konsistent mit `product-list.component`
+- **Lokale Mutation statt Re-Fetch** – Create liefert Kategorie mit Server-ID zurück; Update und Delete aktualisieren lokale Liste direkt
+- **`<button>` statt `<span>` für Kategorienamen** – ESLint `click-events-have-key-events` + `interactive-supports-focus` erfordern fokussierbares Element; `<button type="button">` mit transparentem Styling
+- **Dekorativer `drag_indicator`** – UI-Design zeigt ihn, Drag-and-Drop ist nicht im Backlog
+
+### Verifikation
+
+- `ng test` → 193 Unit-Tests grün (163 bestehende + 30 neue AdminComponent, 16 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (552.69 kB initial, 5 Lazy Chunks inkl. admin-component 6.61 kB)
+- `npx playwright test` → 42 E2E-Tests grün (34 bestehende + 8 neue Admin-Tests)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 15 – siehe `backlog.md`
+
+---
+
 ## Iteration 13 – Produkt löschen
 
 **Status:** Abgeschlossen

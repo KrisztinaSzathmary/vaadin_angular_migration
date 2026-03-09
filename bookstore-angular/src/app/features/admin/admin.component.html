@@ -1,0 +1,111 @@
+<div class="p-6">
+  <!-- Header -->
+  <h1 class="text-2xl font-bold text-gray-900">Admin</h1>
+  <p class="text-sm text-gray-500">Manage your store categories and settings.</p>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <p class="mt-6 text-sm text-gray-500">Loading categories...</p>
+  }
+
+  <!-- Error -->
+  @if (error()) {
+    <p class="mt-6 text-sm text-red-600">{{ error() }}</p>
+  }
+
+  <!-- Categories Card -->
+  @if (!loading() && !error()) {
+    <div class="mt-6 rounded-lg border border-gray-200 bg-white">
+      <!-- Card Header -->
+      <div class="flex items-center justify-between px-6 py-4">
+        <div class="flex items-center gap-3">
+          <mat-icon class="text-indigo-500">sell</mat-icon>
+          <div>
+            <h2 class="text-base font-semibold text-gray-900">Edit categories</h2>
+            <p class="text-sm text-gray-500">{{ categoryCount() }} categories</p>
+          </div>
+        </div>
+        <button
+          mat-flat-button
+          color="primary"
+          [disabled]="editingCategoryId() !== null"
+          (click)="onAddCategory()"
+        >
+          <mat-icon>add</mat-icon>
+          Add new category
+        </button>
+      </div>
+
+      <!-- Category Rows -->
+      <div class="border-t border-gray-200">
+        @for (category of categories(); track category.id) {
+          <div class="flex items-center gap-3 border-b border-gray-100 px-6 py-3 last:border-b-0">
+            <!-- Drag indicator (decorative) -->
+            <mat-icon class="text-gray-300 text-[20px]">drag_indicator</mat-icon>
+
+            @if (editingCategoryId() === category.id) {
+              <!-- Edit Mode -->
+              <div class="flex flex-1 items-center gap-3">
+                <div class="flex-1">
+                  <input
+                    type="text"
+                    [formControl]="nameControl"
+                    class="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                    data-testid="category-name-input"
+                  />
+                  @if (nameControl.touched && nameControl.hasError('required')) {
+                    <p class="mt-1 text-xs text-red-600">Category name is required.</p>
+                  }
+                  @if (nameControl.touched && nameControl.hasError('minlength')) {
+                    <p class="mt-1 text-xs text-red-600">Name must be at least 2 characters.</p>
+                  }
+                </div>
+                <button
+                  mat-flat-button
+                  color="primary"
+                  [disabled]="isSaving()"
+                  (click)="onSaveCategory()"
+                  data-testid="save-category-btn"
+                >
+                  Save
+                </button>
+                @if (category.id >= 0) {
+                  <button
+                    mat-button
+                    color="warn"
+                    [disabled]="isSaving()"
+                    (click)="onDeleteCategory(category)"
+                    data-testid="delete-category-btn"
+                  >
+                    Delete
+                  </button>
+                }
+                <button
+                  mat-button
+                  [disabled]="isSaving()"
+                  (click)="onCancelEdit()"
+                  data-testid="cancel-edit-btn"
+                >
+                  Cancel
+                </button>
+              </div>
+            } @else {
+              <!-- Read Mode -->
+              <button
+                type="button"
+                class="flex-1 cursor-pointer text-left text-sm text-gray-900 bg-transparent border-none p-0"
+                (click)="onEditCategory(category)"
+                data-testid="category-name"
+              >
+                {{ category.name }}
+              </button>
+              <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-500">
+                category
+              </span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
