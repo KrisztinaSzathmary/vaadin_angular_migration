@@ -3,8 +3,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { signal } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { ProductListComponent } from './product-list.component';
 import { ProductFormComponent, ProductDeletedResult } from './product-form.component';
 import { AuthService } from '../../core/services/auth.service';
@@ -55,10 +56,18 @@ describe('ProductListComponent', () => {
   let httpTesting: HttpTestingController;
   let dialog: MatDialog;
   let notificationSpy: jest.Mocked<NotificationService>;
+  let routerEventsSubject: Subject<NavigationEnd>;
+  let mockRouter: { events: Subject<NavigationEnd>; url: string; navigate: jest.Mock };
   const isAdminSignal = signal(false);
 
   beforeEach(async () => {
     isAdminSignal.set(false);
+    routerEventsSubject = new Subject<NavigationEnd>();
+    mockRouter = {
+      events: routerEventsSubject,
+      url: '/inventory',
+      navigate: jest.fn().mockResolvedValue(true),
+    };
     notificationSpy = {
       showSuccess: jest.fn(),
       showError: jest.fn(),
@@ -69,6 +78,7 @@ describe('ProductListComponent', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
+        { provide: Router, useValue: mockRouter },
         {
           provide: AuthService,
           useValue: { isAdmin: isAdminSignal },
@@ -338,15 +348,64 @@ describe('ProductListComponent', () => {
     expect(component.categories()).toEqual(mockCategories);
   });
 
-  it('should open dialog on New Product click as admin', () => {
+  // --- URL-based Navigation Tests ---
+
+  it('should navigate to /inventory/new on onNewProduct', () => {
+    loadProducts();
+
+    component.onNewProduct();
+
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/inventory', 'new']);
+  });
+
+  it('should navigate to /inventory/:id on onRowClick as admin', () => {
     isAdminSignal.set(true);
     loadProducts();
+
+    component.onRowClick(mockProducts[0]);
+
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/inventory', 1]);
+  });
+
+  it('should not navigate on onRowClick when not admin', () => {
+    isAdminSignal.set(false);
+    loadProducts();
+
+    component.onRowClick(mockProducts[0]);
+
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
+  });
+
+  it('should open dialog when route param is a numeric ID', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
     const dialogRefMock = {
       afterClosed: () => of(undefined),
     } as unknown as MatDialogRef<ProductFormComponent>;
     const openSpy = jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
 
-    component.onNewProduct();
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/1', '/inventory/1'));
+
+    // Flush the product-by-id request
+    httpTesting.expectOne('/api/v1/products/1').flush(mockProducts[0]);
+
+    expect(openSpy).toHaveBeenCalledWith(ProductFormComponent, {
+      data: { product: mockProducts[0], categories: mockCategories },
+      width: '520px',
+    });
+  });
+
+  it('should open create dialog when route param is "new" as admin', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const dialogRefMock = {
+      afterClosed: () => of(undefined),
+    } as unknown as MatDialogRef<ProductFormComponent>;
+    const openSpy = jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
 
     expect(openSpy).toHaveBeenCalledWith(ProductFormComponent, {
       data: { product: null, categories: mockCategories },
@@ -354,45 +413,96 @@ describe('ProductListComponent', () => {
     });
   });
 
-  it('should pass null as product data for New Product', () => {
+  it('should navigate back to /inventory when dialog closes', () => {
     isAdminSignal.set(true);
     loadProducts();
+
     const dialogRefMock = {
       afterClosed: () => of(undefined),
     } as unknown as MatDialogRef<ProductFormComponent>;
-    const openSpy = jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
 
-    component.onNewProduct();
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
 
-    const callArgs = openSpy.mock.calls[0][1];
-    expect(callArgs?.data.product).toBeNull();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/inventory']);
   });
 
-  it('should pass product data on row click as admin', () => {
+  it('should show error notification for invalid ID param', () => {
+    loadProducts();
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/abc', '/inventory/abc'));
+
+    expect(notificationSpy.showError).toHaveBeenCalledWith("Invalid product ID: 'abc'");
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/inventory']);
+  });
+
+  it('should show error notification when product not found (404)', () => {
     isAdminSignal.set(true);
     loadProducts();
-    const dialogRefMock = {
-      afterClosed: () => of(undefined),
-    } as unknown as MatDialogRef<ProductFormComponent>;
-    const openSpy = jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
 
-    component.onRowClick(mockProducts[0]);
+    const dialogOpenSpy = jest.spyOn(dialog, 'open');
 
-    const callArgs = openSpy.mock.calls[0][1];
-    expect(callArgs?.data.product).toEqual(mockProducts[0]);
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/999', '/inventory/999'));
+
+    httpTesting
+      .expectOne('/api/v1/products/999')
+      .error(new ProgressEvent('error'), { status: 404 });
+
+    expect(notificationSpy.showError).toHaveBeenCalledWith('Product with ID 999 not found');
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/inventory']);
+    expect(dialogOpenSpy).not.toHaveBeenCalled();
   });
 
-  it('should not open dialog on row click when not admin', () => {
+  it('should redirect non-admin from /inventory/new to /inventory', () => {
     isAdminSignal.set(false);
     loadProducts();
-    const openSpy = jest.spyOn(dialog, 'open');
 
-    component.onRowClick(mockProducts[0]);
+    const dialogOpenSpy = jest.spyOn(dialog, 'open');
 
-    expect(openSpy).not.toHaveBeenCalled();
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
+
+    expect(dialogOpenSpy).not.toHaveBeenCalled();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/inventory']);
   });
 
-  it('should refresh products after dialog close with result', () => {
+  it('should use cached categories when available for openProductById', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+    // Categories already loaded via flushInit
+
+    const dialogRefMock = {
+      afterClosed: () => of(undefined),
+    } as unknown as MatDialogRef<ProductFormComponent>;
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/1', '/inventory/1'));
+
+    // Should only request the product, not categories again
+    httpTesting.expectOne('/api/v1/products/1').flush(mockProducts[0]);
+    httpTesting.expectNone('/api/v1/categories');
+  });
+
+  it('should fetch categories from API when cache is empty for openProductById', () => {
+    isAdminSignal.set(true);
+    // Initialize with empty categories
+    fixture.detectChanges();
+    httpTesting.expectOne('/api/v1/products').flush(mockProducts);
+    httpTesting.expectOne('/api/v1/categories').flush([]);
+    fixture.detectChanges();
+
+    const dialogRefMock = {
+      afterClosed: () => of(undefined),
+    } as unknown as MatDialogRef<ProductFormComponent>;
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/1', '/inventory/1'));
+
+    // Should request both product and categories
+    httpTesting.expectOne('/api/v1/products/1').flush(mockProducts[0]);
+    httpTesting.expectOne('/api/v1/categories').flush(mockCategories);
+  });
+
+  it('should refresh products and show notification after dialog close with save result', () => {
     isAdminSignal.set(true);
     loadProducts();
 
@@ -402,84 +512,17 @@ describe('ProductListComponent', () => {
     } as unknown as MatDialogRef<ProductFormComponent>;
     jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
 
-    component.onNewProduct();
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
 
     // Flush the refresh request
     const req = httpTesting.expectOne('/api/v1/products');
     expect(req.request.method).toBe('GET');
     req.flush(mockProducts);
-  });
-
-  it('should not refresh products when dialog closes without result', () => {
-    isAdminSignal.set(true);
-    loadProducts();
-
-    const dialogRefMock = {
-      afterClosed: () => of(undefined),
-    } as unknown as MatDialogRef<ProductFormComponent>;
-    jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
-
-    component.onNewProduct();
-
-    // No additional product request should be made
-    httpTesting.expectNone('/api/v1/products');
-  });
-
-  it('should show notification after successful save', () => {
-    isAdminSignal.set(true);
-    loadProducts();
-
-    const savedProduct = { ...mockProducts[0], productName: 'Updated' };
-    const dialogRefMock = {
-      afterClosed: () => of(savedProduct),
-    } as unknown as MatDialogRef<ProductFormComponent>;
-    jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
-
-    component.onNewProduct();
-
-    // Flush the refresh request
-    httpTesting.expectOne('/api/v1/products').flush(mockProducts);
 
     expect(notificationSpy.showSuccess).toHaveBeenCalledWith('Product created');
   });
 
-  // --- Delete Result Tests ---
-
-  it('should refresh products after dialog close with delete result', () => {
-    isAdminSignal.set(true);
-    loadProducts();
-
-    const deleteResult: ProductDeletedResult = { deleted: true, productName: 'Test Product A' };
-    const dialogRefMock = {
-      afterClosed: () => of(deleteResult),
-    } as unknown as MatDialogRef<ProductFormComponent>;
-    jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
-
-    component.onRowClick(mockProducts[0]);
-
-    const req = httpTesting.expectOne('/api/v1/products');
-    expect(req.request.method).toBe('GET');
-    req.flush(mockProducts.slice(1));
-  });
-
-  it('should show delete notification after successful delete', () => {
-    isAdminSignal.set(true);
-    loadProducts();
-
-    const deleteResult: ProductDeletedResult = { deleted: true, productName: 'Test Product A' };
-    const dialogRefMock = {
-      afterClosed: () => of(deleteResult),
-    } as unknown as MatDialogRef<ProductFormComponent>;
-    jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
-
-    component.onRowClick(mockProducts[0]);
-
-    httpTesting.expectOne('/api/v1/products').flush(mockProducts.slice(1));
-
-    expect(notificationSpy.showSuccess).toHaveBeenCalledWith("'Test Product A' removed");
-  });
-
-  it('should show update notification for edit result', () => {
+  it('should show update notification for edit result via route', () => {
     isAdminSignal.set(true);
     loadProducts();
 
@@ -489,10 +532,42 @@ describe('ProductListComponent', () => {
     } as unknown as MatDialogRef<ProductFormComponent>;
     jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
 
-    component.onRowClick(mockProducts[0]);
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/1', '/inventory/1'));
 
+    httpTesting.expectOne('/api/v1/products/1').flush(mockProducts[0]);
+
+    // Flush the refresh request
     httpTesting.expectOne('/api/v1/products').flush(mockProducts);
 
     expect(notificationSpy.showSuccess).toHaveBeenCalledWith('Product updated');
+  });
+
+  it('should show delete notification via route', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const deleteResult: ProductDeletedResult = { deleted: true, productName: 'Test Product A' };
+    const dialogRefMock = {
+      afterClosed: () => of(deleteResult),
+    } as unknown as MatDialogRef<ProductFormComponent>;
+    jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/1', '/inventory/1'));
+
+    httpTesting.expectOne('/api/v1/products/1').flush(mockProducts[0]);
+
+    // Flush the refresh request
+    httpTesting.expectOne('/api/v1/products').flush(mockProducts.slice(1));
+
+    expect(notificationSpy.showSuccess).toHaveBeenCalledWith("'Test Product A' removed");
+  });
+
+  // --- extractIdFromUrl Tests ---
+
+  it('should extract ID from URL', () => {
+    expect(component.extractIdFromUrl('/inventory/42')).toBe('42');
+    expect(component.extractIdFromUrl('/inventory/new')).toBe('new');
+    expect(component.extractIdFromUrl('/inventory')).toBeNull();
+    expect(component.extractIdFromUrl('/about')).toBeNull();
   });
 });

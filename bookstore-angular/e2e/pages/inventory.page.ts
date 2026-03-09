@@ -70,4 +70,18 @@ export class InventoryPage {
   async clearSearch(): Promise<void> {
     await this.searchInput.clear();
   }
+
+  async gotoProduct(id: number | string): Promise<void> {
+    await this.page.evaluate((productId) => {
+      window.history.pushState({}, '', `/inventory/${productId}`);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }, id.toString());
+  }
+
+  async gotoNewProduct(): Promise<void> {
+    await this.page.evaluate(() => {
+      window.history.pushState({}, '', '/inventory/new');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+  }
 }

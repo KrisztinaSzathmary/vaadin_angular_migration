@@ -2,6 +2,81 @@
 
 ---
 
+## Iteration 16 – URL-basierte Produktnavigation
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-09
+
+### Umgesetzte Änderungen
+
+- `src/app/shared/components/empty-route/empty-route.component.ts` – Minimale Standalone-Komponente (template: `''`), benötigt als Child-Route-Target für Angular Router
+- `src/app/app.routes.ts` – Child-Route `{ path: ':id', component: EmptyRouteComponent }` unter `/inventory` hinzugefügt; `:id` matcht sowohl `new` als auch numerische IDs
+- `src/app/features/inventory/product-list.component.ts` – Kernrefactoring für URL-basierte Navigation:
+  - Neue Imports: `Router`, `NavigationEnd`, `RouterOutlet`, `filter`, `forkJoin`, `of`
+  - `RouterOutlet` im `imports`-Array, `<router-outlet />` im Template
+  - `private dialogOpen = false` Flag gegen doppeltes Dialog-Öffnen
+  - `ngOnInit()` erweitert: `Router.events` Subscription auf `NavigationEnd` + initiale URL-Prüfung
+  - `extractIdFromUrl(url)` – Hilfsmethode, extrahiert ID aus `/inventory/:id`
+  - `handleRouteParam(idParam)` – Dispatcht `new` vs. numerische ID vs. ungültige ID
+  - `openProductById(id)` – Nutzt `forkJoin({ product, categories })`, gecachte Kategorien oder API-Fetch
+  - `openProductDialogFromRoute(product)` – Refactored aus `openProductDialog`, navigiert zu `/inventory` bei Dialog-Close
+  - `onRowClick(product)` → `router.navigate(['/inventory', product.id])` (nur Admin)
+  - `onNewProduct()` → `router.navigate(['/inventory', 'new'])`
+- `src/app/features/inventory/product-list.component.html` – `<router-outlet />` am Ende des Templates
+- `src/app/features/inventory/product-list.component.spec.ts` – Komplett überarbeitet: Mock-Router mit `Subject<NavigationEnd>` statt `provideRouter` (vermeidet doppelte Komponenteninstanzierung). 30 bestehende Tests + 15 neue:
+  1. `onNewProduct` navigiert zu `/inventory/new`
+  2. `onRowClick` navigiert zu `/inventory/:id` (Admin)
+  3. Kein Navigieren bei `onRowClick` als Nicht-Admin
+  4. Route-Param `:id` öffnet Dialog mit korrektem Produkt
+  5. Route-Param `new` öffnet Create-Dialog (Admin)
+  6. Dialog-Close navigiert zurück zu `/inventory`
+  7. Ungültiger ID-Param zeigt Error-Notification
+  8. Nicht-existente Produkt-ID (404) zeigt Error-Notification
+  9. Nicht-Admin wird von `/inventory/new` redirected
+  10. `openProductById` nutzt gecachte Kategorien
+  11. `openProductById` lädt Kategorien per API wenn leer
+  12. Refresh + Create-Notification nach Dialog-Close mit Save-Result
+  13. Update-Notification für Edit-Result via Route
+  14. Delete-Notification via Route
+  15. `extractIdFromUrl` Hilfsmethoden-Tests
+- `e2e/pages/inventory.page.ts` – Neue Methoden `gotoProduct(id)` und `gotoNewProduct()` mit `pushState`/`popstate` (client-seitige Navigation, bewahrt Angular Auth-State)
+- `e2e/url-navigation.spec.ts` – 8 neue E2E-Tests:
+  1. `/inventory/:id` öffnet Edit-Dialog mit korrektem Produkt
+  2. `/inventory/new` öffnet Create-Dialog
+  3. Klick auf Produktzeile aktualisiert URL zu `/inventory/:id`
+  4. Klick auf "New Product" aktualisiert URL zu `/inventory/new`
+  5. Dialog schließen setzt URL auf `/inventory` zurück
+  6. Ungültige Produkt-ID zeigt Error-Notification
+  7. Nicht-existente numerische ID zeigt Error-Notification
+  8. Nicht-Admin navigiert zu `/inventory/new` → Redirect zu `/inventory`
+
+### Entscheidungen
+
+- **Child Route + Router-Event-Subscription** – `ProductListComponent` bleibt gemountet (keine Tabellen-Neuinstanzierung). `EmptyRouteComponent` als leerer Child-Route-Target, Dialog-Lifecycle durch URL-Änderungen gesteuert
+- **`EmptyRouteComponent` statt `redirectTo`** – Angular Router erfordert eine Komponente pro Route; leere Komponente rendert nichts sichtbares
+- **`extractIdFromUrl()` mit Regex statt `ActivatedRoute`** – Robuster bei NavigationEnd-Events, da `ActivatedRoute` im Parent-Kontext den Child-Param nicht direkt liefert
+- **`forkJoin` für Produkt + Kategorien** – Bei Bookmark-Navigation werden Produkt und Kategorien parallel geladen; gecachte Kategorien via `of()` wenn verfügbar
+- **`dialogOpen` Flag** – Verhindert doppeltes Dialog-Öffnen bei schnellen aufeinanderfolgenden NavigationEnd-Events
+- **Mock-Router in Unit-Tests** – `Subject<NavigationEnd>` statt `provideRouter(testRoutes)`, da `provideRouter` + `router.navigateByUrl` eine zweite Komponenteninstanz über Route-Aktivierung erzeugt (doppelte HTTP-Requests)
+- **`pushState`/`popstate` in E2E-Tests** – `page.goto()` verursacht Full-Page-Reload und verliert Angular Auth-State (in-memory Signal); client-seitige Navigation bewahrt den Router-Kontext
+
+### Verifikation
+
+- `ng test` → 216 Unit-Tests grün (211 bestehende − 10 alte Dialog-Tests + 15 neue Route-Tests, 16 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (561.99 kB initial, 7 Lazy Chunks)
+- `npx playwright test` → 55 Tests grün (47 bestehende + 8 neue URL-Navigation-Tests)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 17 – siehe `backlog.md`
+
+---
+
 ## Iteration 15 – About-Seite und Fehlerseite
 
 **Status:** Abgeschlossen

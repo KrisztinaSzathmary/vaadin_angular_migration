@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './features/login/login.component';
 import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
+import { EmptyRouteComponent } from './shared/components/empty-route/empty-route.component';
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
 
@@ -16,6 +17,7 @@ export const routes: Routes = [
         path: 'inventory',
         loadComponent: () =>
           import('./features/inventory/product-list.component').then((m) => m.ProductListComponent),
+        children: [{ path: ':id', component: EmptyRouteComponent }],
       },
       {
         path: 'about',
