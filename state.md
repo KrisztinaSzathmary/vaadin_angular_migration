@@ -2,6 +2,47 @@
 
 ---
 
+## Iteration 15 – About-Seite und Fehlerseite
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-09
+
+### Umgesetzte Änderungen
+
+- `src/app/features/about/about.component.ts` – Vollständige Neuimplementierung: Fetcht Produkte und Kategorien für Dashboard-Statistiken, Signal-State (`products`, `categoryCount`, `loading`), Computed Signals (`totalProducts`, `availableProducts`, `totalStock`), statische Arrays `systemInfo` (Environment, Version, Build date, Runtime) und `techInfo` (Framework, UI Library, Styling, Language mit Links), Angular `VERSION`-Konstante für dynamische Versionsanzeige
+- `src/app/features/about/about.component.html` – Neues externes Template gemäß `ui-design-plan/about/v0_about_extra.png`: Header mit Bookstore-Icon + "Bookstore" Titel + Version-Badge + Subtitle, 4 Stats-Cards (Total products, Available, Total stock, Categories), 2-Spalten-Layout mit System-Card und Technology-Card (Links mit `target="_blank"`), Footer mit Info-Text + Last-Updated-Datum
+- `src/app/features/about/about.component.spec.ts` – 17 Unit-Tests: Rendering (4: Creation, Heading, Subtitle, Version-Badge), Stats Cards (4: Total products, Available, Total stock, Category count), System Info (2: Section-Rendering, Runtime-Version), Technology Info (3: Section-Rendering, Werte, Links), Footer (1), Data Fetching (2: API-Calls, Error-Handling), Computed Signals (1: verschiedene Daten)
+- `src/app/features/not-found/not-found.component.ts` – Erweitert um zentriertes Layout mit `search_off` Icon, Tailwind-Styling (flex, items-center, justify-center, gap), `MatIconModule` Import
+- `src/app/features/not-found/not-found.component.spec.ts` – Erweitert auf 4 Tests (2 bestehende + 2 neue: search_off Icon, zentriertes Layout)
+- `e2e/pages/about.page.ts` – Erweitert: Locators für Heading ("Bookstore"), Subtitle, VersionBadge, TotalProducts, AvailableProducts, TotalStock, CategoryCount, SystemSection, TechnologySection, FooterText; Methoden `waitForLoaded()`
+- `e2e/about.spec.ts` – 5 E2E-Tests: Heading + Subtitle + Version-Badge, Stats-Cards mit Werten > 0, System + Technology Sections, Technology Links (4 Links mit target _blank), Footer
+
+### Entscheidungen
+
+- **Dashboard-Layout gemäß UI-Design** – `v0_about_extra.png` zeigt reichhaltiges Dashboard statt einfacher Info-Seite; UI-Design ist maßgeblich
+- **Technologie-Referenzen angepasst** – Next.js/React aus dem Mockup ersetzt durch Angular 20 / Angular Material 20 / Tailwind CSS 4 / TypeScript 5.9
+- **`Angular VERSION`-Konstante** – Dynamische Versionsanzeige aus `@angular/core`, kein Hardcoding der Major-Version
+- **Stats aus API** – Produkte und Kategorien werden gefetcht, Statistiken (totalProducts, availableProducts, totalStock) via Computed Signals berechnet
+- **NotFoundComponent mit Icon** – `search_off` Icon und zentriertes Layout für bessere UX, kein separates Design vorhanden
+- **`DecimalPipe` für Total Stock** – Tausendertrennzeichen via `{{ totalStock() | number }}`
+
+### Verifikation
+
+- `ng test` → 211 Unit-Tests grün (193 bestehende + 16 neue AboutComponent + 2 neue NotFoundComponent, 16 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (561.76 kB initial, 7 Lazy Chunks inkl. about-component 5.49 kB, not-found-component 583 B)
+- `npx playwright test` → 47 Tests (45 bestanden + 2 vorbestehende flaky Timeouts in product-form.spec.ts: "Cancel closes dialog" und "category selection toggles correctly" – nicht durch Iteration 15 verursacht)
+
+### Offene Punkte
+
+- 2 vorbestehende flaky E2E-Timeouts in `product-form.spec.ts` (Timeout bei `waitForTableLoaded` und `button[role="option"]` – sporadisch, treten seit Iteration 12/13 auf)
+
+### Nächste Iteration
+
+- Iteration 16 – siehe `backlog.md`
+
+---
+
 ## Iteration 14 – Admin-Ansicht (Kategorien-Verwaltung)
 
 **Status:** Abgeschlossen
