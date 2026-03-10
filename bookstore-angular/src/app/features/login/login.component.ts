@@ -11,7 +11,14 @@ import { LanguageService } from '../../core/services/language.service';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, UpperCasePipe, MatButtonModule, MatButtonToggleModule, MatIconModule, TranslatePipe],
+  imports: [
+    ReactiveFormsModule,
+    UpperCasePipe,
+    MatButtonModule,
+    MatButtonToggleModule,
+    MatIconModule,
+    TranslatePipe,
+  ],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {

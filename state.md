@@ -2,6 +2,56 @@
 
 ---
 
+## Iteration 22 – E2E-Tests (Quality Check)
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-10
+
+### Umgesetzte Änderungen
+
+- `e2e/smoke.spec.ts` – **Gelöscht**: 1 Test („login page loads and shows login form") war vollständig redundant mit `e2e/auth.spec.ts` (Login-Flows testen implizit, dass das Formular rendert)
+- Verbleibende 11 E2E-Spec-Dateien geprüft – keine weiteren Redundanzen gefunden:
+  - `auth.spec.ts` (3), `route-guards.spec.ts` (3), `inventory.spec.ts` (4), `product-form.spec.ts` (8), `admin.spec.ts` (4), `i18n.spec.ts` (6), `unsaved-changes.spec.ts` (5), `navigation.spec.ts` (3), `url-navigation.spec.ts` (4), `responsive.spec.ts` (9), `about.spec.ts` (1)
+
+### Verifikation
+
+- `npx playwright test` → 50 E2E-Tests grün (11 Spec-Dateien, 7 Page Objects)
+- Keine fehlgeschlagenen oder flaky Tests
+
+### Nächste Iteration
+
+- Siehe `backlog.md`
+
+---
+
+## Iteration 21 – Unit-Tests (Quality Check)
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-10
+
+### Umgesetzte Änderungen
+
+- **Lint-Fix:** `src/app/features/login/login.component.ts` – Prettier-Formatierung der `imports`-Array-Zeile (Zeilenumbrüche statt Einzeiler)
+- **Alle 18 `.spec.ts`-Dateien geprüft** – keine redundanten oder trivialen Tests gefunden, die entfernt werden könnten
+- Dateien ohne Tests bestätigt als korrekt exempt: Models (Interfaces/Enums), `empty-route.component.ts` (trivial `template: ''`), `app.config.ts`, `app.routes.ts`, `translate-testing.ts` – keine Logik zu testen
+
+### Verifikation
+
+- `ng test` → 255 Unit-Tests grün (18 Test-Suites)
+- `ng test --coverage` → 97.6% Line Coverage, 97.83% Statement Coverage, 90.19% Branch Coverage, 95.33% Function Coverage
+- `ng lint` → Alle Dateien bestanden (nach Prettier-Fix)
+- `ng build` → BUILD SUCCESS (645.46 kB initial, 7 Lazy Chunks)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 22 – siehe `backlog.md`
+
+---
+
 ## Iteration 20 – Responsives Design
 
 **Status:** Abgeschlossen
