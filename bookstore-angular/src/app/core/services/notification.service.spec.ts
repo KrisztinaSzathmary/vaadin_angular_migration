@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NotificationService } from './notification.service';
+import { TranslateTestModule } from '../../testing/translate-testing';
 
 describe('NotificationService', () => {
   let service: NotificationService;
@@ -10,6 +11,7 @@ describe('NotificationService', () => {
     snackBarSpy = { open: jest.fn() } as unknown as jest.Mocked<MatSnackBar>;
 
     TestBed.configureTestingModule({
+      imports: [TranslateTestModule],
       providers: [{ provide: MatSnackBar, useValue: snackBarSpy }],
     });
 

@@ -3,12 +3,12 @@
   <div>
     <h2 class="text-xl font-bold text-gray-900">
       @if (isEditMode()) {
-        Edit product
+        {{ 'PRODUCT.EDIT_TITLE' | translate }}
       } @else {
-        Add new product
+        {{ 'PRODUCT.ADD_TITLE' | translate }}
       }
     </h2>
-    <p class="text-sm text-gray-500 mt-1">Fill in the details below to add a new book to your inventory.</p>
+    <p class="text-sm text-gray-500 mt-1">{{ 'PRODUCT.SUBTITLE' | translate }}</p>
   </div>
   <button mat-icon-button (click)="onCancel()" class="text-gray-400 hover:text-gray-600">
     <mat-icon>close</mat-icon>
@@ -20,20 +20,20 @@
   <form [formGroup]="productForm" (ngSubmit)="onSave()">
     <!-- Product name -->
     <div class="mb-4" [ngClass]="{'border-l-2 border-blue-500 pl-3': productForm.controls.productName.dirty}">
-      <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">Product name</label>
+      <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">{{ 'PRODUCT.LABEL_NAME' | translate }}</label>
       <input
         id="productName"
         type="text"
         formControlName="productName"
-        placeholder="e.g. The Art of Programming"
+        [placeholder]="'PRODUCT.PLACEHOLDER_NAME' | translate"
         class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
       />
       @if (productForm.controls.productName.touched && productForm.controls.productName.errors) {
         <p class="text-xs text-red-600 mt-1">
           @if (productForm.controls.productName.errors['required']) {
-            Product name is required.
+            {{ 'PRODUCT.VALIDATION.NAME_REQUIRED' | translate }}
           } @else if (productForm.controls.productName.errors['minlength']) {
-            Product name must be at least 2 characters.
+            {{ 'PRODUCT.VALIDATION.NAME_MIN_LENGTH' | translate }}
           }
         </p>
       }
@@ -43,7 +43,7 @@
     <div class="grid grid-cols-2 gap-4 mb-4">
       <!-- Price -->
       <div [ngClass]="{'border-l-2 border-blue-500 pl-3': productForm.controls.price.dirty}">
-        <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Price (&euro;)</label>
+        <label for="price" class="block text-sm font-medium text-gray-700 mb-1">{{ 'PRODUCT.LABEL_PRICE' | translate }} (&euro;)</label>
         <input
           id="price"
           type="number"
@@ -55,9 +55,9 @@
         @if (productForm.controls.price.touched && productForm.controls.price.errors) {
           <p class="text-xs text-red-600 mt-1">
             @if (productForm.controls.price.errors['required']) {
-              Price is required.
+              {{ 'PRODUCT.VALIDATION.PRICE_REQUIRED' | translate }}
             } @else if (productForm.controls.price.errors['min']) {
-              Price must be 0 or greater.
+              {{ 'PRODUCT.VALIDATION.PRICE_MIN' | translate }}
             }
           </p>
         }
@@ -66,7 +66,7 @@
       <!-- Availability -->
       <div [ngClass]="{'border-l-2 border-blue-500 pl-3': productForm.controls.availability.dirty}">
         <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
-        <label id="availability-label" class="block text-sm font-medium text-gray-700 mb-1">Availability</label>
+        <label id="availability-label" class="block text-sm font-medium text-gray-700 mb-1">{{ 'PRODUCT.LABEL_AVAILABILITY' | translate }}</label>
         <mat-select
           formControlName="availability"
           aria-labelledby="availability-label"
@@ -81,21 +81,21 @@
 
     <!-- In stock -->
     <div class="mb-4" [ngClass]="{'border-l-2 border-blue-500 pl-3': productForm.controls.stockCount.dirty}">
-      <label for="stockCount" class="block text-sm font-medium text-gray-700 mb-1">In stock</label>
+      <label for="stockCount" class="block text-sm font-medium text-gray-700 mb-1">{{ 'PRODUCT.LABEL_STOCK' | translate }}</label>
       <input
         id="stockCount"
         type="number"
         formControlName="stockCount"
-        placeholder="Number of items in stock"
+        [placeholder]="'PRODUCT.PLACEHOLDER_STOCK' | translate"
         min="0"
         class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
       />
       @if (productForm.controls.stockCount.touched && productForm.controls.stockCount.errors) {
         <p class="text-xs text-red-600 mt-1">
           @if (productForm.controls.stockCount.errors['required']) {
-            Stock count is required.
+            {{ 'PRODUCT.VALIDATION.STOCK_REQUIRED' | translate }}
           } @else if (productForm.controls.stockCount.errors['min']) {
-            Stock count must be 0 or greater.
+            {{ 'PRODUCT.VALIDATION.STOCK_MIN' | translate }}
           }
         </p>
       }
@@ -103,13 +103,13 @@
 
     <!-- Cross-field validation error -->
     @if (productForm.errors?.['availabilityMismatch'] && (productForm.controls.stockCount.touched || productForm.controls.availability.touched)) {
-      <p class="text-xs text-red-600 mb-4">{{ productForm.errors?.['availabilityMismatch'] }}</p>
+      <p class="text-xs text-red-600 mb-4">{{ productForm.errors?.['availabilityMismatch'] | translate }}</p>
     }
 
     <!-- Categories -->
     <div class="mb-6" [ngClass]="{'border-l-2 border-blue-500 pl-3': productForm.controls.categoryIds.dirty}">
       <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
-      <label id="categories-label" class="block text-sm font-medium text-gray-700 mb-2">Categories</label>
+      <label id="categories-label" class="block text-sm font-medium text-gray-700 mb-2">{{ 'PRODUCT.LABEL_CATEGORIES' | translate }}</label>
       <div class="flex flex-wrap gap-2" role="listbox" aria-labelledby="categories-label">
         @for (cat of categories; track cat.id) {
           <button
@@ -137,7 +137,7 @@
       [disabled]="isDeleting()"
       (click)="onDelete()"
     >
-      Delete
+      {{ 'ACTIONS.DELETE' | translate }}
     </button>
   }
   <div class="ml-auto flex gap-3">
@@ -146,13 +146,13 @@
       [disabled]="productForm.pristine"
       (click)="onDiscard()"
     >
-      Discard
+      {{ 'ACTIONS.DISCARD' | translate }}
     </button>
     <button
       mat-stroked-button
       (click)="onCancel()"
     >
-      Cancel
+      {{ 'ACTIONS.CANCEL' | translate }}
     </button>
     <button
       mat-flat-button
@@ -161,9 +161,9 @@
       (click)="onSave()"
     >
       @if (isEditMode()) {
-        Save
+        {{ 'ACTIONS.SAVE' | translate }}
       } @else {
-        Add product
+        {{ 'ACTIONS.ADD_PRODUCT' | translate }}
       }
     </button>
   </div>

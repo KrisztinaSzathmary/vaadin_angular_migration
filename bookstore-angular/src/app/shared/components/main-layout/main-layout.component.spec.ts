@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { MainLayoutComponent } from './main-layout.component';
 import { AuthService } from '../../../core/services/auth.service';
+import { TranslateTestModule } from '../../../testing/translate-testing';
 
 function createComponent(): {
   fixture: ComponentFixture<MainLayoutComponent>;
@@ -27,7 +28,7 @@ function createComponent(): {
 describe('MainLayoutComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MainLayoutComponent],
+      imports: [MainLayoutComponent, TranslateTestModule],
       providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
   });

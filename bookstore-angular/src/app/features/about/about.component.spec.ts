@@ -6,6 +6,7 @@ import { AboutComponent } from './about.component';
 import { Product } from '../../models/product.model';
 import { Availability } from '../../models/availability.enum';
 import { Category } from '../../models/category.model';
+import { TranslateTestModule } from '../../testing/translate-testing';
 
 const MOCK_PRODUCTS: Product[] = [
   {
@@ -55,7 +56,7 @@ describe('AboutComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AboutComponent],
+      imports: [AboutComponent, TranslateTestModule],
       providers: [provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
 

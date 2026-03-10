@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ConfirmDialogComponent, ConfirmDialogData } from './confirm-dialog.component';
+import { TranslateTestModule } from '../../../testing/translate-testing';
 
 describe('ConfirmDialogComponent', () => {
   let component: ConfirmDialogComponent;
@@ -14,7 +15,7 @@ describe('ConfirmDialogComponent', () => {
     >;
 
     TestBed.configureTestingModule({
-      imports: [ConfirmDialogComponent, NoopAnimationsModule],
+      imports: [ConfirmDialogComponent, NoopAnimationsModule, TranslateTestModule],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: data },
         { provide: MatDialogRef, useValue: dialogRefSpy },

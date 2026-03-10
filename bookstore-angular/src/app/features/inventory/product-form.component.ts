@@ -16,6 +16,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { NgClass } from '@angular/common';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ProductService } from '../../core/services/product.service';
 import { NotificationService } from '../../core/services/notification.service';
 import {
@@ -42,13 +43,13 @@ export function availabilityStockValidator(control: AbstractControl): Validation
   const stockCount = control.get('stockCount')?.value as number;
 
   if (availability === Availability.AVAILABLE && stockCount <= 0) {
-    return { availabilityMismatch: 'Available products must have stock count greater than 0' };
+    return { availabilityMismatch: 'PRODUCT.VALIDATION.AVAILABLE_STOCK' };
   }
   if (availability === Availability.DISCONTINUED && stockCount !== 0) {
-    return { availabilityMismatch: 'Discontinued products must have stock count of 0' };
+    return { availabilityMismatch: 'PRODUCT.VALIDATION.DISCONTINUED_STOCK' };
   }
   if (availability === Availability.COMING && stockCount !== 0) {
-    return { availabilityMismatch: 'Coming products must have stock count of 0' };
+    return { availabilityMismatch: 'PRODUCT.VALIDATION.COMING_STOCK' };
   }
   return null;
 }
@@ -63,12 +64,14 @@ export function availabilityStockValidator(control: AbstractControl): Validation
     MatIconModule,
     MatSelectModule,
     NgClass,
+    TranslatePipe,
   ],
 })
 export class ProductFormComponent {
   private readonly fb = inject(FormBuilder);
   private readonly productService = inject(ProductService);
   private readonly notificationService = inject(NotificationService);
+  private readonly translate = inject(TranslateService);
   private readonly dialog = inject(MatDialog);
   private readonly dialogRef = inject(MatDialogRef<ProductFormComponent>);
   private readonly data: ProductFormData = inject(MAT_DIALOG_DATA);
@@ -132,7 +135,8 @@ export class ProductFormComponent {
       },
       error: (err: { error?: { error?: string } }) => {
         this.isSaving.set(false);
-        const message = err.error?.error ?? 'Failed to save product';
+        const message =
+          err.error?.error ?? this.translate.instant('PRODUCT.NOTIFICATION.SAVE_ERROR');
         this.notificationService.showError(message);
       },
     });
@@ -141,7 +145,7 @@ export class ProductFormComponent {
   onDelete(): void {
     const productName = this.data.product?.productName ?? '';
     const dialogData: ConfirmDialogData = {
-      message: `'${productName}' will be deleted.`,
+      message: this.translate.instant('PRODUCT.CONFIRM_DELETE', { name: productName }),
     };
 
     this.dialog
@@ -172,7 +176,8 @@ export class ProductFormComponent {
       },
       error: (err: { error?: { error?: string } }) => {
         this.isDeleting.set(false);
-        const message = err.error?.error ?? 'Failed to delete product';
+        const message =
+          err.error?.error ?? this.translate.instant('PRODUCT.NOTIFICATION.DELETE_ERROR');
         this.notificationService.showError(message);
       },
     });
@@ -184,7 +189,7 @@ export class ProductFormComponent {
     }
     return this.dialog
       .open(ConfirmDialogComponent, {
-        data: { message: 'You have unsaved changes. Discard them?' } as ConfirmDialogData,
+        data: { message: this.translate.instant('UNSAVED.DISCARD_CHANGES') } as ConfirmDialogData,
       })
       .afterClosed()
       .pipe(map((confirmed?: boolean) => confirmed === true));
@@ -196,7 +201,7 @@ export class ProductFormComponent {
     }
     this.dialog
       .open(ConfirmDialogComponent, {
-        data: { message: 'Discard all changes?' } as ConfirmDialogData,
+        data: { message: this.translate.instant('UNSAVED.DISCARD_ALL') } as ConfirmDialogData,
       })
       .afterClosed()
       .subscribe((confirmed?: boolean) => {
@@ -230,11 +235,11 @@ export class ProductFormComponent {
   formatAvailability(availability: Availability): string {
     switch (availability) {
       case Availability.AVAILABLE:
-        return 'Available';
+        return this.translate.instant('AVAILABILITY.AVAILABLE');
       case Availability.COMING:
-        return 'Coming';
+        return this.translate.instant('AVAILABILITY.COMING');
       case Availability.DISCONTINUED:
-        return 'Discontinued';
+        return this.translate.instant('AVAILABILITY.DISCONTINUED');
     }
   }
 }

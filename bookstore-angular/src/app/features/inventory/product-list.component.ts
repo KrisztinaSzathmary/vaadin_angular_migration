@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { NgClass } from '@angular/common';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Observable, Subject, debounceTime, filter, forkJoin, map, of } from 'rxjs';
 import { HasUnsavedChanges } from '../../core/guards/unsaved-changes.guard';
 import { ProductService } from '../../core/services/product.service';
@@ -25,7 +26,15 @@ import { Availability } from '../../models/availability.enum';
 @Component({
   selector: 'app-product-list',
   templateUrl: './product-list.component.html',
-  imports: [MatTableModule, MatSortModule, MatIconModule, MatButtonModule, NgClass, RouterOutlet],
+  imports: [
+    MatTableModule,
+    MatSortModule,
+    MatIconModule,
+    MatButtonModule,
+    NgClass,
+    RouterOutlet,
+    TranslatePipe,
+  ],
 })
 export class ProductListComponent implements OnInit, HasUnsavedChanges {
   private readonly productService = inject(ProductService);
@@ -33,6 +42,7 @@ export class ProductListComponent implements OnInit, HasUnsavedChanges {
   private readonly authService = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly notificationService = inject(NotificationService);
+  private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
 
@@ -115,7 +125,7 @@ export class ProductListComponent implements OnInit, HasUnsavedChanges {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Failed to load products');
+        this.error.set(this.translate.instant('INVENTORY.ERROR'));
         this.loading.set(false);
       },
     });
@@ -197,7 +207,9 @@ export class ProductListComponent implements OnInit, HasUnsavedChanges {
 
     const id = Number(idParam);
     if (isNaN(id) || !Number.isInteger(id) || id <= 0) {
-      this.notificationService.showError(`Invalid product ID: '${idParam}'`);
+      this.notificationService.showError(
+        this.translate.instant('PRODUCT.NOTIFICATION.INVALID_ID', { id: idParam }),
+      );
       this.router.navigate(['/inventory']);
       return;
     }
@@ -218,7 +230,9 @@ export class ProductListComponent implements OnInit, HasUnsavedChanges {
         this.openProductDialogFromRoute(product);
       },
       error: () => {
-        this.notificationService.showError(`Product with ID ${id} not found`);
+        this.notificationService.showError(
+          this.translate.instant('PRODUCT.NOTIFICATION.NOT_FOUND', { id }),
+        );
         this.router.navigate(['/inventory']);
       },
     });
@@ -268,9 +282,13 @@ export class ProductListComponent implements OnInit, HasUnsavedChanges {
       if (result) {
         this.refreshProducts();
         if ('deleted' in result) {
-          this.notificationService.showSuccess(`'${result.productName}' removed`);
+          this.notificationService.showSuccess(
+            this.translate.instant('PRODUCT.NOTIFICATION.REMOVED', { name: result.productName }),
+          );
         } else {
-          const message = product ? 'Product updated' : 'Product created';
+          const message = product
+            ? this.translate.instant('PRODUCT.NOTIFICATION.UPDATED')
+            : this.translate.instant('PRODUCT.NOTIFICATION.CREATED');
           this.notificationService.showSuccess(message);
         }
       }
@@ -297,11 +315,11 @@ export class ProductListComponent implements OnInit, HasUnsavedChanges {
   formatAvailability(availability: Availability): string {
     switch (availability) {
       case Availability.AVAILABLE:
-        return 'Available';
+        return this.translate.instant('AVAILABILITY.AVAILABLE');
       case Availability.COMING:
-        return 'Coming';
+        return this.translate.instant('AVAILABILITY.COMING');
       case Availability.DISCONTINUED:
-        return 'Discontinued';
+        return this.translate.instant('AVAILABILITY.DISCONTINUED');
     }
   }
 

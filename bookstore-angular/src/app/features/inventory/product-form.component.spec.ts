@@ -16,6 +16,7 @@ import { Category } from '../../models/category.model';
 import { Availability } from '../../models/availability.enum';
 import { NotificationService } from '../../core/services/notification.service';
 import { FormControl, FormGroup } from '@angular/forms';
+import { TranslateTestModule } from '../../testing/translate-testing';
 
 const mockCategories: Category[] = [
   { id: 1, name: 'Best sellers' },
@@ -56,7 +57,7 @@ describe('ProductFormComponent', () => {
     } as unknown as jest.Mocked<NotificationService>;
 
     TestBed.configureTestingModule({
-      imports: [ProductFormComponent, NoopAnimationsModule],
+      imports: [ProductFormComponent, NoopAnimationsModule, TranslateTestModule],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),

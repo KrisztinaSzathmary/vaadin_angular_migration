@@ -3,17 +3,21 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
+import { LanguageService } from '../../core/services/language.service';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, MatButtonModule, MatIconModule],
+  imports: [ReactiveFormsModule, MatButtonModule, MatIconModule, TranslatePipe],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
+  private readonly translate = inject(TranslateService);
+  readonly languageService = inject(LanguageService);
 
   readonly loginForm = this.fb.nonNullable.group({
     username: ['', Validators.required],
@@ -40,8 +44,12 @@ export class LoginComponent {
       },
       error: () => {
         this.isLoading.set(false);
-        this.errorMessage.set('Invalid username or password');
+        this.errorMessage.set(this.translate.instant('LOGIN.ERROR_INVALID'));
       },
     });
+  }
+
+  onLanguageChange(lang: string): void {
+    this.languageService.switchLanguage(lang);
   }
 }

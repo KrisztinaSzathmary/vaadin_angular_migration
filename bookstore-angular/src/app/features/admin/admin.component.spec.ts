@@ -6,6 +6,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { AdminComponent } from './admin.component';
 import { Category } from '../../models/category.model';
+import { TranslateTestModule } from '../../testing/translate-testing';
 
 const MOCK_CATEGORIES: Category[] = [
   { id: 1, name: "Children's books" },
@@ -20,7 +21,7 @@ describe('AdminComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AdminComponent, NoopAnimationsModule],
+      imports: [AdminComponent, NoopAnimationsModule, TranslateTestModule],
       providers: [provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
 

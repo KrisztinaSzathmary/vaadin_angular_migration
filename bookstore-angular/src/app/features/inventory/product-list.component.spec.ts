@@ -14,6 +14,7 @@ import { NotificationService } from '../../core/services/notification.service';
 import { Product } from '../../models/product.model';
 import { Category } from '../../models/category.model';
 import { Availability } from '../../models/availability.enum';
+import { TranslateTestModule } from '../../testing/translate-testing';
 
 const mockProducts: Product[] = [
   {
@@ -75,7 +76,7 @@ describe('ProductListComponent', () => {
     } as unknown as jest.Mocked<NotificationService>;
 
     await TestBed.configureTestingModule({
-      imports: [ProductListComponent, NoopAnimationsModule],
+      imports: [ProductListComponent, NoopAnimationsModule, TranslateTestModule],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),

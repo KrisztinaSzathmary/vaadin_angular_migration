@@ -2,6 +2,63 @@
 
 ---
 
+## Iteration 18 – Internationalisierung (i18n)
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-10
+
+### Umgesetzte Änderungen
+
+- `package.json` – `@ngx-translate/core` + `@ngx-translate/http-loader` als Dependencies installiert
+- `public/i18n/en.json` – Englische Übersetzungen (~106 Keys), organisiert in Namensräumen: APP, NAV, LOGIN, INVENTORY, AVAILABILITY, PRODUCT, ACTIONS, UNSAVED, ADMIN, ABOUT, NOT_FOUND, CONFIRM
+- `public/i18n/de.json` – Deutsche Übersetzungen (~106 Keys), gleiche Struktur wie `en.json`
+- `src/app/app.config.ts` – `provideTranslateService()` mit `provideTranslateHttpLoader({ prefix: './i18n/', suffix: '.json' })` und `fallbackLang: 'en'`
+- `src/app/core/services/language.service.ts` – Signal-basierter Sprachservice: `currentLanguage` Signal (initial aus Cookie `bookstore-lang` oder `'en'`), `availableLanguages` Array, `switchLanguage(lang)` mit Cookie-Persistierung (Max-Age: 1 Jahr, SameSite=Lax), Constructor ruft `translate.setDefaultLang('en')` + `translate.use(currentLanguage())`
+- `src/app/core/services/language.service.spec.ts` – 8 Unit-Tests: Creation, Default-Sprache, TranslateService-Initialisierung, verfügbare Sprachen, Sprachwechsel (Signal, Cookie, TranslateService.use), Cookie-Lesen bei Init
+- `src/app/features/login/login.component.html` – Alle Strings via `TranslatePipe` übersetzt, **Sprachauswahl-Dropdown** in linker Sidebar hinzugefügt: `<select>` mit Tailwind-Styling (halbtransparent auf blauem Hintergrund), Optionen aus `languageService.availableLanguages`, `[selected]`-Binding für korrekte Initialisierung nach Reload
+- `src/app/features/login/login.component.ts` – `LanguageService` + `TranslatePipe` injiziert, `onLanguageChange()` Handler
+- `src/app/shared/components/main-layout/main-layout.component.html/.ts` – `TranslatePipe` auf 6 Sidebar-Strings (Bookstore, Inventory, About, Admin, Collapse, Logout)
+- `src/app/features/inventory/product-list.component.html` – Alle Strings übersetzt: Titel, Produktanzahl, Spaltenüberschriften, Availability-Badges, Suchplatzhalter, "New product"-Button, Loading-Text
+- `src/app/features/inventory/product-list.component.ts` – `TranslatePipe` + `TranslateService` importiert, `formatAvailability()` nutzt `translate.instant()`, Notification-Strings übersetzt
+- `src/app/features/inventory/product-form.component.html` – Alle Labels, Validierungsmeldungen, Button-Texte übersetzt, Cross-Field-Fehler via `{{ productForm.errors?.['availabilityMismatch'] | translate }}`
+- `src/app/features/inventory/product-form.component.ts` – `TranslatePipe` + `TranslateService` importiert, `availabilityStockValidator` gibt Translation-Keys als Fehlerwerte zurück, Confirm-Dialog- und Notification-Strings nutzen `translate.instant()`
+- `src/app/features/admin/admin.component.html/.ts` – `TranslatePipe` + `TranslateService`, ~15 Strings übersetzt inkl. Notifications
+- `src/app/features/about/about.component.html/.ts` – `TranslatePipe`, ~20 Strings übersetzt, `systemInfo`/`techInfo` Arrays nutzen Translation-Keys
+- `src/app/features/not-found/not-found.component.ts` – `TranslatePipe` importiert, 1 String übersetzt
+- `src/app/shared/components/confirm-dialog/confirm-dialog.component.ts` – `TranslatePipe` importiert, Titel + Button-Texte übersetzt
+- `src/app/core/services/notification.service.ts` – `TranslateService` injiziert, `'Close'`-Button-Text übersetzt
+- `src/app/testing/translate-testing.ts` – Shared Test-Helper: `TranslateTestModule` NgModule mit `FakeTranslateLoader` (lädt `en.json` via `require()`), Constructor ruft `translate.use('en')` auf
+- `tsconfig.app.json` – `"src/app/testing/**"` zu `exclude` hinzugefügt (verhindert `require()`-Kompilierung im App-Build)
+- 9 `.spec.ts`-Dateien aktualisiert – `TranslateTestModule` in TestBed-Imports: `login`, `main-layout`, `product-list`, `product-form`, `admin`, `about`, `not-found`, `confirm-dialog`, `notification.service`
+- `e2e/i18n.spec.ts` – 6 E2E-Tests: Sprachauswahl-Dropdown sichtbar, Standard Englisch, Wechsel zu Deutsch, Sprache nach Login erhalten, Sprache nach Reload erhalten (Cookie), Wechsel zurück zu Englisch
+
+### Entscheidungen
+
+- **`@ngx-translate/core` statt `@angular/localize`** – Anforderung ist dynamischer Sprachwechsel ohne Reload; `@angular/localize` ist build-time i18n (separate Builds pro Sprache)
+- **`public/i18n/` statt `src/assets/`** – Angular 20 Konvention, `angular.json` assets config zeigt `"input": "public"`, Loader-Prefix `./i18n/`
+- **Cross-Field-Validator gibt Translation-Keys zurück** – `availabilityStockValidator` ist pure Funktion ohne DI; Validator setzt `{ availabilityMismatch: 'PRODUCT.VALIDATION.AVAILABLE_STOCK' }`, Template übersetzt via `| translate` Pipe
+- **`TranslateTestModule` als NgModule-Klasse** – ngx-translate v17 `defaultLanguage` ist deprecated und lädt keine Übersetzungen; `translate.use('en')` im Constructor triggert den `FakeTranslateLoader` und setzt `currentLang`, damit `translate.instant()` in Tests funktioniert
+- **`require()` für JSON in Test-Helper** – Synchrones Laden der echten `en.json`-Datei; `tsconfig.app.json` exclude verhindert Kompilierung im Browser-Build
+- **`[selected]`-Binding auf `<option>`** – `[value]` auf `<select>` setzt initial nicht zuverlässig den richtigen Wert nach Page-Reload; explizites `[selected]` auf `<option>` stellt korrekte Initialisierung sicher
+- **CSS-Selektor statt Role-Locator in E2E-Tests** – `loginPage.login()` nutzt `button[type="submit"]` statt `getByRole('button', { name: /Log in/i })` für sprachunabhängige Zuverlässigkeit
+
+### Verifikation
+
+- `ng test` → 245 Unit-Tests grün (237 bestehende + 8 neue LanguageService, 18 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS
+- `npx playwright test` → 42 E2E-Tests grün (36 bestehende + 6 neue i18n-Tests)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 19 – siehe `backlog.md`
+
+---
+
 ## Iteration 17 – Ungespeicherte Änderungen (Dirty State)
 
 **Status:** Abgeschlossen

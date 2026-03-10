@@ -1,13 +1,14 @@
 import { Component, computed, inject, OnInit, signal, VERSION } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ProductService } from '../../core/services/product.service';
 import { CategoryService } from '../../core/services/category.service';
 import { Product } from '../../models/product.model';
 import { Availability } from '../../models/availability.enum';
 
 export interface TechLink {
-  label: string;
+  labelKey: string;
   value: string;
   url: string;
 }
@@ -15,7 +16,7 @@ export interface TechLink {
 @Component({
   selector: 'app-about',
   templateUrl: './about.component.html',
-  imports: [DecimalPipe, MatIconModule],
+  imports: [DecimalPipe, MatIconModule, TranslatePipe],
 })
 export class AboutComponent implements OnInit {
   private readonly productService = inject(ProductService);
@@ -33,27 +34,31 @@ export class AboutComponent implements OnInit {
 
   readonly angularVersion = VERSION.full;
 
-  readonly systemInfo: { label: string; value: string }[] = [
-    { label: 'Environment', value: 'Production' },
-    { label: 'Version', value: 'v1.1-SNAPSHOT' },
-    { label: 'Build date', value: new Date().toISOString().split('T')[0] },
-    { label: 'Runtime', value: `Angular ${VERSION.major}` },
+  readonly systemInfo: { labelKey: string; value: string }[] = [
+    { labelKey: 'ABOUT.SYSTEM_ENVIRONMENT', value: 'ABOUT.SYSTEM_ENVIRONMENT_VALUE' },
+    { labelKey: 'ABOUT.SYSTEM_VERSION', value: 'v1.1-SNAPSHOT' },
+    { labelKey: 'ABOUT.SYSTEM_BUILD_DATE', value: new Date().toISOString().split('T')[0] },
+    { labelKey: 'ABOUT.SYSTEM_RUNTIME', value: `Angular ${VERSION.major}` },
   ];
 
   readonly techInfo: TechLink[] = [
-    { label: 'Framework', value: `Angular ${VERSION.major}`, url: 'https://angular.dev' },
     {
-      label: 'UI Library',
+      labelKey: 'ABOUT.TECH_FRAMEWORK',
+      value: `Angular ${VERSION.major}`,
+      url: 'https://angular.dev',
+    },
+    {
+      labelKey: 'ABOUT.TECH_UI_LIBRARY',
       value: 'Angular Material 20',
       url: 'https://material.angular.io',
     },
     {
-      label: 'Styling',
+      labelKey: 'ABOUT.TECH_STYLING',
       value: 'Tailwind CSS 4',
       url: 'https://tailwindcss.com',
     },
     {
-      label: 'Language',
+      labelKey: 'ABOUT.TECH_LANGUAGE',
       value: 'TypeScript 5.9',
       url: 'https://www.typescriptlang.org',
     },

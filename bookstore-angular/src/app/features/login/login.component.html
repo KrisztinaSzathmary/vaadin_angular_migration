@@ -3,12 +3,28 @@
   <div
     class="hidden w-sidebar bg-[#6B8AFF] p-8 text-white sm:flex sm:flex-col"
   >
-    <h1 class="mb-4 text-2xl font-bold text-black">Login information</h1>
+    <h1 class="mb-4 text-2xl font-bold text-black">{{ 'LOGIN.INFO_TITLE' | translate }}</h1>
     <p class="text-sm leading-relaxed">
-      Log in as &quot;admin&quot; to have full access. Log in with any other
-      username to have read-only access. For all users, the password is same as
-      the username.
+      {{ 'LOGIN.INFO_TEXT' | translate }}
     </p>
+
+    <!-- Language Selector -->
+    <div class="mt-auto">
+      <label for="language-select" class="mb-1 block text-xs font-medium text-white/70">
+        {{ 'LOGIN.LANGUAGE' | translate }}
+      </label>
+      <select
+        id="language-select"
+        [value]="languageService.currentLanguage()"
+        (change)="onLanguageChange($any($event.target).value)"
+        class="w-full rounded border border-white/30 bg-white/20 px-3 py-2 text-sm text-white backdrop-blur-sm focus:border-white focus:ring-1 focus:ring-white focus:outline-none"
+        data-testid="language-select"
+      >
+        @for (lang of languageService.availableLanguages; track lang.code) {
+          <option [value]="lang.code" [selected]="lang.code === languageService.currentLanguage()" class="text-gray-900">{{ lang.label }}</option>
+        }
+      </select>
+    </div>
   </div>
 
   <!-- Right area -->
@@ -18,12 +34,12 @@
       (ngSubmit)="onSubmit()"
       class="flex w-80 flex-col gap-5"
     >
-      <h2 class="mb-2 text-2xl font-bold">Login</h2>
+      <h2 class="mb-2 text-2xl font-bold">{{ 'LOGIN.TITLE' | translate }}</h2>
 
       <!-- Username -->
       <div class="flex flex-col gap-1">
         <label for="username" class="text-sm font-medium text-gray-700">
-          Username <span class="text-red-500">&bull;</span>
+          {{ 'LOGIN.USERNAME' | translate }} <span class="text-red-500">&bull;</span>
         </label>
         <input
           id="username"
@@ -36,7 +52,7 @@
       <!-- Password -->
       <div class="flex flex-col gap-1">
         <label for="password" class="text-sm font-medium text-gray-700">
-          Password <span class="text-red-500">&bull;</span>
+          {{ 'LOGIN.PASSWORD' | translate }} <span class="text-red-500">&bull;</span>
         </label>
         <div class="relative">
           <input
@@ -50,7 +66,9 @@
             type="button"
             (click)="hidePassword.set(!hidePassword())"
             [attr.aria-label]="
-              hidePassword() ? 'Show password' : 'Hide password'
+              hidePassword()
+                ? ('LOGIN.SHOW_PASSWORD' | translate)
+                : ('LOGIN.HIDE_PASSWORD' | translate)
             "
             class="absolute right-2 top-1/2 flex -translate-y-1/2 items-center text-gray-400 hover:text-gray-600"
           >
@@ -72,12 +90,12 @@
         class="w-full"
         [disabled]="loginForm.invalid || isLoading()"
       >
-        {{ isLoading() ? "Logging in..." : "Log in" }}
+        {{ isLoading() ? ('LOGIN.BUTTON_LOADING' | translate) : ('LOGIN.BUTTON' | translate) }}
       </button>
 
-      <a class="cursor-pointer text-center text-sm text-blue-600"
-        >Forgot password</a
-      >
+      <a class="cursor-pointer text-center text-sm text-blue-600">
+        {{ 'LOGIN.FORGOT_PASSWORD' | translate }}
+      </a>
     </form>
   </div>
 </div>
