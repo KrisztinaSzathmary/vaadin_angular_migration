@@ -2,6 +2,87 @@
 
 ---
 
+## Iteration 23 – Abschluss und Dokumentation
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-10
+
+### Umgesetzte Änderungen
+
+- `bookstore-angular/README.md` – Default Angular CLI README ersetzt durch projektspezifische Dokumentation: Projektbeschreibung, Tech Stack, Prerequisites, Getting Started (Backend + Frontend + API Proxy), Available Scripts, Projektstruktur-Übersicht, Test-Credentials, Feature-Übersicht, bekannte Limitierungen
+- `state.md` – Iteration 23 Eintrag mit Feature-Parität-Checkliste, bekannten Unterschieden und Aufräumempfehlungen
+
+### Feature-Parität-Checkliste (Vaadin ↔ Angular)
+
+| Feature | Vaadin | Angular | Status |
+|---------|--------|---------|--------|
+| Login/Logout | LoginView + AccessControl | LoginComponent + AuthService | Migriert |
+| Produkttabelle (Grid) | ProductGrid (Vaadin Grid) | ProductListComponent (MatTable) | Migriert |
+| Produktfilter | TextField + ListDataProvider | Search input + MatTableDataSource.filterPredicate | Migriert |
+| Produkt-Formular (CRUD) | ProductForm (Dialog) | ProductFormComponent (MatDialog) | Migriert |
+| Produkt löschen | ConfirmDialog | ConfirmDialogComponent + MatDialog | Migriert |
+| Kategorien-Verwaltung | AdminView + VirtualList | AdminComponent + Inline-Editing | Migriert |
+| Sidebar-Navigation | Menu + SideNav | MainLayoutComponent + MatSidenav | Migriert |
+| URL-basierte Navigation | HasUrlParameter<String> | Angular Router + Route Params | Migriert |
+| Unsaved Changes Guard | BeforeLeaveObserver | CanDeactivate Guard + ConfirmDialog | Migriert |
+| Internationalisierung | CustomI18NProvider (EN/FI) | ngx-translate (EN/DE) | Migriert (andere 2. Sprache) |
+| Responsives Design | CSS Media Queries (800px/570px) | BreakpointObserver + MatSidenav | Migriert |
+| About-Seite | AboutView (einfach) | AboutComponent (Dashboard mit Stats) | Erweitert |
+| 404-Fehlerseite | ErrorView | NotFoundComponent | Migriert |
+| Keyboard Shortcuts | Ctrl+F/Alt+N/Ctrl+S/Esc/PgDn/PgUp/Ctrl+L | – | Nicht migriert (Iteration 19 übersprungen) |
+| Rollen-basierte Autorisierung | AccessControl + isUserInRole() | AuthService + adminGuard | Migriert |
+| CORS-Filter | JAX-RS @Provider | proxy.conf.json (Dev) | Migriert |
+| REST-API (Backend) | – (neu hinzugefügt) | Konsumiert via HttpClient | Beibehalten |
+
+### Bekannte Unterschiede
+
+- **Keyboard Shortcuts**: Iteration 19 wurde übersprungen – Ctrl+F, Alt+N, Ctrl+S, Escape, Page Down/Up, Ctrl+L fehlen in Angular
+- **Zweite Sprache**: Vaadin = Finnisch (fi_FI), Angular = Deutsch (de) – bewusste Entscheidung
+- **About-Seite**: Angular-Version hat Dashboard mit Stats-Cards (erweitert ggü. Vaadin)
+- **Custom Web Component**: Vaadin's `<bookstore-title>` Polymer-Komponente wurde durch Standard-HTML ersetzt
+- **Daten-Caching**: Vaadin's `ProductDataProvider` hatte 1-Minuten-Cache; Angular lädt bei jedem Seitenaufruf frisch
+
+### Aufräumarbeiten – Vaadin-Frontend-Dateien
+
+Folgende Vaadin-Frontend-Dateien könnten entfernt werden, falls die Angular SPA die Vaadin-UI vollständig ablöst:
+
+**Java Views (UI-Logik):**
+- `com.vaadin.samples.MainLayout` – Vaadin Haupt-Layout
+- `com.vaadin.samples.Menu` – Vaadin Navigation
+- `com.vaadin.samples.authentication.LoginView` – Vaadin Login
+- `com.vaadin.samples.crud.SampleCrudViewImpl` – Vaadin Produkt-CRUD
+- `com.vaadin.samples.crud.ProductGrid` – Vaadin Produkttabelle
+- `com.vaadin.samples.crud.ProductForm` – Vaadin Produktformular
+- `com.vaadin.samples.crud.ProductDataProvider` – Vaadin Daten-Provider
+- `com.vaadin.samples.crud.SampleCrudPresenter` – MVP Presenter
+- `com.vaadin.samples.AdminView` – Vaadin Admin-Ansicht
+- `com.vaadin.samples.about.AboutView` – Vaadin About-Seite
+- `com.vaadin.samples.ErrorView` – Vaadin 404-Seite
+
+**Frontend-Ressourcen:**
+- `frontend/themes/bookstore/` – Vaadin CSS-Theme (styles.css, component CSS)
+- `frontend/index.html` – Vaadin Entry Point
+- `bookstore-starter-flow-my-component/` – Custom Web Component Modul
+
+**Beibehalten (Backend/REST):**
+- `com.vaadin.samples.rest/` – REST-API-Package (wird von Angular genutzt)
+- `com.vaadin.samples.backend/` – Backend-Services (DataService, MockDataService)
+- `com.vaadin.samples.authentication.AccessControl*` – Auth-Logik (von REST genutzt)
+
+**Empfehlung**: Koexistenz beibehalten – Vaadin-UI und Angular-SPA laufen parallel auf demselben Backend. Entfernung erst nach vollständiger Abnahme der Angular-SPA.
+
+### Verifikation
+
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS
+- `ng test` → 255 Unit-Tests grün (keine Änderungen an Testdateien)
+
+### Nächste Iteration
+
+- Keine – Migration abgeschlossen
+
+---
+
 ## Iteration 22 – E2E-Tests (Quality Check)
 
 **Status:** Abgeschlossen
