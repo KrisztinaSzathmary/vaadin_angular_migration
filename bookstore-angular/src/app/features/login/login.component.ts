@@ -2,14 +2,16 @@ import { Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
+import { UpperCasePipe } from '@angular/common';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { LanguageService } from '../../core/services/language.service';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, MatButtonModule, MatIconModule, TranslatePipe],
+  imports: [ReactiveFormsModule, UpperCasePipe, MatButtonModule, MatButtonToggleModule, MatIconModule, TranslatePipe],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {

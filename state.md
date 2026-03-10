@@ -2,6 +2,51 @@
 
 ---
 
+## Iteration 20 – Responsives Design
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-10
+
+### Umgesetzte Änderungen
+
+- `src/app/shared/components/main-layout/main-layout.component.ts` – Refactored: `MatSidenavModule` + `MatButtonModule` importiert, `BreakpointObserver` mit `toSignal()` für `isMobile` Signal (`max-width: 799px`), `drawerOpen` Signal, `toggleDrawer()`/`closeDrawer()` Methoden, Router-Events Subscription schließt Drawer bei `NavigationEnd`
+- `src/app/shared/components/main-layout/main-layout.component.html` – Komplett umgebaut: `<div class="flex">` → `<mat-sidenav-container>`, `<nav>` → `<mat-sidenav>` mit `[mode]="isMobile() ? 'over' : 'side'"`, bedingte Top-Bar mit Hamburger-Button (`aria-label="Toggle menu"`) und "Bookstore" Titel auf Mobile, alle `routerLink`-Klicks rufen `closeDrawer()` auf
+- `src/app/shared/components/main-layout/main-layout.component.spec.ts` – Neugeschrieben: Desktop-Tests (14) und Mobile-Tests (4) mit separatem `BreakpointObserver` Mock, `provideAnimationsAsync()` für MatSidenav
+- `src/app/features/inventory/product-list.component.ts` – `BreakpointObserver` injiziert, `isSmallScreen` Signal (`max-width: 569px`) via `toSignal()`, `displayedColumns` von `readonly string[]` zu `computed()` Signal (3 Spalten unter 570px, 5 darüber), Dialog-Config bedingt: Fullscreen (`100vw×100vh`, `panelClass: 'fullscreen-dialog'`) auf kleinem Screen, `520px` auf großem
+- `src/app/features/inventory/product-list.component.html` – Header: `flex flex-col gap-4 md:flex-row md:items-start md:justify-between`, Badges: `flex-wrap gap-4 md:gap-6`, Filter-Bar: `flex-col gap-3 sm:flex-row sm:items-center`, New-Product-Button: `w-full sm:w-auto`, Tabelle: `max-h-[calc(100vh-280px)] overflow-auto` Container, `sticky: true` auf `*matHeaderRowDef`, `displayedColumns` → `displayedColumns()` (Signal-Aufrufe)
+- `src/app/features/inventory/product-list.component.spec.ts` – `BreakpointObserver` Mock als Provider, 4 neue Tests: 5 Spalten auf großem Screen, 3 Spalten auf kleinem Screen (mit `TestBed.resetTestingModule()`), Fullscreen-Dialog-Config auf kleinem Screen, 520px-Dialog auf großem Screen
+- `src/app/features/inventory/product-form.component.html` – Price+Availability Grid: `grid-cols-2` → `grid-cols-1 sm:grid-cols-2`
+- `src/app/features/admin/admin.component.html` – Edit-Mode Container: `flex flex-1 items-center gap-3` → `flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3`
+- `src/app/features/about/about.component.html` – Footer: `flex items-center justify-between` → `flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between`
+- `src/styles.css` – `.fullscreen-dialog .mat-mdc-dialog-surface { border-radius: 0 !important; }` für kantenlosen Vollbild-Dialog
+- `e2e/pages/sidebar.page.ts` – Erweitert: `hamburgerButton` Locator, `clickHamburger()` Methode
+- `e2e/responsive.spec.ts` – 8 neue E2E-Tests in 3 Viewport-Gruppen: Mobile <570px (5: Hamburger sichtbar/Sidebar versteckt, Drawer öffnet, Drawer schließt bei Navigation, 3 Tabellenspalten, Fullscreen-Dialog), Tablet 570–799px (1: Hamburger sichtbar + 5 Spalten), Desktop ≥800px (2: Sidebar permanent + kein Hamburger, 5 Spalten)
+
+### Entscheidungen
+
+- **`MatSidenavModule` statt reines Tailwind** – Angular Material und CDK bereits im Stack; MatSidenav bietet Accessibility (Focus-Trap, ARIA), Backdrop, Animation out-of-the-box
+- **`BreakpointObserver` + `toSignal()`** – Reaktives Breakpoint-Tracking ohne manuelle `resize`-Events; Werte als Angular Signals für Template-Binding
+- **Separate Breakpoints für Layout (800px) und Spalten (570px)** – `isMobile` steuert Sidebar-Modus, `isSmallScreen` steuert Spaltenanzahl und Dialog-Größe
+- **`TestBed.resetTestingModule()` für Small-Screen-Tests** – `BreakpointObserver` wird via DI injiziert und kann nicht nach Komponentenerstellung gewechselt werden; separater TestBed-Setup mit anderem Mock
+- **`provideAnimationsAsync()` statt `NoopAnimationsModule`** – MatSidenav benötigt Animation-Provider; async-Variante vermeidet Zone.js-Probleme in Tests
+
+### Verifikation
+
+- `ng test` → 255 Unit-Tests grün (245 bestehende + 4 neue MainLayout Mobile + 4 neue ProductList Responsive + 2 neue Dialog-Config, 18 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS
+- `npx playwright test` → 50 E2E-Tests grün (42 bestehende + 8 neue Responsive-Tests)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 21 – siehe `backlog.md`
+
+---
+
 ## Iteration 18 – Internationalisierung (i18n)
 
 **Status:** Abgeschlossen

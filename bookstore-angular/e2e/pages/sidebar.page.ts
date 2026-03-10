@@ -7,6 +7,7 @@ export class SidebarPage {
   readonly aboutLink: Locator;
   readonly adminLink: Locator;
   readonly logoutButton: Locator;
+  readonly hamburgerButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -15,6 +16,7 @@ export class SidebarPage {
     this.aboutLink = page.locator('nav a[routerLink="/about"]');
     this.adminLink = page.locator('nav a[routerLink="/admin"]');
     this.logoutButton = page.locator('nav button', { hasText: 'Logout' });
+    this.hamburgerButton = page.locator('button[aria-label="Toggle menu"]');
   }
 
   async clickInventory(): Promise<void> {
@@ -31,5 +33,9 @@ export class SidebarPage {
 
   async clickLogout(): Promise<void> {
     await this.logoutButton.click();
+  }
+
+  async clickHamburger(): Promise<void> {
+    await this.hamburgerButton.click();
   }
 }

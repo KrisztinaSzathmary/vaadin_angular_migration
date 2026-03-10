@@ -5,6 +5,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { signal } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
 import { of, Subject } from 'rxjs';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ProductListComponent } from './product-list.component';
@@ -15,6 +16,16 @@ import { Product } from '../../models/product.model';
 import { Category } from '../../models/category.model';
 import { Availability } from '../../models/availability.enum';
 import { TranslateTestModule } from '../../testing/translate-testing';
+
+function createBreakpointObserver(smallScreen: boolean): Partial<BreakpointObserver> {
+  return {
+    observe: () =>
+      of({
+        matches: smallScreen,
+        breakpoints: { '(max-width: 569px)': smallScreen },
+      } as BreakpointState),
+  };
+}
 
 const mockProducts: Product[] = [
   {
@@ -86,6 +97,7 @@ describe('ProductListComponent', () => {
           useValue: { isAdmin: isAdminSignal },
         },
         { provide: NotificationService, useValue: notificationSpy },
+        { provide: BreakpointObserver, useValue: createBreakpointObserver(false) },
       ],
     }).compileComponents();
 
@@ -785,5 +797,124 @@ describe('ProductListComponent', () => {
     // User cancelled – URL should be restored to current product
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/inventory', '1'], { replaceUrl: true });
     expect(firstDialogRef.close).not.toHaveBeenCalled();
+  });
+
+  // --- Responsive Tests ---
+
+  it('should show all 5 columns on large screen', () => {
+    loadProducts();
+    expect(component.displayedColumns()).toEqual([
+      'productName',
+      'price',
+      'availability',
+      'stockCount',
+      'categories',
+    ]);
+  });
+
+  it('should show only 3 columns on small screen', async () => {
+    // Reconfigure with small screen breakpoint
+    TestBed.resetTestingModule();
+    routerEventsSubject = new Subject<NavigationEnd>();
+    mockRouter = {
+      events: routerEventsSubject,
+      url: '/inventory',
+      navigate: jest.fn().mockResolvedValue(true),
+    };
+    notificationSpy = {
+      showSuccess: jest.fn(),
+      showError: jest.fn(),
+    } as unknown as jest.Mocked<NotificationService>;
+
+    await TestBed.configureTestingModule({
+      imports: [ProductListComponent, NoopAnimationsModule, TranslateTestModule],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: Router, useValue: mockRouter },
+        { provide: AuthService, useValue: { isAdmin: isAdminSignal } },
+        { provide: NotificationService, useValue: notificationSpy },
+        { provide: BreakpointObserver, useValue: createBreakpointObserver(true) },
+      ],
+    }).compileComponents();
+
+    const smallFixture = TestBed.createComponent(ProductListComponent);
+    const smallComponent = smallFixture.componentInstance;
+    const smallHttp = TestBed.inject(HttpTestingController);
+    smallFixture.detectChanges();
+    smallHttp.expectOne('/api/v1/products').flush(mockProducts);
+    smallHttp.expectOne('/api/v1/categories').flush(mockCategories);
+    smallFixture.detectChanges();
+
+    expect(smallComponent.displayedColumns()).toEqual(['productName', 'price', 'availability']);
+    smallHttp.verify();
+  });
+
+  it('should open dialog with fullscreen config on small screen', async () => {
+    // Reconfigure with small screen breakpoint
+    TestBed.resetTestingModule();
+    routerEventsSubject = new Subject<NavigationEnd>();
+    mockRouter = {
+      events: routerEventsSubject,
+      url: '/inventory',
+      navigate: jest.fn().mockResolvedValue(true),
+    };
+    isAdminSignal.set(true);
+    notificationSpy = {
+      showSuccess: jest.fn(),
+      showError: jest.fn(),
+    } as unknown as jest.Mocked<NotificationService>;
+
+    await TestBed.configureTestingModule({
+      imports: [ProductListComponent, NoopAnimationsModule, TranslateTestModule],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: Router, useValue: mockRouter },
+        { provide: AuthService, useValue: { isAdmin: isAdminSignal } },
+        { provide: NotificationService, useValue: notificationSpy },
+        { provide: BreakpointObserver, useValue: createBreakpointObserver(true) },
+      ],
+    }).compileComponents();
+
+    const smallFixture = TestBed.createComponent(ProductListComponent);
+    const smallHttp = TestBed.inject(HttpTestingController);
+    const smallDialog = TestBed.inject(MatDialog);
+    smallFixture.detectChanges();
+    smallHttp.expectOne('/api/v1/products').flush(mockProducts);
+    smallHttp.expectOne('/api/v1/categories').flush(mockCategories);
+    smallFixture.detectChanges();
+
+    const dialogRefMock = createMockDialogRef();
+    const openSpy = jest.spyOn(smallDialog, 'open').mockReturnValue(dialogRefMock);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
+
+    expect(openSpy).toHaveBeenCalledWith(
+      ProductFormComponent,
+      expect.objectContaining({
+        width: '100vw',
+        maxWidth: '100vw',
+        height: '100vh',
+        panelClass: 'fullscreen-dialog',
+        disableClose: true,
+      }),
+    );
+    smallHttp.verify();
+  });
+
+  it('should open dialog with 520px width on large screen', () => {
+    isAdminSignal.set(true);
+    loadProducts();
+
+    const dialogRefMock = createMockDialogRef();
+    const openSpy = jest.spyOn(dialog, 'open').mockReturnValue(dialogRefMock);
+
+    routerEventsSubject.next(new NavigationEnd(1, '/inventory/new', '/inventory/new'));
+
+    expect(openSpy).toHaveBeenCalledWith(
+      ProductFormComponent,
+      expect.objectContaining({ width: '520px', disableClose: true }),
+    );
   });
 });

@@ -1,6 +1,7 @@
 import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Router, NavigationEnd, RouterOutlet } from '@angular/router';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatIconModule } from '@angular/material/icon';
@@ -45,6 +46,7 @@ export class ProductListComponent implements OnInit, HasUnsavedChanges {
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
+  private readonly breakpointObserver = inject(BreakpointObserver);
 
   readonly products = signal<Product[]>([]);
   readonly categories = signal<Category[]>([]);
@@ -64,7 +66,17 @@ export class ProductListComponent implements OnInit, HasUnsavedChanges {
   );
 
   readonly dataSource = new MatTableDataSource<Product>();
-  readonly displayedColumns = ['productName', 'price', 'availability', 'stockCount', 'categories'];
+
+  readonly isSmallScreen = toSignal(
+    this.breakpointObserver.observe('(max-width: 569px)').pipe(map((r) => r.matches)),
+    { initialValue: false },
+  );
+
+  readonly displayedColumns = computed(() =>
+    this.isSmallScreen()
+      ? ['productName', 'price', 'availability']
+      : ['productName', 'price', 'availability', 'stockCount', 'categories'],
+  );
 
   private readonly filterSubject = new Subject<string>();
   private currentDialogRef: MatDialogRef<ProductFormComponent> | null = null;
@@ -246,9 +258,13 @@ export class ProductListComponent implements OnInit, HasUnsavedChanges {
       categories: this.categories(),
     };
 
+    const dialogConfig = this.isSmallScreen()
+      ? { width: '100vw', maxWidth: '100vw', height: '100vh', panelClass: 'fullscreen-dialog' }
+      : { width: '520px' };
+
     const dialogRef = this.dialog.open(ProductFormComponent, {
       data,
-      width: '520px',
+      ...dialogConfig,
       disableClose: true,
     });
 

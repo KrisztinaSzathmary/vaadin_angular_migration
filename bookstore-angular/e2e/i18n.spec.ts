@@ -42,7 +42,7 @@ test.describe('Internationalization (i18n)', () => {
     await expect(page.getByRole('heading', { name: 'Anmelden', exact: true })).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toContainText('Anmelden');
     await expect(page.getByText('Anmeldeinformationen')).toBeVisible();
-    await expect(page.getByText('Sprache')).toBeVisible();
+    await expect(page.getByText('Sprache').first()).toBeVisible();
   });
 
   test('should persist language after login', async ({ page }) => {

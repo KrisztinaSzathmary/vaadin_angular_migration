@@ -40,7 +40,7 @@
     </div>
 
     <!-- Price + Availability row -->
-    <div class="grid grid-cols-2 gap-4 mb-4">
+    <div class="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2">
       <!-- Price -->
       <div [ngClass]="{'border-l-2 border-blue-500 pl-3': productForm.controls.price.dirty}">
         <label for="price" class="block text-sm font-medium text-gray-700 mb-1">{{ 'PRODUCT.LABEL_PRICE' | translate }} (&euro;)</label>

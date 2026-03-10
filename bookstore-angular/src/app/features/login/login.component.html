@@ -96,6 +96,21 @@
       <a class="cursor-pointer text-center text-sm text-blue-600">
         {{ 'LOGIN.FORGOT_PASSWORD' | translate }}
       </a>
+
+      <!-- Mobile Language Toggle (visible only below sm breakpoint) -->
+      <div class="flex items-center justify-center gap-2 sm:hidden" data-testid="language-select-mobile">
+        <span class="text-xs font-medium text-gray-500">{{ 'LOGIN.LANGUAGE' | translate }}</span>
+        <mat-button-toggle-group
+          [value]="languageService.currentLanguage()"
+          (change)="onLanguageChange($event.value)"
+          hideSingleSelectionIndicator
+          class="language-toggle"
+        >
+          @for (lang of languageService.availableLanguages; track lang.code) {
+            <mat-button-toggle [value]="lang.code">{{ lang.code | uppercase }}</mat-button-toggle>
+          }
+        </mat-button-toggle-group>
+      </div>
     </form>
   </div>
 </div>

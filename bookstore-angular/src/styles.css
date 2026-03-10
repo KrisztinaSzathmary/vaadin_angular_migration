@@ -13,3 +13,13 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.fullscreen-dialog .mat-mdc-dialog-surface {
+  border-radius: 0 !important;
+}
+
+.language-toggle .mat-button-toggle-appearance-standard {
+  --mat-standard-button-toggle-height: 32px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
