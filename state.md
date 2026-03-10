@@ -1,0 +1,1065 @@
+# State – Vaadin-zu-Angular-Migration
+
+---
+
+## Iteration 23 – Abschluss und Dokumentation
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-10
+
+### Umgesetzte Änderungen
+
+- `bookstore-angular/README.md` – Default Angular CLI README ersetzt durch projektspezifische Dokumentation: Projektbeschreibung, Tech Stack, Prerequisites, Getting Started (Backend + Frontend + API Proxy), Available Scripts, Projektstruktur-Übersicht, Test-Credentials, Feature-Übersicht, bekannte Limitierungen
+- `state.md` – Iteration 23 Eintrag mit Feature-Parität-Checkliste, bekannten Unterschieden und Aufräumempfehlungen
+
+### Feature-Parität-Checkliste (Vaadin ↔ Angular)
+
+| Feature | Vaadin | Angular | Status |
+|---------|--------|---------|--------|
+| Login/Logout | LoginView + AccessControl | LoginComponent + AuthService | Migriert |
+| Produkttabelle (Grid) | ProductGrid (Vaadin Grid) | ProductListComponent (MatTable) | Migriert |
+| Produktfilter | TextField + ListDataProvider | Search input + MatTableDataSource.filterPredicate | Migriert |
+| Produkt-Formular (CRUD) | ProductForm (Dialog) | ProductFormComponent (MatDialog) | Migriert |
+| Produkt löschen | ConfirmDialog | ConfirmDialogComponent + MatDialog | Migriert |
+| Kategorien-Verwaltung | AdminView + VirtualList | AdminComponent + Inline-Editing | Migriert |
+| Sidebar-Navigation | Menu + SideNav | MainLayoutComponent + MatSidenav | Migriert |
+| URL-basierte Navigation | HasUrlParameter<String> | Angular Router + Route Params | Migriert |
+| Unsaved Changes Guard | BeforeLeaveObserver | CanDeactivate Guard + ConfirmDialog | Migriert |
+| Internationalisierung | CustomI18NProvider (EN/FI) | ngx-translate (EN/DE) | Migriert (andere 2. Sprache) |
+| Responsives Design | CSS Media Queries (800px/570px) | BreakpointObserver + MatSidenav | Migriert |
+| About-Seite | AboutView (einfach) | AboutComponent (Dashboard mit Stats) | Erweitert |
+| 404-Fehlerseite | ErrorView | NotFoundComponent | Migriert |
+| Keyboard Shortcuts | Ctrl+F/Alt+N/Ctrl+S/Esc/PgDn/PgUp/Ctrl+L | – | Nicht migriert (Iteration 19 übersprungen) |
+| Rollen-basierte Autorisierung | AccessControl + isUserInRole() | AuthService + adminGuard | Migriert |
+| CORS-Filter | JAX-RS @Provider | proxy.conf.json (Dev) | Migriert |
+| REST-API (Backend) | – (neu hinzugefügt) | Konsumiert via HttpClient | Beibehalten |
+
+### Bekannte Unterschiede
+
+- **Keyboard Shortcuts**: Iteration 19 wurde übersprungen – Ctrl+F, Alt+N, Ctrl+S, Escape, Page Down/Up, Ctrl+L fehlen in Angular
+- **Zweite Sprache**: Vaadin = Finnisch (fi_FI), Angular = Deutsch (de) – bewusste Entscheidung
+- **About-Seite**: Angular-Version hat Dashboard mit Stats-Cards (erweitert ggü. Vaadin)
+- **Custom Web Component**: Vaadin's `<bookstore-title>` Polymer-Komponente wurde durch Standard-HTML ersetzt
+- **Daten-Caching**: Vaadin's `ProductDataProvider` hatte 1-Minuten-Cache; Angular lädt bei jedem Seitenaufruf frisch
+
+### Aufräumarbeiten – Vaadin-Frontend-Dateien
+
+Folgende Vaadin-Frontend-Dateien könnten entfernt werden, falls die Angular SPA die Vaadin-UI vollständig ablöst:
+
+**Java Views (UI-Logik):**
+- `com.vaadin.samples.MainLayout` – Vaadin Haupt-Layout
+- `com.vaadin.samples.Menu` – Vaadin Navigation
+- `com.vaadin.samples.authentication.LoginView` – Vaadin Login
+- `com.vaadin.samples.crud.SampleCrudViewImpl` – Vaadin Produkt-CRUD
+- `com.vaadin.samples.crud.ProductGrid` – Vaadin Produkttabelle
+- `com.vaadin.samples.crud.ProductForm` – Vaadin Produktformular
+- `com.vaadin.samples.crud.ProductDataProvider` – Vaadin Daten-Provider
+- `com.vaadin.samples.crud.SampleCrudPresenter` – MVP Presenter
+- `com.vaadin.samples.AdminView` – Vaadin Admin-Ansicht
+- `com.vaadin.samples.about.AboutView` – Vaadin About-Seite
+- `com.vaadin.samples.ErrorView` – Vaadin 404-Seite
+
+**Frontend-Ressourcen:**
+- `frontend/themes/bookstore/` – Vaadin CSS-Theme (styles.css, component CSS)
+- `frontend/index.html` – Vaadin Entry Point
+- `bookstore-starter-flow-my-component/` – Custom Web Component Modul
+
+**Beibehalten (Backend/REST):**
+- `com.vaadin.samples.rest/` – REST-API-Package (wird von Angular genutzt)
+- `com.vaadin.samples.backend/` – Backend-Services (DataService, MockDataService)
+- `com.vaadin.samples.authentication.AccessControl*` – Auth-Logik (von REST genutzt)
+
+**Empfehlung**: Koexistenz beibehalten – Vaadin-UI und Angular-SPA laufen parallel auf demselben Backend. Entfernung erst nach vollständiger Abnahme der Angular-SPA.
+
+### Verifikation
+
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS
+- `ng test` → 255 Unit-Tests grün (keine Änderungen an Testdateien)
+
+### Nächste Iteration
+
+- Keine – Migration abgeschlossen
+
+---
+
+## Iteration 22 – E2E-Tests (Quality Check)
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-10
+
+### Umgesetzte Änderungen
+
+- `e2e/smoke.spec.ts` – **Gelöscht**: 1 Test („login page loads and shows login form") war vollständig redundant mit `e2e/auth.spec.ts` (Login-Flows testen implizit, dass das Formular rendert)
+- Verbleibende 11 E2E-Spec-Dateien geprüft – keine weiteren Redundanzen gefunden:
+  - `auth.spec.ts` (3), `route-guards.spec.ts` (3), `inventory.spec.ts` (4), `product-form.spec.ts` (8), `admin.spec.ts` (4), `i18n.spec.ts` (6), `unsaved-changes.spec.ts` (5), `navigation.spec.ts` (3), `url-navigation.spec.ts` (4), `responsive.spec.ts` (9), `about.spec.ts` (1)
+
+### Verifikation
+
+- `npx playwright test` → 50 E2E-Tests grün (11 Spec-Dateien, 7 Page Objects)
+- Keine fehlgeschlagenen oder flaky Tests
+
+### Nächste Iteration
+
+- Siehe `backlog.md`
+
+---
+
+## Iteration 21 – Unit-Tests (Quality Check)
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-10
+
+### Umgesetzte Änderungen
+
+- **Lint-Fix:** `src/app/features/login/login.component.ts` – Prettier-Formatierung der `imports`-Array-Zeile (Zeilenumbrüche statt Einzeiler)
+- **Alle 18 `.spec.ts`-Dateien geprüft** – keine redundanten oder trivialen Tests gefunden, die entfernt werden könnten
+- Dateien ohne Tests bestätigt als korrekt exempt: Models (Interfaces/Enums), `empty-route.component.ts` (trivial `template: ''`), `app.config.ts`, `app.routes.ts`, `translate-testing.ts` – keine Logik zu testen
+
+### Verifikation
+
+- `ng test` → 255 Unit-Tests grün (18 Test-Suites)
+- `ng test --coverage` → 97.6% Line Coverage, 97.83% Statement Coverage, 90.19% Branch Coverage, 95.33% Function Coverage
+- `ng lint` → Alle Dateien bestanden (nach Prettier-Fix)
+- `ng build` → BUILD SUCCESS (645.46 kB initial, 7 Lazy Chunks)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 22 – siehe `backlog.md`
+
+---
+
+## Iteration 20 – Responsives Design
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-10
+
+### Umgesetzte Änderungen
+
+- `src/app/shared/components/main-layout/main-layout.component.ts` – Refactored: `MatSidenavModule` + `MatButtonModule` importiert, `BreakpointObserver` mit `toSignal()` für `isMobile` Signal (`max-width: 799px`), `drawerOpen` Signal, `toggleDrawer()`/`closeDrawer()` Methoden, Router-Events Subscription schließt Drawer bei `NavigationEnd`
+- `src/app/shared/components/main-layout/main-layout.component.html` – Komplett umgebaut: `<div class="flex">` → `<mat-sidenav-container>`, `<nav>` → `<mat-sidenav>` mit `[mode]="isMobile() ? 'over' : 'side'"`, bedingte Top-Bar mit Hamburger-Button (`aria-label="Toggle menu"`) und "Bookstore" Titel auf Mobile, alle `routerLink`-Klicks rufen `closeDrawer()` auf
+- `src/app/shared/components/main-layout/main-layout.component.spec.ts` – Neugeschrieben: Desktop-Tests (14) und Mobile-Tests (4) mit separatem `BreakpointObserver` Mock, `provideAnimationsAsync()` für MatSidenav
+- `src/app/features/inventory/product-list.component.ts` – `BreakpointObserver` injiziert, `isSmallScreen` Signal (`max-width: 569px`) via `toSignal()`, `displayedColumns` von `readonly string[]` zu `computed()` Signal (3 Spalten unter 570px, 5 darüber), Dialog-Config bedingt: Fullscreen (`100vw×100vh`, `panelClass: 'fullscreen-dialog'`) auf kleinem Screen, `520px` auf großem
+- `src/app/features/inventory/product-list.component.html` – Header: `flex flex-col gap-4 md:flex-row md:items-start md:justify-between`, Badges: `flex-wrap gap-4 md:gap-6`, Filter-Bar: `flex-col gap-3 sm:flex-row sm:items-center`, New-Product-Button: `w-full sm:w-auto`, Tabelle: `max-h-[calc(100vh-280px)] overflow-auto` Container, `sticky: true` auf `*matHeaderRowDef`, `displayedColumns` → `displayedColumns()` (Signal-Aufrufe)
+- `src/app/features/inventory/product-list.component.spec.ts` – `BreakpointObserver` Mock als Provider, 4 neue Tests: 5 Spalten auf großem Screen, 3 Spalten auf kleinem Screen (mit `TestBed.resetTestingModule()`), Fullscreen-Dialog-Config auf kleinem Screen, 520px-Dialog auf großem Screen
+- `src/app/features/inventory/product-form.component.html` – Price+Availability Grid: `grid-cols-2` → `grid-cols-1 sm:grid-cols-2`
+- `src/app/features/admin/admin.component.html` – Edit-Mode Container: `flex flex-1 items-center gap-3` → `flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3`
+- `src/app/features/about/about.component.html` – Footer: `flex items-center justify-between` → `flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between`
+- `src/styles.css` – `.fullscreen-dialog .mat-mdc-dialog-surface { border-radius: 0 !important; }` für kantenlosen Vollbild-Dialog
+- `e2e/pages/sidebar.page.ts` – Erweitert: `hamburgerButton` Locator, `clickHamburger()` Methode
+- `e2e/responsive.spec.ts` – 8 neue E2E-Tests in 3 Viewport-Gruppen: Mobile <570px (5: Hamburger sichtbar/Sidebar versteckt, Drawer öffnet, Drawer schließt bei Navigation, 3 Tabellenspalten, Fullscreen-Dialog), Tablet 570–799px (1: Hamburger sichtbar + 5 Spalten), Desktop ≥800px (2: Sidebar permanent + kein Hamburger, 5 Spalten)
+
+### Entscheidungen
+
+- **`MatSidenavModule` statt reines Tailwind** – Angular Material und CDK bereits im Stack; MatSidenav bietet Accessibility (Focus-Trap, ARIA), Backdrop, Animation out-of-the-box
+- **`BreakpointObserver` + `toSignal()`** – Reaktives Breakpoint-Tracking ohne manuelle `resize`-Events; Werte als Angular Signals für Template-Binding
+- **Separate Breakpoints für Layout (800px) und Spalten (570px)** – `isMobile` steuert Sidebar-Modus, `isSmallScreen` steuert Spaltenanzahl und Dialog-Größe
+- **`TestBed.resetTestingModule()` für Small-Screen-Tests** – `BreakpointObserver` wird via DI injiziert und kann nicht nach Komponentenerstellung gewechselt werden; separater TestBed-Setup mit anderem Mock
+- **`provideAnimationsAsync()` statt `NoopAnimationsModule`** – MatSidenav benötigt Animation-Provider; async-Variante vermeidet Zone.js-Probleme in Tests
+
+### Verifikation
+
+- `ng test` → 255 Unit-Tests grün (245 bestehende + 4 neue MainLayout Mobile + 4 neue ProductList Responsive + 2 neue Dialog-Config, 18 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS
+- `npx playwright test` → 50 E2E-Tests grün (42 bestehende + 8 neue Responsive-Tests)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 21 – siehe `backlog.md`
+
+---
+
+## Iteration 18 – Internationalisierung (i18n)
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-10
+
+### Umgesetzte Änderungen
+
+- `package.json` – `@ngx-translate/core` + `@ngx-translate/http-loader` als Dependencies installiert
+- `public/i18n/en.json` – Englische Übersetzungen (~106 Keys), organisiert in Namensräumen: APP, NAV, LOGIN, INVENTORY, AVAILABILITY, PRODUCT, ACTIONS, UNSAVED, ADMIN, ABOUT, NOT_FOUND, CONFIRM
+- `public/i18n/de.json` – Deutsche Übersetzungen (~106 Keys), gleiche Struktur wie `en.json`
+- `src/app/app.config.ts` – `provideTranslateService()` mit `provideTranslateHttpLoader({ prefix: './i18n/', suffix: '.json' })` und `fallbackLang: 'en'`
+- `src/app/core/services/language.service.ts` – Signal-basierter Sprachservice: `currentLanguage` Signal (initial aus Cookie `bookstore-lang` oder `'en'`), `availableLanguages` Array, `switchLanguage(lang)` mit Cookie-Persistierung (Max-Age: 1 Jahr, SameSite=Lax), Constructor ruft `translate.setDefaultLang('en')` + `translate.use(currentLanguage())`
+- `src/app/core/services/language.service.spec.ts` – 8 Unit-Tests: Creation, Default-Sprache, TranslateService-Initialisierung, verfügbare Sprachen, Sprachwechsel (Signal, Cookie, TranslateService.use), Cookie-Lesen bei Init
+- `src/app/features/login/login.component.html` – Alle Strings via `TranslatePipe` übersetzt, **Sprachauswahl-Dropdown** in linker Sidebar hinzugefügt: `<select>` mit Tailwind-Styling (halbtransparent auf blauem Hintergrund), Optionen aus `languageService.availableLanguages`, `[selected]`-Binding für korrekte Initialisierung nach Reload
+- `src/app/features/login/login.component.ts` – `LanguageService` + `TranslatePipe` injiziert, `onLanguageChange()` Handler
+- `src/app/shared/components/main-layout/main-layout.component.html/.ts` – `TranslatePipe` auf 6 Sidebar-Strings (Bookstore, Inventory, About, Admin, Collapse, Logout)
+- `src/app/features/inventory/product-list.component.html` – Alle Strings übersetzt: Titel, Produktanzahl, Spaltenüberschriften, Availability-Badges, Suchplatzhalter, "New product"-Button, Loading-Text
+- `src/app/features/inventory/product-list.component.ts` – `TranslatePipe` + `TranslateService` importiert, `formatAvailability()` nutzt `translate.instant()`, Notification-Strings übersetzt
+- `src/app/features/inventory/product-form.component.html` – Alle Labels, Validierungsmeldungen, Button-Texte übersetzt, Cross-Field-Fehler via `{{ productForm.errors?.['availabilityMismatch'] | translate }}`
+- `src/app/features/inventory/product-form.component.ts` – `TranslatePipe` + `TranslateService` importiert, `availabilityStockValidator` gibt Translation-Keys als Fehlerwerte zurück, Confirm-Dialog- und Notification-Strings nutzen `translate.instant()`
+- `src/app/features/admin/admin.component.html/.ts` – `TranslatePipe` + `TranslateService`, ~15 Strings übersetzt inkl. Notifications
+- `src/app/features/about/about.component.html/.ts` – `TranslatePipe`, ~20 Strings übersetzt, `systemInfo`/`techInfo` Arrays nutzen Translation-Keys
+- `src/app/features/not-found/not-found.component.ts` – `TranslatePipe` importiert, 1 String übersetzt
+- `src/app/shared/components/confirm-dialog/confirm-dialog.component.ts` – `TranslatePipe` importiert, Titel + Button-Texte übersetzt
+- `src/app/core/services/notification.service.ts` – `TranslateService` injiziert, `'Close'`-Button-Text übersetzt
+- `src/app/testing/translate-testing.ts` – Shared Test-Helper: `TranslateTestModule` NgModule mit `FakeTranslateLoader` (lädt `en.json` via `require()`), Constructor ruft `translate.use('en')` auf
+- `tsconfig.app.json` – `"src/app/testing/**"` zu `exclude` hinzugefügt (verhindert `require()`-Kompilierung im App-Build)
+- 9 `.spec.ts`-Dateien aktualisiert – `TranslateTestModule` in TestBed-Imports: `login`, `main-layout`, `product-list`, `product-form`, `admin`, `about`, `not-found`, `confirm-dialog`, `notification.service`
+- `e2e/i18n.spec.ts` – 6 E2E-Tests: Sprachauswahl-Dropdown sichtbar, Standard Englisch, Wechsel zu Deutsch, Sprache nach Login erhalten, Sprache nach Reload erhalten (Cookie), Wechsel zurück zu Englisch
+
+### Entscheidungen
+
+- **`@ngx-translate/core` statt `@angular/localize`** – Anforderung ist dynamischer Sprachwechsel ohne Reload; `@angular/localize` ist build-time i18n (separate Builds pro Sprache)
+- **`public/i18n/` statt `src/assets/`** – Angular 20 Konvention, `angular.json` assets config zeigt `"input": "public"`, Loader-Prefix `./i18n/`
+- **Cross-Field-Validator gibt Translation-Keys zurück** – `availabilityStockValidator` ist pure Funktion ohne DI; Validator setzt `{ availabilityMismatch: 'PRODUCT.VALIDATION.AVAILABLE_STOCK' }`, Template übersetzt via `| translate` Pipe
+- **`TranslateTestModule` als NgModule-Klasse** – ngx-translate v17 `defaultLanguage` ist deprecated und lädt keine Übersetzungen; `translate.use('en')` im Constructor triggert den `FakeTranslateLoader` und setzt `currentLang`, damit `translate.instant()` in Tests funktioniert
+- **`require()` für JSON in Test-Helper** – Synchrones Laden der echten `en.json`-Datei; `tsconfig.app.json` exclude verhindert Kompilierung im Browser-Build
+- **`[selected]`-Binding auf `<option>`** – `[value]` auf `<select>` setzt initial nicht zuverlässig den richtigen Wert nach Page-Reload; explizites `[selected]` auf `<option>` stellt korrekte Initialisierung sicher
+- **CSS-Selektor statt Role-Locator in E2E-Tests** – `loginPage.login()` nutzt `button[type="submit"]` statt `getByRole('button', { name: /Log in/i })` für sprachunabhängige Zuverlässigkeit
+
+### Verifikation
+
+- `ng test` → 245 Unit-Tests grün (237 bestehende + 8 neue LanguageService, 18 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS
+- `npx playwright test` → 42 E2E-Tests grün (36 bestehende + 6 neue i18n-Tests)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 19 – siehe `backlog.md`
+
+---
+
+## Iteration 17 – Ungespeicherte Änderungen (Dirty State)
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-09
+
+### Umgesetzte Änderungen
+
+- `src/app/core/guards/unsaved-changes.guard.ts` – Neuer Guard: `HasUnsavedChanges` Interface (`hasUnsavedChanges(): boolean`, `confirmDiscard(): Observable<boolean>`) + funktionaler `CanDeactivateFn<HasUnsavedChanges>` Guard
+- `src/app/core/guards/unsaved-changes.guard.spec.ts` – 4 Unit-Tests (erlaubt ohne Änderungen, ruft `confirmDiscard()` bei Änderungen, blockiert bei Cancel, erlaubt bei Confirm)
+- `src/app/features/inventory/product-form.component.ts` – Erweitert um:
+  - `canClose(): Observable<boolean>` – öffnet ConfirmDialog mit "You have unsaved changes. Discard them?" bei dirty Form, gibt `of(true)` bei pristine zurück
+  - `onCancel()` modifiziert: delegiert an `canClose()`, schließt Dialog nur bei Confirm/pristine
+  - `onDiscard()` modifiziert: ConfirmDialog mit "Discard all changes?" vor Reset; bei pristine Form keine Aktion
+- `src/app/features/inventory/product-form.component.spec.ts` – 11 neue Tests (ersetzen 4 alte): `canClose()` pristine/dirty/confirm/cancel, `onCancel()` pristine/dirty-confirm/dirty-cancel, `onDiscard()` pristine/dirty-confirm/dirty-cancel/dialog-öffnet
+- `src/app/features/inventory/product-list.component.ts` – `HasUnsavedChanges` Interface implementiert:
+  - Neue Felder: `currentDialogRef`, `currentDialogProduct`, `pendingProductId`, `suppressAfterClosedNavigation`
+  - `hasUnsavedChanges()` prüft `currentDialogRef?.componentInstance?.productForm?.dirty`
+  - `confirmDiscard()` delegiert an `canClose()` bei dirty, `forceCloseDialog()` bei pristine
+  - `handleRouteParam()` erweitert: Produktwechsel bei dirty → `canClose()` → Confirm: `pendingProductId` + `forceCloseDialog()`, Cancel: URL-Restore via `replaceUrl: true`
+  - `openProductDialogFromRoute()`: `disableClose: true`, Escape-Key via `keydownEvents()` → `onCancel()`, `afterClosed` prüft `pendingProductId` und `suppressAfterClosedNavigation`
+  - `forceCloseDialog()` Hilfsmethode
+- `src/app/features/inventory/product-list.component.spec.ts` – 10 neue Tests: `hasUnsavedChanges()` (ohne Dialog/pristine/dirty), `confirmDiscard()` (pristine/dirty-confirm/dirty-cancel), `disableClose: true` Config, Produktwechsel (clean/dirty-confirm/dirty-cancel)
+- `src/app/app.routes.ts` – `canDeactivate: [unsavedChangesGuard]` auf Inventory-Route
+- `e2e/pages/product-form.page.ts` – Neue Methoden `confirmUnsavedChanges()` und `cancelUnsavedChanges()`
+- `e2e/unsaved-changes.spec.ts` – 15 neue E2E-Tests: Cancel/X ohne Änderungen (kein Confirm), Cancel mit Änderungen (Confirm angezeigt, Confirm schließt, Cancel behält), X mit Änderungen, Discard mit Änderungen (Confirm "Discard all changes?", Confirm resettet, Cancel behält), Sidebar-Navigation mit Änderungen (Confirm navigiert, Cancel bleibt), Produktwechsel mit Änderungen (Confirm öffnet neues, Cancel behält altes), Escape mit/ohne Änderungen
+- `e2e/product-form.spec.ts` – 4 bestehende Tests aktualisiert: "Cancel closes dialog", "Discard resets form", "category selection toggles", "form validation" – jeweils ConfirmDialog-Handling hinzugefügt
+
+### Entscheidungen
+
+- **`disableClose: true` auf MatDialog** – Verhindert Backdrop-Klick und natives Escape-Schließen; Escape wird via `keydownEvents()` abgefangen und an `onCancel()` delegiert
+- **`suppressAfterClosedNavigation` Flag** – Wenn `CanDeactivate` Guard den Dialog force-closed, darf `afterClosed` nicht zu `/inventory` navigieren (würde Guard-Navigation zu `/about` etc. überschreiben)
+- **`pendingProductId` Pattern** – Bei Produktwechsel wird die neue Produkt-ID zwischengespeichert; nach `forceCloseDialog()` pickt `afterClosed` die pending ID auf und öffnet den neuen Dialog
+- **URL-Restore bei Cancel** – Bei Produktwechsel + Cancel wird die URL via `router.navigate(['/inventory', restoreParam], { replaceUrl: true })` zum aktuellen Produkt zurückgesetzt
+- **`page.evaluate` + `dispatchEvent` in E2E-Tests** – CDK Overlay-Backdrop blockiert Klicks auf Sidebar-Links und Tabellenzeilen; direkte DOM-API-Aufrufe umgehen Hit-Testing
+- **`Subject` für `afterClosed` in Unit-Tests** – `of(undefined)` feuert synchron und setzt `currentDialogRef = null` bevor Assertions greifen; `Subject` hält den Dialog "offen" bis explizit completed
+
+### Verifikation
+
+- `ng test` → 237 Unit-Tests grün (216 bestehende + 4 Guard + 11 ProductForm + 10 ProductList − 4 ersetzte alte Tests, 17 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS
+- `npx playwright test` → 70 E2E-Tests grün (55 bestehende + 15 neue Unsaved-Changes-Tests)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 18 – siehe `backlog.md`
+
+---
+
+## Iteration 16 – URL-basierte Produktnavigation
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-09
+
+### Umgesetzte Änderungen
+
+- `src/app/shared/components/empty-route/empty-route.component.ts` – Minimale Standalone-Komponente (template: `''`), benötigt als Child-Route-Target für Angular Router
+- `src/app/app.routes.ts` – Child-Route `{ path: ':id', component: EmptyRouteComponent }` unter `/inventory` hinzugefügt; `:id` matcht sowohl `new` als auch numerische IDs
+- `src/app/features/inventory/product-list.component.ts` – Kernrefactoring für URL-basierte Navigation:
+  - Neue Imports: `Router`, `NavigationEnd`, `RouterOutlet`, `filter`, `forkJoin`, `of`
+  - `RouterOutlet` im `imports`-Array, `<router-outlet />` im Template
+  - `private dialogOpen = false` Flag gegen doppeltes Dialog-Öffnen
+  - `ngOnInit()` erweitert: `Router.events` Subscription auf `NavigationEnd` + initiale URL-Prüfung
+  - `extractIdFromUrl(url)` – Hilfsmethode, extrahiert ID aus `/inventory/:id`
+  - `handleRouteParam(idParam)` – Dispatcht `new` vs. numerische ID vs. ungültige ID
+  - `openProductById(id)` – Nutzt `forkJoin({ product, categories })`, gecachte Kategorien oder API-Fetch
+  - `openProductDialogFromRoute(product)` – Refactored aus `openProductDialog`, navigiert zu `/inventory` bei Dialog-Close
+  - `onRowClick(product)` → `router.navigate(['/inventory', product.id])` (nur Admin)
+  - `onNewProduct()` → `router.navigate(['/inventory', 'new'])`
+- `src/app/features/inventory/product-list.component.html` – `<router-outlet />` am Ende des Templates
+- `src/app/features/inventory/product-list.component.spec.ts` – Komplett überarbeitet: Mock-Router mit `Subject<NavigationEnd>` statt `provideRouter` (vermeidet doppelte Komponenteninstanzierung). 30 bestehende Tests + 15 neue:
+  1. `onNewProduct` navigiert zu `/inventory/new`
+  2. `onRowClick` navigiert zu `/inventory/:id` (Admin)
+  3. Kein Navigieren bei `onRowClick` als Nicht-Admin
+  4. Route-Param `:id` öffnet Dialog mit korrektem Produkt
+  5. Route-Param `new` öffnet Create-Dialog (Admin)
+  6. Dialog-Close navigiert zurück zu `/inventory`
+  7. Ungültiger ID-Param zeigt Error-Notification
+  8. Nicht-existente Produkt-ID (404) zeigt Error-Notification
+  9. Nicht-Admin wird von `/inventory/new` redirected
+  10. `openProductById` nutzt gecachte Kategorien
+  11. `openProductById` lädt Kategorien per API wenn leer
+  12. Refresh + Create-Notification nach Dialog-Close mit Save-Result
+  13. Update-Notification für Edit-Result via Route
+  14. Delete-Notification via Route
+  15. `extractIdFromUrl` Hilfsmethoden-Tests
+- `e2e/pages/inventory.page.ts` – Neue Methoden `gotoProduct(id)` und `gotoNewProduct()` mit `pushState`/`popstate` (client-seitige Navigation, bewahrt Angular Auth-State)
+- `e2e/url-navigation.spec.ts` – 8 neue E2E-Tests:
+  1. `/inventory/:id` öffnet Edit-Dialog mit korrektem Produkt
+  2. `/inventory/new` öffnet Create-Dialog
+  3. Klick auf Produktzeile aktualisiert URL zu `/inventory/:id`
+  4. Klick auf "New Product" aktualisiert URL zu `/inventory/new`
+  5. Dialog schließen setzt URL auf `/inventory` zurück
+  6. Ungültige Produkt-ID zeigt Error-Notification
+  7. Nicht-existente numerische ID zeigt Error-Notification
+  8. Nicht-Admin navigiert zu `/inventory/new` → Redirect zu `/inventory`
+
+### Entscheidungen
+
+- **Child Route + Router-Event-Subscription** – `ProductListComponent` bleibt gemountet (keine Tabellen-Neuinstanzierung). `EmptyRouteComponent` als leerer Child-Route-Target, Dialog-Lifecycle durch URL-Änderungen gesteuert
+- **`EmptyRouteComponent` statt `redirectTo`** – Angular Router erfordert eine Komponente pro Route; leere Komponente rendert nichts sichtbares
+- **`extractIdFromUrl()` mit Regex statt `ActivatedRoute`** – Robuster bei NavigationEnd-Events, da `ActivatedRoute` im Parent-Kontext den Child-Param nicht direkt liefert
+- **`forkJoin` für Produkt + Kategorien** – Bei Bookmark-Navigation werden Produkt und Kategorien parallel geladen; gecachte Kategorien via `of()` wenn verfügbar
+- **`dialogOpen` Flag** – Verhindert doppeltes Dialog-Öffnen bei schnellen aufeinanderfolgenden NavigationEnd-Events
+- **Mock-Router in Unit-Tests** – `Subject<NavigationEnd>` statt `provideRouter(testRoutes)`, da `provideRouter` + `router.navigateByUrl` eine zweite Komponenteninstanz über Route-Aktivierung erzeugt (doppelte HTTP-Requests)
+- **`pushState`/`popstate` in E2E-Tests** – `page.goto()` verursacht Full-Page-Reload und verliert Angular Auth-State (in-memory Signal); client-seitige Navigation bewahrt den Router-Kontext
+
+### Verifikation
+
+- `ng test` → 216 Unit-Tests grün (211 bestehende − 10 alte Dialog-Tests + 15 neue Route-Tests, 16 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (561.99 kB initial, 7 Lazy Chunks)
+- `npx playwright test` → 55 Tests grün (47 bestehende + 8 neue URL-Navigation-Tests)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 17 – siehe `backlog.md`
+
+---
+
+## Iteration 15 – About-Seite und Fehlerseite
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-09
+
+### Umgesetzte Änderungen
+
+- `src/app/features/about/about.component.ts` – Vollständige Neuimplementierung: Fetcht Produkte und Kategorien für Dashboard-Statistiken, Signal-State (`products`, `categoryCount`, `loading`), Computed Signals (`totalProducts`, `availableProducts`, `totalStock`), statische Arrays `systemInfo` (Environment, Version, Build date, Runtime) und `techInfo` (Framework, UI Library, Styling, Language mit Links), Angular `VERSION`-Konstante für dynamische Versionsanzeige
+- `src/app/features/about/about.component.html` – Neues externes Template gemäß `ui-design-plan/about/v0_about_extra.png`: Header mit Bookstore-Icon + "Bookstore" Titel + Version-Badge + Subtitle, 4 Stats-Cards (Total products, Available, Total stock, Categories), 2-Spalten-Layout mit System-Card und Technology-Card (Links mit `target="_blank"`), Footer mit Info-Text + Last-Updated-Datum
+- `src/app/features/about/about.component.spec.ts` – 17 Unit-Tests: Rendering (4: Creation, Heading, Subtitle, Version-Badge), Stats Cards (4: Total products, Available, Total stock, Category count), System Info (2: Section-Rendering, Runtime-Version), Technology Info (3: Section-Rendering, Werte, Links), Footer (1), Data Fetching (2: API-Calls, Error-Handling), Computed Signals (1: verschiedene Daten)
+- `src/app/features/not-found/not-found.component.ts` – Erweitert um zentriertes Layout mit `search_off` Icon, Tailwind-Styling (flex, items-center, justify-center, gap), `MatIconModule` Import
+- `src/app/features/not-found/not-found.component.spec.ts` – Erweitert auf 4 Tests (2 bestehende + 2 neue: search_off Icon, zentriertes Layout)
+- `e2e/pages/about.page.ts` – Erweitert: Locators für Heading ("Bookstore"), Subtitle, VersionBadge, TotalProducts, AvailableProducts, TotalStock, CategoryCount, SystemSection, TechnologySection, FooterText; Methoden `waitForLoaded()`
+- `e2e/about.spec.ts` – 5 E2E-Tests: Heading + Subtitle + Version-Badge, Stats-Cards mit Werten > 0, System + Technology Sections, Technology Links (4 Links mit target _blank), Footer
+
+### Entscheidungen
+
+- **Dashboard-Layout gemäß UI-Design** – `v0_about_extra.png` zeigt reichhaltiges Dashboard statt einfacher Info-Seite; UI-Design ist maßgeblich
+- **Technologie-Referenzen angepasst** – Next.js/React aus dem Mockup ersetzt durch Angular 20 / Angular Material 20 / Tailwind CSS 4 / TypeScript 5.9
+- **`Angular VERSION`-Konstante** – Dynamische Versionsanzeige aus `@angular/core`, kein Hardcoding der Major-Version
+- **Stats aus API** – Produkte und Kategorien werden gefetcht, Statistiken (totalProducts, availableProducts, totalStock) via Computed Signals berechnet
+- **NotFoundComponent mit Icon** – `search_off` Icon und zentriertes Layout für bessere UX, kein separates Design vorhanden
+- **`DecimalPipe` für Total Stock** – Tausendertrennzeichen via `{{ totalStock() | number }}`
+
+### Verifikation
+
+- `ng test` → 211 Unit-Tests grün (193 bestehende + 16 neue AboutComponent + 2 neue NotFoundComponent, 16 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (561.76 kB initial, 7 Lazy Chunks inkl. about-component 5.49 kB, not-found-component 583 B)
+- `npx playwright test` → 47 Tests (45 bestanden + 2 vorbestehende flaky Timeouts in product-form.spec.ts: "Cancel closes dialog" und "category selection toggles correctly" – nicht durch Iteration 15 verursacht)
+
+### Offene Punkte
+
+- 2 vorbestehende flaky E2E-Timeouts in `product-form.spec.ts` (Timeout bei `waitForTableLoaded` und `button[role="option"]` – sporadisch, treten seit Iteration 12/13 auf)
+
+### Nächste Iteration
+
+- Iteration 16 – siehe `backlog.md`
+
+---
+
+## Iteration 14 – Admin-Ansicht (Kategorien-Verwaltung)
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-09
+
+### Umgesetzte Änderungen
+
+- `src/app/features/admin/admin.component.ts` – Vollständige Neuimplementierung: Signal-State (`categories`, `loading`, `error`, `editingCategoryId`, `isSaving`), Computed Signal (`categoryCount`), einzelner `FormControl<string>` mit `required` + `minLength(2)` Validierung, Methoden `onAddCategory()` (Sentinel `id: -1`), `onEditCategory()`, `onSaveCategory()` (Create/Update), `onDeleteCategory()` (mit ConfirmDialog), `onCancelEdit()`. Injections: `CategoryService`, `NotificationService`, `MatDialog`
+- `src/app/features/admin/admin.component.html` – Neues externes Template gemäß `ui-design-plan/admin/v0_admin.png`: Seitentitel + Untertitel, Kategorien-Card mit Header (`sell` Icon, "Edit categories", Kategorie-Anzahl, "Add new category" Button), Kategoriereihen mit zwei Modi: Lesemodus (Button mit Kategoriename + "category" Badge) und Bearbeitungsmodus (Text-Input mit Validierungsfehler + Save/Delete/Cancel Buttons), dekorativer `drag_indicator` pro Zeile
+- `src/app/features/admin/admin.component.spec.ts` – 30 Unit-Tests: Rendering (7: Creation, Loading-State, Seitentitel, Untertitel, "Edit categories" Heading, Kategorie-Anzahl, Kategorienamen), Inline-Editing (5: Edit-Modus bei Klick, Input mit aktuellem Namen, Save/Delete/Cancel Buttons, Delete versteckt bei neuer Kategorie, nur eine Zeile editierbar), Validierung (3: Name < 2 Zeichen verhindert Speichern, Fehlermeldung angezeigt, Speichern bei gültigem Namen), CRUD (8: Create-API-Call, Create aktualisiert Liste, Update-API-Call, Update aktualisiert Namen, Delete öffnet ConfirmDialog, Delete-API-Call bei Confirm, Delete entfernt aus Liste, kein Delete bei Cancel), Notifications (4: "Category saved" bei Create/Update, "Category deleted", Fehler-Notification), Add/Cancel (3: Add fügt leere Zeile hinzu, Button deaktiviert während Bearbeitung, Cancel entfernt neue/stellt bestehende wieder her)
+- `e2e/pages/admin.page.ts` – Page Object für Admin-Seite: Locators für Heading, Subtitle, EditCategoriesHeading, CategoryCount, AddButton, CategoryRows, CategoryNameInput, SaveButton, DeleteButton, CancelButton, Snackbar, ValidationError, ConfirmDialog; Methoden `goto()`, `waitForLoaded()`, `getCategoryByName()`, `clickCategory()`, `fillCategoryName()`, `clickSave()`, `clickDelete()`, `clickCancel()`, `clickAdd()`, `getCategoryNames()`, `confirmDelete()`, `cancelConfirmDialog()`
+- `e2e/admin.spec.ts` – 8 E2E-Tests: Heading + Kategorieliste angezeigt, Kategorie-Anzahl stimmt, Klick → Edit-Modus, Kategorie bearbeiten + speichern + Notification, Validierung bei kurzem Namen, Neue Kategorie erstellen + Notification, Kategorie löschen mit Bestätigung + Notification, Bearbeitung abbrechen → Originalname
+
+### Entscheidungen
+
+- **Einzelner `FormControl` statt `FormGroup`** – Nur ein Feld (name), kein Over-Engineering
+- **`editingCategoryId` Signal** – Nur eine Zeile gleichzeitig bearbeitbar, einfacher als per-Row-Flags
+- **`id: -1` Sentinel für neue Kategorien** – Spiegelt Vaadin-Backend-Pattern (`getId() < 0`), Delete-Button versteckt bei `id < 0`
+- **Externes Template** – Template ist umfangreich (~100 Zeilen), konsistent mit `product-list.component`
+- **Lokale Mutation statt Re-Fetch** – Create liefert Kategorie mit Server-ID zurück; Update und Delete aktualisieren lokale Liste direkt
+- **`<button>` statt `<span>` für Kategorienamen** – ESLint `click-events-have-key-events` + `interactive-supports-focus` erfordern fokussierbares Element; `<button type="button">` mit transparentem Styling
+- **Dekorativer `drag_indicator`** – UI-Design zeigt ihn, Drag-and-Drop ist nicht im Backlog
+
+### Verifikation
+
+- `ng test` → 193 Unit-Tests grün (163 bestehende + 30 neue AdminComponent, 16 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (552.69 kB initial, 5 Lazy Chunks inkl. admin-component 6.61 kB)
+- `npx playwright test` → 42 E2E-Tests grün (34 bestehende + 8 neue Admin-Tests)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 15 – siehe `backlog.md`
+
+---
+
+## Iteration 13 – Produkt löschen
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-05
+
+### Umgesetzte Änderungen
+
+- `src/app/shared/components/confirm-dialog/confirm-dialog.component.ts` – Wiederverwendbarer Bestätigungsdialog: `ConfirmDialogData`-Interface mit `message`, `onConfirm()` schließt mit `true`, `onCancel()` schließt ohne Result. Inline-Template mit `mat-dialog-title`, `mat-dialog-content`, `mat-dialog-actions`
+- `src/app/shared/components/confirm-dialog/confirm-dialog.component.spec.ts` – 6 Unit-Tests (Creation, Nachricht anzeigen, Titel, Confirm-Result, Cancel-Result, Button-Rendering)
+- `src/app/features/inventory/product-form.component.ts` – Erweitert um `ProductDeletedResult`-Interface (`{ deleted: true, productName: string }`), `isDeleting` Signal, `onDelete()` Methode (öffnet ConfirmDialog mit `"'{Name}' will be deleted."`), `executeDelete()` private Methode (ruft `ProductService.delete()`, schließt Dialog mit `ProductDeletedResult`)
+- `src/app/features/inventory/product-form.component.html` – Footer umstrukturiert: Delete-Button links (nur `isEditMode()`), restliche Buttons rechts via `ml-auto`. Delete-Button mit `color="warn"`, disabled bei `isDeleting()`
+- `src/app/features/inventory/product-form.component.spec.ts` – 8 neue Tests: Delete-Button nicht in Create-Modus, Delete-Button in Edit-Modus, Confirm-Dialog öffnet, kein Delete bei Cancel, ProductService.delete() bei Confirm, Dialog schließt mit DeletedResult, isDeleting-State, Fehler-Notification bei Delete-Fehler
+- `src/app/features/inventory/product-list.component.ts` – `openProductDialog` erweitert: Ergebnis-Typ `Product | ProductDeletedResult`, `'deleted' in result` Prüfung, `"'{Name}' removed"` Benachrichtigung bei Löschung
+- `src/app/features/inventory/product-list.component.spec.ts` – 3 neue Tests: Refresh nach Delete-Result, Delete-Notification-Text, Update-Notification bei Edit
+- `e2e/pages/product-form.page.ts` – Erweitert um `deleteButton`, `confirmDialog`, `confirmDialogConfirmButton`, `confirmDialogCancelButton` Locators; neue Methoden `clickDelete()`, `confirmDelete()`, `cancelDelete()`
+- `e2e/product-form.spec.ts` – 4 neue E2E-Tests: Delete-Button nur in Edit-Modus sichtbar, Cancel im Bestätigungsdialog behält Produkt, Confirm-Delete entfernt Produkt + zeigt Notification, Non-Admin sieht keinen Delete-Button
+
+### Entscheidungen
+
+- **`ProductDeletedResult`-Interface statt String-Sentinel** – Typsicherer Ansatz mit `{ deleted: true, productName: string }`, Unterscheidung von `Product`-Ergebnis via `'deleted' in result`
+- **`ConfirmDialogComponent` in `shared/components/`** – Wiederverwendbar für zukünftige Lösch-Bestätigungen (z.B. Kategorien in Iteration 14)
+- **`component['dialog']` in Tests statt `TestBed.inject(MatDialog)`** – Bracket-Notation für private Property sichert korrekte Spy-Bindung an die Component-Instanz
+- **Footer-Layout mit `ml-auto`** – Delete-Button linksbündig, Discard/Cancel/Save rechtsbündig; klare visuelle Trennung destruktiver und konstruktiver Aktionen
+
+### Verifikation
+
+- `ng test` → 163 Unit-Tests grün (146 bestehende + 6 ConfirmDialog + 8 ProductForm-Delete + 3 ProductList-Delete, 16 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (550.52 kB initial, 4 Lazy Chunks inkl. product-list 180.18 kB)
+- `npx playwright test` → 34 E2E-Tests grün (30 bestehende + 4 neue Delete-Tests)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 14 – siehe `backlog.md`
+
+---
+
+## Unteraufgabe 12a – Playwright E2E-Tests für alle User-Interaktionen
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-04
+
+### Umgesetzte Änderungen
+
+- `e2e/pages/sidebar.page.ts` – Neues Page Object für Sidebar-Navigation: Locators für `logo`, `inventoryLink`, `aboutLink`, `adminLink`, `logoutButton`; Methoden `clickInventory()`, `clickAbout()`, `clickAdmin()`, `clickLogout()`
+- `e2e/pages/about.page.ts` – Neues Page Object für About-Seite: `heading` Locator, `goto()` Methode
+- `e2e/pages/not-found.page.ts` – Neues Page Object für 404-Seite: `message` Locator
+- `e2e/pages/inventory.page.ts` – Erweitert um `availableStatus`, `comingStatus`, `discontinuedStatus` Locators; neue Methoden `clickSortHeader(column)`, `getColumnValues(column)`, `fillSearch(text)`, `clearSearch()`
+- `e2e/auth.spec.ts` – 3 Tests: Login mit gültigen/ungültigen Credentials, Logout-Redirect
+- `e2e/route-guards.spec.ts` – 3 Tests: Unauthentifizierter Zugriff → Login-Redirect, Non-Admin → Inventory-Redirect (via `pushState`/`popstate`), unbekannte Route → 404-Meldung
+- `e2e/navigation.spec.ts` – 5 Tests: Sidebar-Links sichtbar, Admin-Link für Admin/Non-Admin, Link-Navigation, aktive Link-Hervorhebung (`bg-indigo-50`)
+- `e2e/inventory.spec.ts` – 7 Tests: Produkte laden, Produktanzahl-Text, Status-Indikatoren, Sortierung nach Preis (asc/desc), Suchfilter filtert/löschen, Non-Admin New-Product disabled
+
+### Entscheidungen
+
+- **`pushState` + `popstate` statt `page.goto` für Admin-Guard-Test** – AuthService speichert User-State nur in-memory (Signal), kein APP_INITIALIZER für Session-Restore. `page.goto('/admin')` löst Full-Page-Reload aus, Angular verliert Auth-State → authGuard greift statt adminGuard. Client-seitige Navigation via `pushState`/`popstate` bewahrt den Angular-Router-Kontext
+- **`page.waitForTimeout(500)` nach Filter-Input** – Debounce (300ms) + DOM-Update brauchen Zeit; kein besserer Locator-basierter Wait möglich bei Filter-Änderungen
+
+### Verifikation
+
+- `npx playwright test` → 30 Tests grün (12 bestehende + 18 neue)
+
+### Nächste Iteration
+
+- Iteration 13 – siehe `backlog.md`
+
+---
+
+## Iteration 12 – Produkt-Formular (Erstellen und Bearbeiten)
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-04
+
+### Umgesetzte Änderungen
+
+- `src/app/core/services/notification.service.ts` – Thin Wrapper um `MatSnackBar` mit `showSuccess(message)` (3s Dauer) und `showError(message)` (5s Dauer), `@Injectable({ providedIn: 'root' })`
+- `src/app/core/services/notification.service.spec.ts` – 5 Unit-Tests (Creation, showSuccess/showError rufen snackBar.open auf, korrekte Duration-Werte)
+- `src/app/features/inventory/product-form.component.ts` – Standalone Component als `MatDialog`-Content: `ProductFormData`-Interface, exportierte `availabilityStockValidator`-Funktion (Cross-Field), Reactive Form (`fb.nonNullable.group()`) mit Feldern `productName`, `price`, `stockCount`, `availability`, `categoryIds`, Methoden `onSave()`, `onDiscard()`, `onCancel()`, `toggleCategory()`, `isCategorySelected()`, `formatAvailability()`. Computed Signal `isEditMode`, WritableSignal `isSaving`. Form-Initialisierung direkt aus `MAT_DIALOG_DATA` (kein `ngOnInit` nötig). Fehler-Handler extrahiert Backend-Fehlermeldung aus `err.error?.error` mit Fallback auf generischen Text
+- `src/app/features/inventory/product-form.component.html` – Dialog-UI gemäß `ui-design-plan/add-item/v0_add_item.png`: Header mit Titel + X-Close-Button, Untertitel, Product name Input, 2-Spalten-Reihe (Price + Availability `mat-select`), In stock Input, Tailwind-gestylte Kategorie-Chip-Buttons, Cross-Field-Fehlermeldung, Dirty-Tracking mit blauem Rand, Footer mit Discard/Cancel/Save-Buttons
+- `src/app/features/inventory/product-form.component.spec.ts` – 36 Unit-Tests: Rendering (7), Form-Initialisierung (3), Feld-Validierung (7), Cross-Field-Validierung (6), Kategorie-Interaktion (2), Save (6), Discard (2), Cancel/Close (2)
+- `src/app/features/inventory/product-list.component.ts` – Erweitert um `MatDialog`, `CategoryService`, `NotificationService` Injections, `categories` Signal, `onRowClick(product)`, `openProductDialog(product)` (dialog.open mit width 520px), `refreshProducts()`, `ngOnInit()` lädt zusätzlich Kategorien
+- `src/app/features/inventory/product-list.component.html` – `(click)="onRowClick(row)"` und `[class.cursor-pointer]="isAdmin()"` auf `<tr mat-row>`
+- `src/app/features/inventory/product-list.component.spec.ts` – 8 neue Tests: Kategorien laden, Dialog öffnen bei New Product/Zeilen-Klick (Admin), Produktdaten übergeben, kein Dialog bei Nicht-Admin, Refresh nach Dialog-Close mit Ergebnis, keine Aktualisierung ohne Ergebnis, Notification nach Save
+- `src/app/core/interceptors/auth.interceptor.ts` – Erweitert: `MatDialog` Injection + `dialog.closeAll()` vor Router-Navigation bei 401-Redirect (verhindert verwaiste Dialoge)
+- `src/app/core/interceptors/auth.interceptor.spec.ts` – 1 neuer Test: `closeAll()` wird bei 401-Redirect aufgerufen
+- `proxy.conf.json` – `cookiePathRewrite` hinzugefügt: mappt `/bookstore-starter-flow-ui-1.1-SNAPSHOT` → `/`, damit JSESSIONID-Cookie auch für `/api/v1/...` Requests gesendet wird
+
+### Entscheidungen
+
+- **Tailwind-Chip-Buttons statt `mat-chip-listbox`/`mat-chip-option`** – Angular Material Chips verursachen `ExpressionChangedAfterItHasBeenCheckedError` bei `[selected]`-Binding aus Formular-State; plain Tailwind-gestylte Buttons mit `role="option"` vermeiden den Feedback-Loop und sind konsistenter mit dem Projekt-CSS-Ansatz
+- **Form-Initialisierung im Constructor (Felddeklaration) statt `ngOnInit`** – `MAT_DIALOG_DATA` ist bei `inject()` sofort verfügbar; Initialisierung über Feld-Default-Werte vermeidet `ExpressionChangedAfterItHasBeenCheckedError` bei Edit-Modus
+- **`MatDialogModule` nicht in ProductListComponent `imports`** – Nur programmatischer `dialog.open()` Aufruf, keine Dialog-Direktiven im Template; `MatDialog` ist `providedIn: 'root'` und braucht kein Modul-Import
+- **`jest.spyOn(dialog, 'open')` statt `useValue`-Mock** – `MatDialog` wird von Angular's Root-Injector bereitgestellt; direkter Spy auf die Instanz ist zuverlässiger als Provider-Override bei Standalone-Components
+- **`eslint-disable-next-line` für `mat-select` und Categories-Label** – `@angular-eslint/template/label-has-associated-control` erkennt `aria-labelledby` nicht; `mat-select` hat kein natives `id`-for-Attribut
+- **`cookiePathRewrite` in Proxy-Config** – WildFly setzt JSESSIONID mit `Path=/bookstore-starter-flow-ui-1.1-SNAPSHOT/`, Angular Dev-Server sendet Requests an `/api/v1/...`. Ohne Cookie-Path-Rewrite sendet der Browser den Cookie nicht mit → 401 bei authentifizierten POST/PUT/DELETE-Requests (erster authentifizierter Schreibzugriff aus Angular)
+- **`dialog.closeAll()` im AuthInterceptor** – Bei 401-Redirect zu `/login` bleiben offene `MatDialog`-Overlays im CDK-Container bestehen; explizites Schließen verhindert verwaiste Dialoge
+
+### Verifikation
+
+- `ng test` → 146 Tests grün (96 bestehende + 5 NotificationService + 36 ProductFormComponent + 8 neue ProductListComponent + 1 neuer AuthInterceptor, 15 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (544.65 kB initial, 4 Lazy Chunks inkl. product-list 178.34 kB)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 13 – siehe `backlog.md`
+
+---
+
+## Iteration 11 – Produkt-Filter
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-03
+
+### Umgesetzte Änderungen
+
+- `src/app/features/inventory/product-list.component.ts` – Erweitert um Filter- und Admin-Logik: `filterText` Signal, `isAdmin` Signal-Referenz (AuthService), `filterSubject` mit `debounceTime(300)` + `takeUntilDestroyed()`, Custom `filterPredicate` auf `MatTableDataSource` (sucht in Produktname, Availability-Label und Kategorienamen), `onFilterInput()` Methode, `onNewProduct()` Placeholder. Neue Imports: `MatIconModule`, `MatButtonModule`, `AuthService`, `DestroyRef`, `Subject`, `debounceTime`, `takeUntilDestroyed`
+- `src/app/features/inventory/product-list.component.html` – Filter-Bar zwischen Header und Loading/Error/Table eingefügt: Plain `<input>` mit `mat-icon` Search-Prefix (Tailwind-gestylt), `mat-flat-button` "New product" mit `add_circle` Icon (disabled für Nicht-Admins)
+- `src/app/features/inventory/product-list.component.spec.ts` – 12 neue Tests: Filter-Input-Rendering + Placeholder, Search-Icon, New-Product-Button (Rendering, disabled/enabled nach Admin-Status), Filter nach Produktname, Availability-Label, Kategoriename, Case-Insensitive-Filter, Keine-Treffer-Filter, Debounce-Verhalten (300ms), Leerer Filter zeigt alle Produkte. AuthService als Mock mit Signal injiziert
+
+### Entscheidungen
+
+- **`Subject` + `debounceTime(300)` + `takeUntilDestroyed()`** – Standard-RxJS-Debounce-Pattern mit sauberem Lifecycle-Management über `DestroyRef`
+- **`MatTableDataSource.filterPredicate`** – Built-in Mechanismus, kein Custom DataSource nötig
+- **Availability-Matching über `formatAvailability().toLowerCase()`** – Benutzer tippen Labels wie "available", nicht Enum-Werte
+- **Kategorie-Matching über `category.some(c => c.name.includes(...))`** – Durchsucht alle Kategorien eines Produkts
+- **`isAdmin` als Signal-Referenz** – Gleisches Pattern wie `MainLayoutComponent` (`this.authService.isAdmin`)
+- **Filter-Tests direkt über `dataSource.filter`** – Trennung von FilterPredicate-Logik und Debounce-Timing; `fakeAsync`/`tick` nur für Debounce-Test
+- **`onNewProduct()` als leerer Placeholder** – Funktionalität kommt in Iteration 12
+
+### Verifikation
+
+- `ng test` → 96 Tests grün (84 bestehende + 12 neue, 13 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (427.60 kB initial, 4 Lazy Chunks inkl. product-list 58.25 kB)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 12 – siehe `backlog.md`
+
+---
+
+## Unteraufgabe 11a – Playwright E2E-Konfiguration
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-04
+
+### Umgesetzte Änderungen
+
+- `@playwright/test` als devDependency installiert, Chromium-Browser heruntergeladen
+- `playwright.config.ts` – Konfiguration mit `webServer` (startet `ng serve` automatisch), `baseURL: http://localhost:4200`, Chromium-Projekt, HTML-Reporter
+- `e2e/pages/login.page.ts` – Page Object für Login-Seite (Locators für Heading, Username, Password, Login-Button, Error-Message; `goto()` und `login()` Methoden)
+- `e2e/smoke.spec.ts` – Minimaler Smoke-Test: Login-Seite lädt und zeigt Formular
+- `jest.config.js` – `testPathIgnorePatterns: ['/e2e/']` hinzugefügt, damit Jest die Playwright-Tests nicht mitläuft
+- `package.json` – `"e2e": "playwright test"` Script hinzugefügt
+
+### Entscheidungen
+
+- **`webServer.reuseExistingServer: !process.env['CI']`** – Lokal wird ein bereits laufender Dev-Server wiederverwendet, in CI wird immer ein neuer gestartet
+- **Nur Chromium** – Für Smoke-Test ausreichend, weitere Browser können später ergänzt werden
+- **`exact: true` im Heading-Locator** – Vermeidet Mehrdeutigkeit zwischen "Login" und "Login information" Headings
+
+### Verifikation
+
+- `npx playwright test` → 1 Test grün (Login-Seite lädt)
+- `ng test` → 146 Unit-Tests grün (E2E-Dateien korrekt ausgeschlossen)
+- `ng lint` → Alle Dateien bestanden
+
+---
+
+## Iteration 10 – Produkt-Grid (nur Lesen)
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-03
+
+### Umgesetzte Änderungen
+
+- `src/app/features/inventory/product-list.component.ts` – Vollständige Neuimplementierung: Signal-State (`products`, `loading`, `error`), Computed Signals (`availableCount`, `comingCount`, `discontinuedCount`), `MatTableDataSource` + `MatSort` Integration, Helper-Methoden (`formatAvailability`, `availabilityColor`, `formatCategories`)
+- `src/app/features/inventory/product-list.component.html` – Externes Template mit Header (Titel + Produktanzahl-Untertitel), Availability-Status-Badges (farbige Punkte + Zähler), Loading/Error-Zustände, `mat-table` mit 5 Spalten (Product name, Price, Availability, In stock, Categories), deklarativer Default-Sort auf productName ASC, Row-Striping
+- `src/app/features/inventory/product-list.component.spec.ts` – Neugeschrieben mit 17 Unit-Tests: Creation, Loading-State, API-Call, Tabellenrendering, Produktnamen, EUR-Preisformat, Availability-Labels + Farbklassen, Lagerbestand, Kategorien (kommasepariert + leere Kategorien), Produktanzahl-Untertitel, Summary-Badges, Loading-Verbergen, Fehlermeldung, Default-Sort
+
+### Entscheidungen
+
+- **`@ViewChild(MatSort)` als Setter statt `ngAfterViewInit()`** – Tabelle ist hinter `@if (!loading() && !error())` verborgen, daher ist `MatSort` erst nach Datenladen verfügbar. Setter-Pattern reagiert automatisch auf View-Query-Auflösung
+- **`MatTableDataSource` als Instanz-Property** – Kein Signal nötig, da `dataSource.data` direkt gesetzt wird und `MatSort` darauf referenziert
+- **`NgClass` für dynamische Availability-Farben** – `[ngClass]="availabilityColor(product.availability)"` setzt `bg-available`/`bg-coming`/`bg-discontinued` Klassen
+- **Kein `standalone: true`** – Angular 20 Default, konsistent mit allen bestehenden Komponenten
+- **`ProgressEvent` in Fehler-Tests** – `HttpTestingController.error()` erfordert `ProgressEvent`, nicht `ErrorEvent`
+
+### Verifikation
+
+- `ng test` → 84 Tests grün (68 bestehende − 1 alter Placeholder + 17 neue, 13 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (426 kB initial, 4 Lazy Chunks inkl. product-list 56.6 kB)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 11 – siehe `backlog.md`
+
+---
+
+## Iteration 9 – Hauptlayout mit Navigation
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-03
+
+### Umgesetzte Änderungen
+
+- `src/app/shared/components/main-layout/main-layout.component.ts` – MainLayoutComponent mit Sidebar-Navigation, AuthService-Integration für Admin-Sichtbarkeit, Logout mit Navigation
+- `src/app/shared/components/main-layout/main-layout.component.html` – Sidebar (260px) mit Logo, Inventory/About/Admin-Links, routerLinkActive-Hervorhebung, Collapse-Button (disabled), Logout-Button
+- `src/app/shared/components/main-layout/main-layout.component.spec.ts` – 10 Unit-Tests (Erstellung, Router-Outlet, Bookstore-Titel, Inventory/About-Links, Admin-Link versteckt/sichtbar, Logout-Button, Logout-Navigation bei Erfolg und Fehler)
+- `src/app/features/inventory/product-list.component.ts` – Placeholder-Komponente mit Inline-Template "Inventory"
+- `src/app/features/about/about.component.ts` – Placeholder-Komponente mit Inline-Template "About"
+- `src/app/features/admin/admin.component.ts` – Placeholder-Komponente mit Inline-Template "Admin"
+- `src/app/features/not-found/not-found.component.ts` – Standalone-Komponente mit Text "The view could not be found."
+- `src/app/features/inventory/product-list.component.spec.ts` – 1 Creation-Test
+- `src/app/features/about/about.component.spec.ts` – 1 Creation-Test
+- `src/app/features/admin/admin.component.spec.ts` – 1 Creation-Test
+- `src/app/features/not-found/not-found.component.spec.ts` – 2 Tests (Creation + Content-Prüfung)
+- `src/app/app.routes.ts` – Komplettes Rewrite: `/login` top-level, `/` → MainLayout + authGuard mit Children (`/inventory`, `/about`, `/admin` + adminGuard), `**` → NotFound
+- `.gitkeep`-Dateien gelöscht: `features/inventory/`, `features/about/`, `features/admin/`, `shared/components/`
+
+### Entscheidungen
+
+- **MainLayout in `shared/components/`** – Strukturelle Layout-Komponente, kein Feature; `core/` ist für Services/Guards
+- **`authGuard` nur auf Parent-Route** – Children erben den Guard (DRY-Prinzip)
+- **`**` Wildcard top-level ohne Sidebar** – Nicht-authentifizierte User sollen keine Sidebar sehen
+- **Collapse-Button disabled/visuell** – Nicht im Backlog-Scope, aber UI-Design zeigt ihn; als disabled-Button dargestellt
+- **Logout navigiert bei Error auch zu `/login`** – Defensiv: Session könnte ohnehin ungültig sein
+- **Inline-Templates für Placeholder-Komponenten** – Triviale Komponenten, vollständige Templates kommen in späteren Iterationen
+- **Feature-Komponenten lazy loaded** – `loadComponent` für Inventory, About, Admin, NotFound; MainLayout eagerly loaded als Shell
+- **Signal-Referenz für `isAdmin`** – Komponente bindet `authService.isAdmin` direkt als Signal-Referenz (kein Wrapper)
+
+### Verifikation
+
+- `ng test` → 68 Tests grün (53 bestehende + 15 neue, 13 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (405 kB initial, 4 Lazy Chunks)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 10 – siehe `backlog.md`
+
+---
+
+## Iteration 8 – Login-Seite
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-03
+
+### Umgesetzte Änderungen
+
+- `src/app/features/login/login.component.ts` – Standalone LoginComponent mit Reactive Form (`username`, `password`), Signal-State (`errorMessage`, `isLoading`, `hidePassword`), AuthService-Integration
+- `src/app/features/login/login.component.html` – Zwei-Spalten-Layout (blaue Sidebar mit Login-Info + zentriertes Login-Formular), Angular Material Form Fields mit Visibility-Toggle, Tailwind CSS
+- `src/app/features/login/login.component.spec.ts` – 10 Unit-Tests (Erstellung, Form-Controls, Validierung, Submit-Verhalten, Navigation, Fehlermeldung, Loading-State, Password-Toggle)
+- `src/app/app.routes.ts` – Routen konfiguriert: `/login` → LoginComponent, `/` → Redirect zu `/login`, `**` → Redirect zu `/login`
+- `src/app/features/login/.gitkeep` – gelöscht
+- `src/styles.css` – `@source` Direktive hinzugefügt für Tailwind v4 Content Detection
+- `postcss.config.js` → `.postcssrc.json` – PostCSS-Konfiguration auf JSON-Format umgestellt (Angular Builder erkennt nur `.postcssrc.json`)
+
+### Entscheidungen
+
+- **`FormBuilder.nonNullable.group()`** – Typsicheres Formular ohne `null`-Werte
+- **Sidebar auf `sm`-Breakpoint ausblenden** – `hidden sm:flex` für responsive Darstellung auf kleinen Bildschirmen
+- **"Forgot password"-Link** – Als nicht-funktionales Element dargestellt (kein `href`, kein Click-Handler), da kein Backlog-Item dafür existiert
+- **Sprachauswahl-Dropdown** – Nicht implementiert, gehört zu Iteration 18 (i18n)
+- **Einfache Routen-Konfiguration** – Nur Login-Route + Redirects; Erweiterung mit Guards und MainLayout erfolgt in späteren Iterationen
+- **`.postcssrc.json` statt `postcss.config.js`** – Angular's `@angular/build:application` Builder erkennt PostCSS-Konfiguration nur im `.postcssrc.json`-Format (nicht `postcss.config.js`). Ohne dies werden Tailwind v4 Utility-Klassen nicht generiert.
+- **`@source` Direktive** – Tailwind v4 Content Detection findet Angular-Templates nicht automatisch innerhalb des Angular-Build-Prozesses; expliziter `@source "./app/**/*.{html,ts}"` nötig
+
+### Verifikation
+
+- `ng test` → 53 Tests grün (43 bestehende + 10 neue LoginComponent-Tests, 8 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (474 kB initial)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 9 – siehe `backlog.md`
+
+---
+
+## Iteration 7 – Authentifizierungs-Service und Auth-Guard
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-03
+
+### Umgesetzte Änderungen
+
+- `src/app/models/auth.model.ts` – Interfaces `LoginRequest`, `LoginResponse`, `UserInfo`
+- `src/app/core/services/auth.service.ts` – Auth-Service mit Signal-basiertem State (`currentUser`, `isLoggedIn`, `isAdmin`), Methoden `login()`, `logout()`, `getCurrentUser()`, `clearAuth()`
+- `src/app/core/services/auth.service.spec.ts` – 16 Unit-Tests
+- `src/app/core/interceptors/auth.interceptor.ts` – Class-based `HttpInterceptor`, setzt `withCredentials: true` global, 401-Redirect zu `/login` (Auth-Endpoints ausgenommen)
+- `src/app/core/interceptors/auth.interceptor.spec.ts` – 9 Unit-Tests
+- `src/app/core/guards/auth.guard.ts` – Functional Guard (`CanActivateFn`) für authentifizierte Routen
+- `src/app/core/guards/auth.guard.spec.ts` – 2 Unit-Tests
+- `src/app/core/guards/admin.guard.ts` – Functional Guard für Admin-Routen (prüft Login + Admin-Rolle)
+- `src/app/core/guards/admin.guard.spec.ts` – 3 Unit-Tests
+- `src/app/app.config.ts` – `AuthInterceptor` als `HTTP_INTERCEPTORS` Provider registriert
+- `src/app/core/services/product.service.ts` – `withCredentials: true` aus allen 5 HTTP-Calls entfernt
+- `src/app/core/services/product.service.spec.ts` – 5 `withCredentials`-Tests entfernt (13 → 8 Tests)
+- `src/app/core/services/category.service.ts` – `withCredentials: true` aus allen 4 HTTP-Calls entfernt
+- `src/app/core/services/category.service.spec.ts` – 4 `withCredentials`-Tests entfernt (9 → 5 Tests)
+- `.gitkeep`-Dateien in `core/guards/` und `core/interceptors/` gelöscht
+
+### Entscheidungen
+
+- **Class-based `HttpInterceptor`** – `app.config.ts` nutzt bereits `withInterceptorsFromDi()`, daher passt `HTTP_INTERCEPTORS` Multi-Token
+- **Functional Guards (`CanActivateFn`)** – Modernes Angular-20-Pattern, einfacher und besser testbar
+- **401-Redirect nur für Nicht-Auth-Endpoints** – URLs mit `/api/v1/auth/` werden vom Redirect ausgenommen, um Login-Loops zu vermeiden
+- **`user` als readonly Signal** – `currentUser.asReadonly()` exponiert den Signal-State nach außen, ohne Schreibzugriff zu erlauben
+- **Separate Interfaces `LoginResponse` / `UserInfo`** – identische Felder, aber semantisch getrennt (Konsistenz mit Backend-DTOs)
+
+### Verifikation
+
+- `ng test` → 43 Tests grün (2 App + 8 Product + 5 Category + 16 Auth + 9 Interceptor + 2 AuthGuard + 3 AdminGuard – über 7 Test-Suites)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (269 kB initial)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 8 – siehe `backlog.md`
+
+---
+
+## Iteration 6 – TypeScript-Modelle und API-Services
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-02
+
+### Umgesetzte Änderungen
+
+- `src/app/models/availability.enum.ts` – String-Enum mit `COMING`, `AVAILABLE`, `DISCONTINUED`
+- `src/app/models/category.model.ts` – Interface mit `id: number`, `name: string`
+- `src/app/models/product.model.ts` – Interface mit `id`, `productName`, `price`, `stockCount`, `availability`, `category`
+- `src/app/core/services/product.service.ts` – 5 CRUD-Methoden (`getAll`, `getById`, `create`, `update`, `delete`)
+- `src/app/core/services/product.service.spec.ts` – 13 Unit-Tests
+- `src/app/core/services/category.service.ts` – 4 CRUD-Methoden (`getAll`, `create`, `update`, `delete`)
+- `src/app/core/services/category.service.spec.ts` – 9 Unit-Tests
+- `.gitkeep`-Dateien in `models/` und `core/services/` entfernt
+
+### Entscheidungen
+
+- **`price: number`** – Jackson serialisiert `BigDecimal` als JSON-Number, TypeScript `number` ist ausreichend
+- **`category: Category[]`** – Feldname singular (wie im Backend `List<CategoryDTO> category`)
+- **`CategoryService.update()` gibt `Observable<void>` zurück** – Response-Body wird ignoriert, obwohl Backend `200 + CategoryDTO` liefert
+- **`inject()` statt Constructor Injection** – ESLint-Regel `@angular-eslint/prefer-inject` erzwingt `inject()`-Funktion
+- **`withCredentials: true` auf jedem HTTP-Call** – AuthInterceptor kommt erst in Iteration 7, bis dahin explizit gesetzt
+
+### Verifikation
+
+- `ng test` → 22 Tests grün (2 bestehende + 13 ProductService + 9 CategoryService - davon je 1 Creation-Test)
+- `ng lint` → Alle Dateien bestanden
+- `ng build` → BUILD SUCCESS (267 kB initial)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 7 – Authentifizierungs-Service und Auth-Guard (siehe `backlog.md`)
+
+---
+
+## Iteration 5 – Angular-Projekt initialisieren
+
+**Status:** Abgeschlossen
+**Datum:** 2026-03-02
+
+### Umgesetzte Änderungen
+
+- `bookstore-angular/` – Angular 20.3 Projekt erstellt via `@angular/cli@20`
+  - Standalone Components (Angular 20 Default, keine NgModules)
+  - Angular 20 Dateinamenskonvention: `app.ts`, `app.html`, `app.spec.ts` (statt `app.component.ts` etc.)
+- **Verzeichnisstruktur** gemäß `stack.rules.md` Sektion 7:
+  - `src/app/core/{services,guards,interceptors}/`
+  - `src/app/features/{login,inventory,admin,about}/`
+  - `src/app/shared/{components,pipes,directives}/`
+  - `src/app/models/`
+  - Alle mit `.gitkeep`-Dateien
+- **Tailwind CSS v4.2** – `@import "tailwindcss"` + `@theme` Block mit Custom-Farben/Breakpoints aus `stack.rules.md`
+  - `postcss.config.js` mit `@tailwindcss/postcss`
+- **Angular Material v20** – M3 Design System, `custom-theme.scss` (SCSS nur für Material-Theming, eigener Code nutzt Tailwind)
+- **Jest** statt Karma – `@angular-builders/jest@20` als Builder in `angular.json`
+  - Karma + Jasmine vollständig entfernt
+  - `tsconfig.spec.json` → `types: ["jest"]`
+  - `jest.config.js` – leere Konfiguration (Builder liefert eigene Defaults)
+- **Proxy** – `proxy.conf.json` für `/api/v1` → `http://localhost:8080/bookstore-starter-flow-ui-1.1-SNAPSHOT`
+- **app.config.ts** – `provideRouter(routes)` + `provideHttpClient(withInterceptorsFromDi())`
+- **App-Component** – minimal mit `<router-outlet />`
+- **ESLint** – `@angular-eslint/schematics@21` + `eslint-config-prettier` + `eslint-plugin-prettier`
+
+### Entscheidungen
+
+- **Tailwind v4 CSS-basierte Config** – `stack.rules.md` zeigt v3-Syntax (`tailwind.config.js`), aber da v4 gefordert ist, wird v4-native `@theme`-Block verwendet. Farben/Breakpoints 1:1 übernommen.
+- **Angular Material SCSS behalten** – Material-Theming benötigt intern SCSS; kein Widerspruch zu "kein SCSS/LESS" Regel, da nur für Material-eigene Theme-Konfiguration
+- **`@angular-builders/jest@20`** statt direktem `jest-preset-angular@16` – Builder integriert `jest-preset-angular@14` intern und setzt Zone-Testumgebung automatisch auf; kein separates `setup-jest.ts` nötig
+- **Angular 20 Dateinamen** – CLI generiert `app.ts` statt `app.component.ts`, wir folgen der Angular-20-Konvention
+
+### Verifikation
+
+- `ng build` → BUILD SUCCESS (267 kB initial)
+- `ng test` → 2 Tests grün (App-Erstellung + router-outlet vorhanden)
+- `ng lint` → Alle Dateien bestanden
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 6 – siehe `backlog.md`
+
+---
+
+## Iteration 4 – REST-API: Kategorien
+
+**Status:** Abgeschlossen
+**Datum:** 2026-02-27
+
+### Umgesetzte Änderungen
+
+- `rest/dto/CategoryDTO.java` – Bean Validation Annotationen (`@NotBlank`, `@Size`) auf `name` + `toEntity()` Methode für Rückkonvertierung zu `Category`
+- `rest/CategoryResource.java` – Neuer REST-Resource mit vier Endpunkten:
+  - `GET /api/v1/categories` → `List<CategoryDTO>` (200 OK, kein Auth erforderlich)
+  - `POST /api/v1/categories` → 201 Created + `CategoryDTO` (nur Admin)
+  - `PUT /api/v1/categories/{id}` → 200 OK + `CategoryDTO` (nur Admin)
+  - `DELETE /api/v1/categories/{id}` → 204 No Content (nur Admin)
+- `rest/CategoryResourceTest.java` – 19 Unit-Tests (JUnit 5 + Mockito) für alle CRUD-Endpunkte inkl. Auth + Validierung
+
+### Entscheidungen
+
+- **`findCategoryById()` via Stream** – `DataService` hat kein `getCategoryById()`, daher Iteration über `getAllCategories()` mit Stream-Filter
+- **PUT: Direktes Mutieren der Referenz** – `MockDataService.updateCategory()` ignoriert Objekte mit `id >= 0`. Da `getAllCategories()` die Original-Listenreferenz zurückgibt, wird das gefundene Objekt direkt mutiert (`existing.setName(dto.getName())`)
+- **POST: `setId(-1)` vor `updateCategory()`** – `MockDataService` vergibt neue ID nur bei `id < 0`
+- **Keine `GET /{id}` Einzelabruf** – nicht im Backlog spezifiziert, Kategorien werden als vollständige Liste abgerufen
+- **Pattern-Konsistenz** – `requireAdmin()`, `validate()`, Field Injection analog zu `ProductResource`
+
+### Verifikation
+
+- `mvn clean install` – BUILD SUCCESS, 58 Tests (19 CategoryResource + 21 ProductResource + 13 Auth + 2 ProductDTO + 3 CORS), 0 Fehler
+- **curl-Tests** (alle bestanden, Kontext-Pfad: `/bookstore-starter-flow-ui-1.1-SNAPSHOT/`):
+  - `GET /api/v1/categories` → 200 OK, 8 Kategorien als JSON-Array (ohne Auth)
+  - `POST /api/v1/categories` mit `{"name":"Test Category"}` als Admin → 201 Created, `{"id":9,"name":"Test Category"}`
+  - `POST /api/v1/categories` mit `{"name":"X"}` (< 2 Zeichen) → 400, `{"error":"Category name must be at least 2 characters"}`
+  - `PUT /api/v1/categories/9` mit `{"name":"Updated Category"}` → 200 OK, `{"id":9,"name":"Updated Category"}`
+  - `DELETE /api/v1/categories/9` → 204 No Content (Kategorie entfernt, GET bestätigt 8 Kategorien)
+  - `POST /api/v1/categories` ohne Auth → 401, `{"error":"Not authenticated"}`
+  - `POST /api/v1/categories` als `user1` (non-admin) → 403, `{"error":"Admin role required"}`
+  - Vaadin-UI → 200 OK (keine Regression)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 5 – Angular-Projekt initialisieren (siehe `backlog.md`)
+
+---
+
+## Iteration 3 – REST-API: Produkte schreiben
+
+**Status:** Abgeschlossen
+**Datum:** 2026-02-27
+
+### Umgesetzte Änderungen
+
+- `rest/dto/ProductDTO.java` – Bean Validation Annotationen (`@NotBlank`, `@Size`, `@NotNull`, `@Min`) + `toEntity(Collection<Category>)` Methode für Rückkonvertierung
+- `rest/dto/AvailabilityDTO.java` – `toEntity()` Methode für Rückkonvertierung zu `Availability`
+- `rest/ProductResource.java` – Erweitert um drei schreibende Endpunkte:
+  - `POST /api/v1/products` → 201 Created + `ProductDTO` (nur Admin)
+  - `PUT /api/v1/products/{id}` → 200 OK + `ProductDTO` (nur Admin)
+  - `DELETE /api/v1/products/{id}` → 204 No Content (nur Admin)
+- `rest/ProductResourceTest.java` – Erweitert auf 21 Tests (17 neue Tests für CRUD + Auth + Validierung)
+
+### Entscheidungen
+
+- **Programmatische Bean Validation** mit `@Inject Validator` statt `@Valid` auf Methodenparameter – ermöglicht konsistente JSON-Fehlerantworten
+- **`requireAdmin()` Helper-Methode** – prüft `isUserSignedIn()` (401) und `isUserInRole("admin")` (403), wiederverwendbar für alle schreibenden Endpunkte
+- **Kategorie-Auflösung per ID** – `toEntity()` mappt `CategoryDTO`-IDs gegen `dataService.getAllCategories()`, unbekannte IDs werden ignoriert
+- **`ParameterMessageInterpolator`** in Tests statt EL-Dependency – Hibernate Validator benötigt Expression Language, die im Test-Classpath fehlt
+- **Keine neuen Dateien** – nur bestehende DTOs und `ProductResource` erweitert
+
+### Verifikation
+
+- `mvn clean install` – BUILD SUCCESS, 39 Tests (21 ProductResource + 13 Auth + 2 ProductDTO + 3 CORS), 0 Fehler
+- curl-Tests implizit durch Iteration 4 WildFly-Deployment verifiziert (alle Endpunkte funktionsfähig)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 4 – REST-API: Kategorien (siehe `backlog.md`)
+
+---
+
+## Iteration 2 – REST-API: Authentifizierung
+
+**Status:** Abgeschlossen
+**Datum:** 2026-02-27
+
+### Umgesetzte Änderungen
+
+- `rest/dto/LoginRequestDTO.java` – POJO mit `username`, `password`, No-Arg/All-Args-Konstruktor
+- `rest/dto/LoginResponseDTO.java` – POJO mit `username`, `role`, No-Arg/All-Args-Konstruktor
+- `rest/dto/UserInfoDTO.java` – POJO mit `username`, `role`, No-Arg/All-Args-Konstruktor (semantisch getrennt von `LoginResponseDTO`)
+- `rest/AuthResource.java` – `@Path("auth")`, `@RequestScoped`, drei Endpunkte:
+  - `POST /api/v1/auth/login` → `LoginResponseDTO` (200) oder JSON-Fehler (400/401)
+  - `POST /api/v1/auth/logout` → 204 No Content (idempotent)
+  - `GET /api/v1/auth/me` → `UserInfoDTO` (200) oder JSON-Fehler (401)
+- `rest/AuthResourceTest.java` – 13 Unit-Tests (JUnit 5 + Mockito)
+
+### Entscheidungen
+
+- **Session-Invalidierung direkt über `HttpServletRequest`** statt `AccessControl.signOut()` – `signOut()` greift auf `VaadinSession` zu, die in JAX-RS-Kontext nicht verfügbar ist
+- **`request.changeSessionId()`** nach Login – Session-Fixation-Schutz
+- **`request.getSession(false)` bei Logout** – keine neue Session anlegen, wenn keine existiert
+- **Field Injection** für `AccessControl`, `@Context` für `HttpServletRequest` – konsistent mit `ProductResource`-Pattern
+- **Keine Änderungen an CORS-Filter** – POST, GET, Credentials und Content-Type bereits unterstützt
+- **Keine POM-Änderungen** – alle Test-Dependencies (JUnit 5, Mockito 5) bereits vorhanden
+
+### Verifikation
+
+- `mvn clean install` – BUILD SUCCESS, 22 Tests (13 neu + 9 bestehend), 0 Fehler
+- **curl-Tests** (alle bestanden, Kontext-Pfad: `/bookstore-starter-flow-ui-1.1-SNAPSHOT/`):
+  - `POST /api/v1/auth/login` mit `user1/user1` → 200, `{"username":"user1","role":"user"}`
+  - `POST /api/v1/auth/login` mit falschen Credentials → 401, `{"error":"Invalid username or password"}`
+  - `GET /api/v1/auth/me` mit Cookie → 200, `{"username":"user1","role":"user"}`
+  - `GET /api/v1/auth/me` ohne Cookie → 401, `{"error":"Not authenticated"}`
+  - `POST /api/v1/auth/logout` mit Cookie → 204 No Content
+  - `GET /api/v1/auth/me` nach Logout → 401 (Session ungültig)
+  - `POST /api/v1/auth/login` mit `admin/admin` → 200, `{"username":"admin","role":"admin"}`
+  - `GET /api/v1/auth/me` als Admin → 200, `{"username":"admin","role":"admin"}`
+  - Vaadin-UI → 200 OK (keine Regression)
+
+### Offene Punkte
+
+- Keine
+
+### Nächste Iteration
+
+- Iteration 3 – siehe `backlog.md`
+
+---
+
+## Iteration 1 – REST-API: Grundgerüst und Produkte lesen
+
+**Status:** Abgeschlossen
+**Datum:** 2026-02-26
+
+### Umgesetzte Änderungen
+
+- `rest/dto/AvailabilityDTO.java` – Enum mit `COMING`, `AVAILABLE`, `DISCONTINUED` + `fromEntity()` Factory
+- `rest/dto/CategoryDTO.java` – POJO mit `id`, `name`, No-Arg/All-Args-Konstruktor, `fromEntity()` Factory
+- `rest/dto/ProductDTO.java` – POJO mit allen Produkt-Feldern, `fromEntity()` Factory (konvertiert `Set<Category>` → `List<CategoryDTO>`, null-safe)
+- `rest/BookstoreRestApplication.java` – `@ApplicationPath("/api/v1")` aktiviert JAX-RS
+- `rest/CorsFilter.java` – `@Provider`, `ContainerRequestFilter` + `ContainerResponseFilter` für `http://localhost:4200`
+- `rest/ProductResource.java` – `@Path("products")`, `@RequestScoped`, zwei Endpunkte:
+  - `GET /api/v1/products` → `List<ProductDTO>` (200 OK)
+  - `GET /api/v1/products/{id}` → `ProductDTO` (200 OK) oder JSON-Fehler (404)
+
+### Entscheidungen
+
+- **Basispfad `/api/v1`** statt `/api` (backlog.md) – `stack.rules.md` ist gemäß `CLAUDE.md` maßgeblich
+- **JAX-RS `@Provider` CORS-Filter** statt Servlet-Filter – gilt nur für REST-Endpunkte, interferiert nicht mit Vaadin Servlet
+- **`@RequestScoped`** für `ProductResource` – erforderlich wegen `bean-discovery-mode="annotated"` in `beans.xml`
+- **Field Injection** statt Constructor Injection in `ProductResource` – RESTEasy benötigt No-Arg-Konstruktor für POJO-Instanziierung
+- **JDK 17** für WildFly 27 – JDK 25 inkompatibel (Security Manager entfernt in JDK 24)
+
+### Verifikation
+
+- `mvn clean install` – BUILD SUCCESS
+- **curl-Tests** (alle bestanden, Kontext-Pfad: `/bookstore-starter-flow-ui-1.1-SNAPSHOT/`):
+  - `GET /api/v1/products` → 200 OK, 100 Produkte als JSON-Array
+  - `GET /api/v1/products/1` → 200 OK, einzelnes Produkt-JSON
+  - `GET /api/v1/products/99999` → 404, `{"error": "Product with id 99999 not found"}`
+  - CORS-Headers bei `Origin: http://localhost:4200` → alle Header korrekt gesetzt
+  - CORS Preflight (OPTIONS) → 200 OK mit allen CORS-Headers
+  - Vaadin-UI → 200 OK (keine Regression)
+
+### Offene Punkte
+
+- **Kontext-Pfad:** WAR wird unter `/bookstore-starter-flow-ui-1.1-SNAPSHOT/` deployt. Angular-Proxy muss diesen Pfad berücksichtigen oder WildFly-Deployment auf Root `/` konfiguriert werden.
+
+### Nächste Iteration
+
+- Iteration 2 – REST-API: Authentifizierung (siehe `backlog.md`)

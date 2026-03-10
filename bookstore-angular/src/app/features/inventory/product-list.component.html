@@ -1,0 +1,103 @@
+<div class="p-6">
+  <!-- Header -->
+  <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">{{ 'INVENTORY.TITLE' | translate }}</h1>
+      <p class="text-sm text-gray-500">{{ 'INVENTORY.PRODUCT_COUNT' | translate: { count: products().length } }}</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-4 md:gap-6">
+      <div class="flex items-center gap-1.5">
+        <span class="h-2.5 w-2.5 rounded-full bg-available"></span>
+        <span class="text-sm text-gray-600">{{ availableCount() }} {{ 'AVAILABILITY.AVAILABLE' | translate }}</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="h-2.5 w-2.5 rounded-full bg-coming"></span>
+        <span class="text-sm text-gray-600">{{ comingCount() }} {{ 'AVAILABILITY.COMING' | translate }}</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="h-2.5 w-2.5 rounded-full bg-discontinued"></span>
+        <span class="text-sm text-gray-600">{{ discontinuedCount() }} {{ 'AVAILABILITY.DISCONTINUED' | translate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div class="relative flex-1">
+      <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">search</mat-icon>
+      <input
+        #filterInput
+        type="text"
+        [placeholder]="'INVENTORY.SEARCH_PLACEHOLDER' | translate"
+        (input)="onFilterInput(filterInput.value)"
+        class="w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-10 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+      />
+    </div>
+    <button
+      mat-flat-button
+      color="primary"
+      [disabled]="!isAdmin()"
+      (click)="onNewProduct()"
+      class="w-full sm:w-auto"
+    >
+      <mat-icon>add_circle</mat-icon>
+      {{ 'INVENTORY.NEW_PRODUCT' | translate }}
+    </button>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <p class="text-sm text-gray-500">{{ 'INVENTORY.LOADING' | translate }}</p>
+  }
+
+  <!-- Error -->
+  @if (error()) {
+    <p class="text-sm text-red-600">{{ error() }}</p>
+  }
+
+  <!-- Table -->
+  @if (!loading() && !error()) {
+    <div class="max-h-[calc(100vh-280px)] overflow-auto">
+      <table mat-table [dataSource]="dataSource" matSort matSortActive="productName" matSortDirection="asc" class="w-full">
+        <!-- Product Name -->
+        <ng-container matColumnDef="productName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-sm font-medium text-gray-500">{{ 'INVENTORY.COLUMN_PRODUCT_NAME' | translate }}</th>
+          <td mat-cell *matCellDef="let product" class="text-sm text-gray-900">{{ product.productName }}</td>
+        </ng-container>
+
+        <!-- Price -->
+        <ng-container matColumnDef="price">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-sm font-medium text-gray-500 text-right">{{ 'INVENTORY.COLUMN_PRICE' | translate }}</th>
+          <td mat-cell *matCellDef="let product" class="text-sm text-gray-900 text-right">{{ product.price.toFixed(2) }} €</td>
+        </ng-container>
+
+        <!-- Availability -->
+        <ng-container matColumnDef="availability">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-sm font-medium text-gray-500">{{ 'INVENTORY.COLUMN_AVAILABILITY' | translate }}</th>
+          <td mat-cell *matCellDef="let product" class="text-sm text-gray-900">
+            <div class="flex items-center gap-1.5">
+              <span class="h-2.5 w-2.5 rounded-full" [ngClass]="availabilityColor(product.availability)"></span>
+              <span>{{ formatAvailability(product.availability) }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Stock Count -->
+        <ng-container matColumnDef="stockCount">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-sm font-medium text-gray-500 text-right">{{ 'INVENTORY.COLUMN_STOCK' | translate }}</th>
+          <td mat-cell *matCellDef="let product" class="text-sm text-gray-900 text-right">{{ product.stockCount }}</td>
+        </ng-container>
+
+        <!-- Categories -->
+        <ng-container matColumnDef="categories">
+          <th mat-header-cell *matHeaderCellDef class="text-sm font-medium text-gray-500">{{ 'INVENTORY.COLUMN_CATEGORIES' | translate }}</th>
+          <td mat-cell *matCellDef="let product" class="text-sm text-gray-900">{{ formatCategories(product) }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns();" (click)="onRowClick(row)" class="even:bg-gray-50" [class.cursor-pointer]="isAdmin()"></tr>
+      </table>
+    </div>
+  }
+</div>
+<router-outlet />

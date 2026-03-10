@@ -1,0 +1,121 @@
+<div class="p-6">
+  <!-- Header -->
+  <div class="flex items-center gap-4 mb-6">
+    <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100">
+      <mat-icon class="text-indigo-600">menu_book</mat-icon>
+    </div>
+    <div>
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'ABOUT.TITLE' | translate }}</h1>
+        <span class="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+          v1.1-SNAPSHOT
+        </span>
+      </div>
+      <p class="text-sm text-gray-500">{{ 'ABOUT.SUBTITLE' | translate }}</p>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  @if (!loading()) {
+    <div class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <!-- Total products -->
+      <div class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50">
+          <mat-icon class="text-indigo-500 text-[20px]">menu_book</mat-icon>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">{{ 'ABOUT.TOTAL_PRODUCTS' | translate }}</p>
+          <p class="text-xl font-bold text-gray-900" data-testid="total-products">{{ totalProducts() }}</p>
+        </div>
+      </div>
+
+      <!-- Available -->
+      <div class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50">
+          <mat-icon class="text-indigo-500 text-[20px]">layers</mat-icon>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">{{ 'ABOUT.AVAILABLE' | translate }}</p>
+          <p class="text-xl font-bold text-gray-900" data-testid="available-products">{{ availableProducts() }}</p>
+        </div>
+      </div>
+
+      <!-- Total stock -->
+      <div class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50">
+          <mat-icon class="text-indigo-500 text-[20px]">inventory_2</mat-icon>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">{{ 'ABOUT.TOTAL_STOCK' | translate }}</p>
+          <p class="text-xl font-bold text-gray-900" data-testid="total-stock">{{ totalStock() | number }}</p>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50">
+          <mat-icon class="text-indigo-500 text-[20px]">sell</mat-icon>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">{{ 'ABOUT.CATEGORIES' | translate }}</p>
+          <p class="text-xl font-bold text-gray-900" data-testid="category-count">{{ categoryCount() }}</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- System & Technology Cards -->
+  <div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <!-- System Card -->
+    <div class="rounded-lg border border-gray-200 bg-white p-5">
+      <div class="mb-4 flex items-center gap-2">
+        <mat-icon class="text-gray-600 text-[20px]">computer</mat-icon>
+        <h2 class="text-sm font-semibold tracking-wide text-gray-600 uppercase">{{ 'ABOUT.SYSTEM' | translate }}</h2>
+      </div>
+      <div class="divide-y divide-gray-100">
+        @for (item of systemInfo; track item.labelKey) {
+          <div class="flex items-center justify-between py-2.5">
+            <span class="text-sm text-gray-500">{{ item.labelKey | translate }}</span>
+            <span class="text-sm font-medium text-gray-900">{{ item.value | translate }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Technology Card -->
+    <div class="rounded-lg border border-gray-200 bg-white p-5">
+      <div class="mb-4 flex items-center gap-2">
+        <mat-icon class="text-gray-600 text-[20px]">code</mat-icon>
+        <h2 class="text-sm font-semibold tracking-wide text-gray-600 uppercase">{{ 'ABOUT.TECHNOLOGY' | translate }}</h2>
+      </div>
+      <div class="divide-y divide-gray-100">
+        @for (item of techInfo; track item.labelKey) {
+          <div class="flex items-center justify-between py-2.5">
+            <span class="text-sm text-gray-500">{{ item.labelKey | translate }}</span>
+            <a
+              [href]="item.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-800"
+            >
+              {{ item.value }}
+              <mat-icon class="text-[14px]">open_in_new</mat-icon>
+            </a>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="flex flex-col gap-2 rounded-lg border border-gray-200 bg-gray-50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center gap-2 text-sm text-gray-500">
+      <mat-icon class="text-[18px]">language</mat-icon>
+      <span>{{ 'ABOUT.FOOTER_TEXT' | translate }}</span>
+    </div>
+    <div class="flex items-center gap-2 text-sm text-gray-400">
+      <mat-icon class="text-[16px]">calendar_today</mat-icon>
+      <span>{{ 'ABOUT.LAST_UPDATED' | translate: { date: systemInfo[2].value } }}</span>
+    </div>
+  </div>
+</div>

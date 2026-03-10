@@ -1,0 +1,86 @@
+<mat-sidenav-container class="h-screen">
+  <!-- Sidebar / Drawer -->
+  <mat-sidenav
+    #drawer
+    [mode]="isMobile() ? 'over' : 'side'"
+    [opened]="isMobile() ? drawerOpen() : true"
+    class="w-sidebar border-r border-gray-200 bg-white"
+    (openedChange)="$event ? null : closeDrawer()"
+  >
+    <nav class="flex h-full flex-col">
+      <!-- Logo -->
+      <div class="flex items-center gap-3 px-5 py-6">
+        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500 text-white">
+          <mat-icon>auto_stories</mat-icon>
+        </div>
+        <span class="text-lg font-semibold text-gray-900">{{ 'APP.BOOKSTORE' | translate }}</span>
+      </div>
+
+      <!-- Navigation Links -->
+      <div class="flex flex-1 flex-col gap-1 px-3 pt-2">
+        <a
+          routerLink="/inventory"
+          routerLinkActive="bg-indigo-50 text-indigo-600"
+          (click)="closeDrawer()"
+          class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+        >
+          <mat-icon>edit</mat-icon>
+          {{ 'NAV.INVENTORY' | translate }}
+        </a>
+        <a
+          routerLink="/about"
+          routerLinkActive="bg-indigo-50 text-indigo-600"
+          (click)="closeDrawer()"
+          class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+        >
+          <mat-icon>info</mat-icon>
+          {{ 'NAV.ABOUT' | translate }}
+        </a>
+        @if (isAdmin()) {
+          <a
+            routerLink="/admin"
+            routerLinkActive="bg-indigo-50 text-indigo-600"
+            (click)="closeDrawer()"
+            class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+          >
+            <mat-icon>settings</mat-icon>
+            {{ 'NAV.ADMIN' | translate }}
+          </a>
+        }
+      </div>
+
+      <!-- Bottom Actions -->
+      <div class="flex flex-col gap-1 border-t border-gray-200 px-3 py-3">
+        <button
+          disabled
+          class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400"
+        >
+          <mat-icon>chevron_left</mat-icon>
+          {{ 'NAV.COLLAPSE' | translate }}
+        </button>
+        <button
+          (click)="logout()"
+          class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+        >
+          <mat-icon>logout</mat-icon>
+          {{ 'NAV.LOGOUT' | translate }}
+        </button>
+      </div>
+    </nav>
+  </mat-sidenav>
+
+  <!-- Main Content -->
+  <mat-sidenav-content class="bg-gray-50">
+    @if (isMobile()) {
+      <header class="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3">
+        <button mat-icon-button aria-label="Toggle menu" (click)="toggleDrawer()">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <span class="text-lg font-semibold text-gray-900">{{ 'APP.BOOKSTORE' | translate }}</span>
+      </header>
+    }
+    <main class="h-full overflow-y-auto">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>
