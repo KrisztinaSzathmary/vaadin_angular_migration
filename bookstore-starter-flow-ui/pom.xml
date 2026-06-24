@@ -79,7 +79,7 @@
 				<artifactId>vaadin-maven-plugin</artifactId>
 				<version>${vaadin.version}</version>
 				<configuration>
-					<pnpmEnable>true</pnpmEnable>
+					<pnpmEnable>false</pnpmEnable>
 					<requireHomeNodeExec>true</requireHomeNodeExec>
 				</configuration>
 				<executions>
@@ -127,7 +127,7 @@
 						<version>4.0.0.Final</version>
 						<configuration>
 							<version>27.0.0.Final</version>
-							<javaOpts>-Dvaadin.frontend.hotdeploy=true</javaOpts>
+							<javaOpts>-Dvaadin.frontend.hotdeploy=true -Dvaadin.pnpm.enable=false</javaOpts>
 <!--							<add-user>-->
 <!--								<users>-->
 <!--									<user>-->
