@@ -78,24 +78,29 @@ Kein selbstständiges Durchlaufen mehrerer Phasen.
 Alle `ng`-Befehle laufen im Angular-Projektverzeichnis **`bookstore-angular/`**,
 nicht im Repo-Root.
 
-**Computational Sensors** — nach Translate und Refactor:
+**Computational Sensors (deterministisch)** — nach Translate und Refactor das
+schnelle Kernset, in `/verify` das volle Set:
 
 ```
 cd bookstore-angular
-ng build
-ng test
-ng lint
+ng build                  # Build + TypeScript strict
+ng test --watch=false     # Unit-Tests (+ --code-coverage in /verify)
+ng lint                   # ESLint + angular-eslint
 ```
 
-**Inferential Sensor** — nach Verify:
+Volles deterministisches Set in `/verify` zusätzlich: `type-coverage` (Typabdeckung),
+`dependency-cruiser` (Architektur/Importe), `playwright` (E2E + Visual Regression +
+ARIA-Snapshots), `@axe-core/playwright` (WCAG-A11y). Playwright ist deterministisch
+— Bedingung: Baselines in fixer Umgebung (Docker/CI), Animationen aus, dynamischer
+Inhalt maskiert.
 
-```
-cd bookstore-angular
-npx playwright test
-```
+**Inferential Sensor (LLM-as-Judge, nicht reproduzierbar)** — in `/verify`, klar
+getrennt nach den Computational Sensors. Bewertet nur, was kein Tool messen kann
+(fachliche Äquivalenz, Angemessenheit). Ein roter Computational Sensor kann durch
+den Judge nicht überstimmt werden.
 
-Du interpretierst das Ergebnis explizit. Bei Fehlern: selbst beheben, erneut
-prüfen — kein HITL-Checkpoint, bis alle Sensoren grün sind.
+Du interpretierst jedes Ergebnis explizit. Bei Fehlern: selbst beheben, erneut
+prüfen — kein HITL-Checkpoint, bis alle Computational Sensors grün sind.
 
 ## Projektstruktur
 
