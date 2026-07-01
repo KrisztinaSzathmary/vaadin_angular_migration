@@ -27,8 +27,9 @@ die spätere Translate-Phase orientiert.
 - **Nur offizielle Angular-Pakete**: `@angular/core`, `@angular/common`,
   `@angular/forms`, `@angular/router`, `@angular/material`, `@angular/cdk`.
   Keine Drittanbieter-Bibliotheken.
-- Aktueller Stack: **Angular 22.0.x, Material 22.0.x (M3), Standalone, Signals,
-  Reactive Forms** (exakte Patch-Version + Details siehe Referenzdatei).
+- Aktueller Stack: **Angular 22.0.4, Material/CDK 22.0.4 (M3), Standalone, Signals,
+  Reactive Forms** (aktuelle Patch-Version bei Provisionierung erneut prüfen, Details
+  siehe Referenzdatei).
 
 ## Ablauf
 

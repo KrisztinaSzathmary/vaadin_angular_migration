@@ -116,9 +116,9 @@ prüfen — kein HITL-Checkpoint, bis alle Computational Sensors grün sind.
 ## Stack
 
 - **Quelle:** Vaadin 24 (Flow) + Java EE, Backend auf Port 8080
-- **Ziel:** Angular 22.0.x (exakte Patch-Version bei Provisionierung bestätigen, siehe
-  `.claude/references/reference-angular-material.md`), Standalone Components, Signals,
-  Reactive Forms, Material 22 (M3)
+- **Ziel:** Angular 22.0.4, Material/CDK 22.0.4 (M3) (aktuelle Patch-Version bei
+  Provisionierung erneut prüfen, siehe `.claude/references/reference-angular-material.md`),
+  Standalone Components, Signals, Reactive Forms
 - **Stack-Vorgabe:** nur stabile APIs, nur offizielle Angular-Pakete (kein Drittanbieter)
 - Sensoren: `ng build` + `ng test` + `ng lint` + Playwright E2E
 - Skills: `analyze`, `translate`, `refactor`, `verify`, `migrate`, `review`

@@ -3,9 +3,9 @@
 > **Zweck:** Faktenbasierte Referenz für den `ui-advisor`-Agenten bei der Übersetzung
 > von Vaadin-Flow-Komponenten nach Angular Material.
 > **Stand:** 2026-07-01, verifiziert gegen angular.dev und npmjs.com/package/@angular/core.
-> **Gepinnte Version:** Angular **22.0.4** (letzter bekannter Patch zum Stand oben). Bei
-> Provisionierung (`ng new`) die dann aktuelle 22.0.x-Patch-Version erneut prüfen und diese
-> Referenz bei Abweichung aktualisieren.
+> **Gepinnte Version:** Angular **22.0.4**, Angular Material/CDK **22.0.4** (letzter
+> bekannter Patch zum Stand oben). Bei Provisionierung (`ng new`) die dann aktuelle
+> Patch-Version erneut prüfen und diese Referenz bei Abweichung aktualisieren.
 
 ## Harte Vorgaben für diese Migration
 
@@ -20,7 +20,7 @@
 | Paket | Version | Quelle |
 |-------|---------|--------|
 | Angular | **22.0.4** (stable, Major-Release 03.06.2026; Patch zum Stand oben — bei Provisionierung erneut prüfen) | blog.angular.dev/announcing-angular-v22, npmjs.com/package/@angular/core |
-| Angular Material / CDK | **22.0.x** (Lockstep mit Core) | github.com/angular/components Releases |
+| Angular Material / CDK | **22.0.4** (Lockstep mit Core) | github.com/angular/components Releases |
 | Node.js | ≥ 20.x | angular.dev/reference/versions |
 
 Aktive Unterstützung: v22 bis Dez. 2026, LTS bis Mai 2028. v21 (LTS bis Mai 2027),
