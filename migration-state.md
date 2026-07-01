@@ -1,6 +1,6 @@
 # Migration State — Vaadin → Angular (Bookstore)
 
-**Stand:** 2026-06-25
+**Stand:** 2026-07-01
 **Branch:** `bp3-harness-demo`
 
 ## Aktueller Status
@@ -27,28 +27,28 @@ Danach sequenziell: M-01 → M-02 → … → M-14 (je mit HITL-Gate nach Analyz
 
 | ID | Einheit | Komplexität | Abhängt von | Status |
 |---|---|---|---|---|
-| M-00 | E2E-Test-Harness | M | — | **offen** |
+| M-00 | E2E-Test-Harness (inkl. Angular-Scaffolding) | M | — | **offen** |
 | M-01 | Domänenmodelle (Product, Category, Availability) | S | — | offen |
-| M-02 | DataService (HTTP-Anbindung) | M | M-01 | offen |
+| M-02 | DataService (In-Memory-Datenschicht, kein REST) | M | M-01 | offen |
 | M-03 | i18n / Übersetzungen (de+en) | S | — | offen |
 | M-04 | Auth-Domäne (AccessControl) | M | M-03 | offen |
 | M-05 | ProductDataProvider → Signal-Store | M | M-01, M-02 | offen |
 | M-06 | Routing & Auth-Guard | M | M-04 | offen |
-| M-07 | AppComponent / Shell | S | M-06 | offen |
-| M-08 | MainLayout / Navigation | M | M-04, M-07 | offen |
-| M-09 | LoginView | M | M-04, M-06 | offen |
-| M-10 | AboutView | S | M-07, M-08 | offen |
-| M-11 | Inventory CRUD-View | L | M-05, M-08, M-09 | offen |
-| M-12 | ProductForm | L | M-01, M-05, M-11 | offen |
-| M-13 | ErrorView / 404-Route | S | M-06 | offen |
-| M-14 | AdminView (Kategorie-Verwaltung) | M | M-02, M-08 | offen |
+| M-07 | MainLayout (App-Shell) | M | M-04, M-08, M-06 | offen |
+| M-08 | Menu (Navigation/Sidenav) | M | M-04, M-03 | offen |
+| M-09 | LoginView | M | M-04, M-07, M-06 | offen |
+| M-10 | ProductGrid | M | M-01 | offen |
+| M-11 | Inventory-View (SampleCrudView + Presenter + ProductForm) | L | M-01, M-04, M-05, M-07, M-10 | offen |
+| M-12 | AboutView | S | M-07, M-03 | offen |
+| M-13 | Error-/404-Route | S | M-06, M-07, M-03 | offen |
+| M-14 | AdminView (Kategorieverwaltung) | M | M-01, M-02, M-07, M-06, M-09 | offen |
 
 ## Offene Punkte / Entscheidungen
 
 1. **`BookstoreTitle` Custom Element** — JS-Implementierung liegt in
    `bookstore-starter-flow-my-component/src/main/java/com/vaadin/samples/BookstoreTitle.java`
    als `@Tag("bookstore-title")`-Wrapper. Die eigentliche JS-Datei (`bookstore-title.js`)
-   noch nicht analysiert. Vor M-10 (AboutView) klären.
+   noch nicht analysiert. Vor M-12 (AboutView) klären.
 2. **ErrorView-Verhalten** — Laufzeit zeigt Toast statt separatem Screen (lt. flow-mapper).
    In M-13 als Wildcard-Route + Notification umgesetzt (kein 1:1 zur Java-Impl).
 3. **BeforeLeave-Guard / Dirty-Wechsel im Grid** — Vaadin schützt nur beim Verlassen

@@ -1,6 +1,6 @@
 # Migration-Roadmap — Vaadin → Angular (Bookstore)
 
-**Stand:** 2026-06-25
+**Stand:** 2026-07-01 (REST-Annahme korrigiert, Angular-Scaffolding-Hinweis ergänzt)
 **Quelle:** `bookstore-starter-flow-ui/src/main/java/com/vaadin/samples/` (Vaadin 24 / Flow + Java EE)
 **Ziel:** `bookstore-angular/` (Angular 22, Standalone Components, Signals, Reactive Forms, Material 22 / M3)
 **Referenz:** `ui-design-plan/` (annotierte Views, Flows, Empfehlungen)
@@ -18,11 +18,16 @@ abgeleitet 14 migrierbare Einheiten (siehe Backlog). Views, Layout, Auth-UI-Schi
 Datenanbindung (DataProvider), i18n, Routing/Guards, Error-Handling.
 
 ### Außerhalb des Scope (bleibt unverändert)
-- **`bookstore-starter-flow-backend/`** — REST-API / Domänenmodell bleibt Java EE
-  (CLAUDE.md: „Backend bleibt unverändert"). Die Domänenklassen `Product`, `Category`,
-  `Availability` sowie `DataService` werden auf Angular-Seite als **TypeScript-Modelle +
-  HTTP-Service** *neu abgebildet*, nicht aus Java migriert. Sie sind das Fundament und
-  bilden die Wurzeln der Topologie.
+- **`bookstore-starter-flow-backend/`** — Domänenmodell/Datenzugriff bleibt Java EE
+  (CLAUDE.md: „Backend bleibt unverändert"). **Kein REST-API** — `DataService` ist ein
+  reines CDI-Interface, das per `@Inject` in-process (nicht über HTTP) in
+  `ProductDataProvider` eingespeist wird (verifiziert: keine JAX-RS/Jersey/RestEasy-
+  Imports, kein `web.xml` mit Servlet-/REST-Mapping, Packaging ist `ear`). Die
+  Domänenklassen `Product`, `Category`, `Availability` sowie `DataService` werden auf
+  Angular-Seite als **TypeScript-Modelle + In-Memory-/Mock-Datenschicht** (kein
+  `HttpClient`) *neu abgebildet*, nicht aus Java migriert (siehe `migration-backlog.md`
+  M-02 für die Entscheidungsbegründung). Sie sind das Fundament und bilden die Wurzeln
+  der Topologie.
 
 ### Bewusst nicht migriert (mit Grund)
 | Vaadin-Einheit | Grund |
@@ -185,7 +190,7 @@ Einheiten) zuerst, dann aufsteigend. Querschnitt (Test-Harness, i18n, Auth, Guar
 | Phase | Einheiten | Begründung |
 |-------|-----------|------------|
 | **0 — Test-Harness** | E2E/Playwright-Gerüst (M-00) | Querschnitt; muss vor der ersten View stehen, damit jede Migration gegen Flows verifizierbar ist. |
-| **1 — Fundament** | Modelle (M-01), DataService/HTTP (M-02), i18n (M-03) | Keine ausgehenden Kanten bzw. nur Backend-Contract. Wurzeln. |
+| **1 — Fundament** | Modelle (M-01), DataService (M-02, In-Memory statt REST), i18n (M-03) | Keine ausgehenden Kanten bzw. nur Backend-Contract. Wurzeln. |
 | **2 — Domänen-Querschnitt** | Auth (M-04), ProductDataProvider (M-05), Guard/Routing (M-06) | Hängen nur an Phase 1. Auth + Guard sind Voraussetzung für jede geschützte View. |
 | **3 — Shell** | MainLayout (M-07), Menu (M-08) | Hängt an Auth (M-04). Router-Layout aller Views. |
 | **4 — Einfache & Daten-Views** | LoginView (M-09), AboutView (M-12), ErrorRoute (M-13), ProductGrid (M-10) | Login hängt nur an Auth+Layout; About/Error nur an Layout; Grid nur an Modellen. |

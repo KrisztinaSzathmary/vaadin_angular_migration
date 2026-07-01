@@ -2,7 +2,10 @@
 
 > **Zweck:** Faktenbasierte Referenz für den `ui-advisor`-Agenten bei der Übersetzung
 > von Vaadin-Flow-Komponenten nach Angular Material.
-> **Stand:** Juni 2026, verifiziert gegen angular.dev.
+> **Stand:** 2026-07-01, verifiziert gegen angular.dev und npmjs.com/package/@angular/core.
+> **Gepinnte Version:** Angular **22.0.4** (letzter bekannter Patch zum Stand oben). Bei
+> Provisionierung (`ng new`) die dann aktuelle 22.0.x-Patch-Version erneut prüfen und diese
+> Referenz bei Abweichung aktualisieren.
 
 ## Harte Vorgaben für diese Migration
 
@@ -16,12 +19,13 @@
 
 | Paket | Version | Quelle |
 |-------|---------|--------|
-| Angular | **22** (stable, Release 03.06.2026) | blog.angular.dev/announcing-angular-v22 |
-| Angular Material / CDK | **22** (Lockstep mit Core) | github.com/angular/components Releases |
+| Angular | **22.0.4** (stable, Major-Release 03.06.2026; Patch zum Stand oben — bei Provisionierung erneut prüfen) | blog.angular.dev/announcing-angular-v22, npmjs.com/package/@angular/core |
+| Angular Material / CDK | **22.0.x** (Lockstep mit Core) | github.com/angular/components Releases |
 | Node.js | ≥ 20.x | angular.dev/reference/versions |
 
 Aktive Unterstützung: v22 bis Dez. 2026, LTS bis Mai 2028. v21 (LTS bis Mai 2027),
 v20 (LTS bis Nov. 2026) ebenfalls supported.
+
 
 ## Feature-Stabilität (verifiziert gegen angular.dev/roadmap)
 
@@ -188,3 +192,4 @@ save(updated: Book) { this.ref.close(updated); }
 - [mat-table guide — angular/components](https://github.com/angular/components/blob/main/src/material/table/table.md)
 - [MatDialog guide — angular/components](https://github.com/angular/components/blob/main/src/material/dialog/dialog.md)
 - [angular/components Releases (Material v22)](https://github.com/angular/components/releases)
+- [@angular/core versions — npmjs.com](https://www.npmjs.com/package/@angular/core?activeTab=versions)

@@ -107,7 +107,7 @@ prüfen — kein HITL-Checkpoint, bis alle Computational Sensors grün sind.
 | Pfad | Inhalt |
 |------|--------|
 | `bookstore-starter-flow-ui/src/main/java/com/vaadin/samples/` | **Vaadin-Quellcode** (Migrations-Referenz) |
-| `bookstore-starter-flow-backend/` | Java-EE-Backend (REST-API, bleibt unverändert) |
+| `bookstore-starter-flow-backend/` | Java-EE-Backend, CDI-basiert, **kein REST** (in-process `DataService`, bleibt unverändert) |
 | `bookstore-starter-flow-ear/` | EAR-Packaging fürs Deployment |
 | `bookstore-angular/` | **Angular-Zielprojekt** (wird im Lauf der Migration aufgebaut) |
 | `.claude/skills/` | Harness-Skills — lade mit `/skillname` |
@@ -116,7 +116,9 @@ prüfen — kein HITL-Checkpoint, bis alle Computational Sensors grün sind.
 ## Stack
 
 - **Quelle:** Vaadin 24 (Flow) + Java EE, Backend auf Port 8080
-- **Ziel:** Angular 22, Standalone Components, Signals, Reactive Forms, Material 22 (M3)
+- **Ziel:** Angular 22.0.x (exakte Patch-Version bei Provisionierung bestätigen, siehe
+  `.claude/references/reference-angular-material.md`), Standalone Components, Signals,
+  Reactive Forms, Material 22 (M3)
 - **Stack-Vorgabe:** nur stabile APIs, nur offizielle Angular-Pakete (kein Drittanbieter)
 - Sensoren: `ng build` + `ng test` + `ng lint` + Playwright E2E
 - Skills: `analyze`, `translate`, `refactor`, `verify`, `migrate`, `review`

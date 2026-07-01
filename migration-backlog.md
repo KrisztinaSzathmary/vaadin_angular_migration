@@ -1,6 +1,6 @@
 # Migration-Backlog — Vaadin → Angular (Bookstore)
 
-**Stand:** 2026-06-25
+**Stand:** 2026-07-01 (M-02 REST-Annahme korrigiert, M-00 um Angular-Scaffolding ergänzt)
 Feinkörnige, sequenzierte Migrationseinheiten. Reihenfolge folgt der Dependency-Map in
 `migration-roadmap.md`. Jede Einheit durchläuft den vollen `/migrate`-Zyklus
 (Analyze → Translate → Refactor → Verify) mit HITL-Gate.
@@ -9,16 +9,30 @@ Feinkörnige, sequenzierte Migrationseinheiten. Reihenfolge folgt der Dependency
 
 ---
 
-## M-00 — E2E-Test-Harness (Querschnitt)
+## M-00 — E2E-Test-Harness (Querschnitt, inkl. Angular-Scaffolding)
 - Vaadin-Quelle: — (abgeleitet aus `ui-design-plan/flows/01..07`)
-- Angular-Ziel: `bookstore-angular/e2e/` (Playwright-Config, Baseline-Fixtures, Helpers)
+- Angular-Ziel: `bookstore-angular/` (Projekt-Scaffold) + `bookstore-angular/e2e/`
+  (Playwright-Config, Baseline-Fixtures, Helpers)
 - Hängt ab von: —
 - Komplexität: M
+- **Enthält als frühere Teilschritte (`bookstore-angular/` existiert noch nicht):**
+  1. `ng new bookstore-angular` — Angular **22.0.x** (exakte Patch-Version zum
+     Provisionierungszeitpunkt fixieren, siehe `.claude/references/reference-angular-material.md`),
+     Standalone, `--style=scss --strict --skip-git` (Repo existiert bereits).
+  2. Node-/Angular-CLI-Version pinnen (`nvm-provisioner`-Agent; `.nvmrc` in
+     `bookstore-angular/`).
+  3. Baseline-Scripts in `package.json` festschreiben: `lint`, `test`, `build`
+     (Grundlage für das Sensor-Protokoll aus `CLAUDE.md`).
+  4. Erst danach: Playwright-Config, Baseline-Fixtures, E2E-Helpers (s. u.).
 - Begründung Reihenfolge: Querschnitt zuerst. Ohne Flows-basierte E2E-Baseline ist
   funktionale Äquivalenz späterer Views nicht prüfbar (Sensor-Protokoll, CLAUDE.md).
-- Akzeptanzkriterien: Playwright läuft deterministisch (Animationen aus, dynamischer
-  Inhalt maskiert); leeres Smoke-Spec grün; `@axe-core/playwright` eingebunden;
-  Flow-Dateien als Testvorlagen referenziert.
+  Das Angular-Projekt muss vor dem E2E-Setup existieren, da Playwright/`ng`-Befehle
+  ein vorhandenes `bookstore-angular/`-Projekt voraussetzen.
+- Akzeptanzkriterien: `bookstore-angular/` Projekt angelegt (Angular 22.x, Standalone,
+  strict); `ng build`/`ng test`/`ng lint` laufen grün auf dem leeren Scaffold; Playwright
+  läuft deterministisch (Animationen aus, dynamischer Inhalt maskiert); leeres Smoke-Spec
+  grün; `@axe-core/playwright` eingebunden; Flow-Dateien als Testvorlagen referenziert.
+  Details: `plans/M-00-e2e-harness.md`.
 
 ## M-01 — Domänenmodelle (Product, Category, Availability)
 - Vaadin-Quelle: `bookstore-starter-flow-backend/.../data/Product.java`, `Category.java`, `Availability.java` (Contract-Referenz, bleibt Java)
@@ -31,17 +45,37 @@ Feinkörnige, sequenzierte Migrationseinheiten. Reihenfolge folgt der Dependency
   (productName, price, stockCount, availability, category, id, isNewProduct-Äquivalent);
   `Availability` mit AVAILABLE/COMING/DISCONTINUED; `ng build` strict grün.
 
-## M-02 — DataService (HTTP-Anbindung ans Backend)
-- Vaadin-Quelle: `bookstore-starter-flow-backend/.../DataService.java` (Contract)
+## M-02 — DataService (In-Memory-Datenschicht, kein REST-Backend)
+- Vaadin-Quelle: `bookstore-starter-flow-backend/.../DataService.java` (Contract),
+  `mock/MockDataService.java` (Referenzverhalten für Mock-Daten)
 - Angular-Ziel: `bookstore-angular/src/app/core/services/data.service.ts`
 - Hängt ab von: M-01
 - Komplexität: M
-- Begründung Reihenfolge: Backend bleibt unverändert (REST). Angular braucht einen
-  HTTP-Client-Service, der `getAllProducts/getAllCategories/getProductById/updateProduct/
-  deleteProduct/updateCategory/deleteCategory` abbildet (genutzt in `ProductDataProvider`,
-  `SampleCrudPresenter:55,82`, `AdminView:66,98,112`).
+- **Entscheidung (2026-07-01, revidiert nach Backlog-Review):** Es gibt **kein REST-Backend**.
+  `DataService` ist ein reines CDI-Interface (`jakarta.inject`), das `MockDataService`
+  **in-process** implementiert und per Constructor-Injection direkt in `ProductDataProvider`
+  eingespeist wird (`ProductDataProvider.java` — `@Inject public ProductDataProvider(DataService
+  dataService)`). Es existieren keine JAX-RS/Jersey/RestEasy-Imports, keine `web.xml` mit
+  Servlet-/REST-Mappings, kein HTTP-Endpunkt für Produkte/Kategorien (verifiziert per Grep über
+  `bookstore-starter-flow-backend/`). Die frühere Annahme „Backend bleibt unverändert (REST)"
+  war falsch — das Backend bleibt zwar unverändert, aber weil es *nie* REST war.
+  Da `CLAUDE.md` das Backend explizit als unverändert vorgibt (kein Java-Code-Zugriff für die
+  Angular-Migration) und diese Demo den Harness-Zyklus zeigen soll statt eine neue Backend-Schicht
+  zu bauen, wird **Option (b)** gewählt: `DataService` wird in Angular als **In-Memory-/Mock-
+  Datenschicht** neu implementiert (kein `HttpClient`, kein Netzwerk-Call), die exakt die
+  Methodensignaturen und das Verhalten von `MockDataService` nachbildet (inkl. Zufalls-Mock-Daten
+  über `MockDataGenerator`-Äquivalent). Eine echte REST-Anbindung ist **kein Ziel dieser Demo**;
+  falls später ein echtes Backend gebraucht wird, wäre ein JAX-RS-Adapter vor Angular-Client-Code
+  ein eigenes, separates Vorhaben außerhalb dieses Backlogs.
+- Begründung Reihenfolge: Wurzel-Adapter über den Modellen (M-01). Wird von `ProductDataProvider`
+  (M-05, `:13,24,36`) sowie direkt von `SampleCrudPresenter:55,82` und `AdminView:66,98,112`
+  referenziert — die Angular-Entsprechung braucht dieselben Methoden
+  (`getAllProducts/getAllCategories/getProductById/updateProduct/deleteProduct/updateCategory/
+  deleteCategory`), unabhängig davon, ob sie HTTP oder In-Memory implementiert sind.
 - Akzeptanzkriterien: Alle in der UI aufgerufenen Service-Methoden vorhanden und typisiert;
-  `HttpClient`-basiert; Unit-Tests mit `HttpTestingController` grün.
+  In-Memory-Implementierung liefert deterministisch wiederholbare Mock-Daten (Seed/Fixture statt
+  echtem Zufall, damit Playwright-Baselines aus M-00 stabil bleiben); Unit-Tests gegen die
+  In-Memory-Implementierung grün (kein `HttpTestingController` nötig, da kein `HttpClient`).
 
 ## M-03 — i18n / Übersetzungen
 - Vaadin-Quelle: `CustomI18NProvider.java` + `translate*.properties`
